@@ -35,6 +35,8 @@ typedef struct
 #else
 #define ENET_API __declspec( dllimport )
 #endif /* ENET_BUILDING_LIB */
+#else /* !ENET_DLL */
+#define ENET_API extern
 #endif /* ENET_DLL */
 
 #endif /* __ENET_WIN32_H__ */

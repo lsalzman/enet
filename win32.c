@@ -88,7 +88,7 @@ ENetSocket
 enet_socket_create (ENetSocketType type, const ENetAddress * address)
 {
     ENetSocket newSocket = socket (PF_INET, type == ENET_SOCKET_TYPE_DATAGRAM ? SOCK_DGRAM : SOCK_STREAM, 0);
-    int nonBlocking = 1,
+    u_long nonBlocking = 1,
         receiveBufferSize = ENET_HOST_RECEIVE_BUFFER_SIZE;
     struct sockaddr_in sin;
 
@@ -216,8 +216,8 @@ enet_socket_receive (ENetSocket socket,
                      ENetBuffer * buffers,
                      size_t bufferCount)
 {
-    DWORD sinLength = sizeof (struct sockaddr_in),
-          flags = 0,
+    INT sinLength = sizeof (struct sockaddr_in);
+    DWORD flags = 0,
           recvLength;
     struct sockaddr_in sin;
 
