@@ -1184,9 +1184,9 @@ enet_host_flush (ENetHost * host)
     @param host    host to service
     @param event   an event structure where event details will be placed if one occurs
     @param timeout number of milliseconds that ENet should wait for events
-    @retval > 1 if an event occurred within the specified time limit
+    @retval > 0 if an event occurred within the specified time limit
     @retval 0 if no event occurred
-    @retval < 1 on failure
+    @retval < 0 on failure
     @remarks enet_host_service should be called fairly regularly for adequate performance
     @ingroup host
 */
