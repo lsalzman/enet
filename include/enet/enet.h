@@ -89,8 +89,9 @@ typedef enum
  * of the allocated data.  The flags field is either 0 (specifying no flags), 
  * or a bitwise-or of any combination of the following flags:
  *
- *    ENET_PACKET_FLAG_RELIABLE - packet must be received by the ta
-
+ *    ENET_PACKET_FLAG_RELIABLE - packet must be received by the target peer
+ *    and resend attempts should be made until the packet is delivered
+ 
    @sa ENetPacketFlag
  */
 typedef struct _ENetPacket
