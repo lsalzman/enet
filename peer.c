@@ -517,7 +517,9 @@ enet_peer_queue_outgoing_command (ENetPeer * peer, const ENetProtocol * command,
     else
     if (command -> header.flags & ENET_PROTOCOL_FLAG_UNSEQUENCED)
     {
-       outgoingCommand -> reliableSequenceNumber = channel -> outgoingReliableSequenceNumber;
+       ++ channel -> outgoingUnsequencedGroup;
+
+       outgoingCommand -> reliableSequenceNumber = 0;
        outgoingCommand -> unreliableSequenceNumber = 0;
     }
     else
