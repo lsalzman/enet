@@ -396,17 +396,19 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
         fragmentCount != startCommand -> fragmentCount)
       return;
     
-    if ((startCommand -> fragments [fragmentNumber / 32] & (1 << fragmentNumber)) == 0)
-      -- startCommand -> fragmentsRemaining;
+    if ((startCommand -> fragments [fragmentNumber / 32] & (1 << (fragmentNumber & 32))) == 0)
+    {
+       -- startCommand -> fragmentsRemaining;
 
-    startCommand -> fragments [fragmentNumber / 32] |= (1 << fragmentNumber);
+       startCommand -> fragments [fragmentNumber / 32] |= (1 << (fragmentNumber & 32));
 
-    if (fragmentOffset + fragmentLength > startCommand -> packet -> dataLength)
-      fragmentLength = startCommand -> packet -> dataLength - fragmentOffset;
+       if (fragmentOffset + fragmentLength > startCommand -> packet -> dataLength)
+         fragmentLength = startCommand -> packet -> dataLength - fragmentOffset;
 
-    memcpy (startCommand -> packet -> data + fragmentOffset,
-            (enet_uint8 *) command + sizeof (ENetProtocolSendFragment),
-            fragmentLength);
+       memcpy (startCommand -> packet -> data + fragmentOffset,
+               (enet_uint8 *) command + sizeof (ENetProtocolSendFragment),
+               fragmentLength);
+    }
 }
 
 static void

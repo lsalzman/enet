@@ -558,6 +558,7 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
 
     switch (command -> header.command)
     {
+    case ENET_PROTOCOL_COMMAND_SEND_FRAGMENT:
     case ENET_PROTOCOL_COMMAND_SEND_RELIABLE:
        for (currentCommand = enet_list_previous (enet_list_end (& channel -> incomingReliableCommands));
             currentCommand != enet_list_end (& channel -> incomingReliableCommands);
