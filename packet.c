@@ -63,7 +63,7 @@ enet_packet_resize (ENetPacket * packet, size_t dataLength)
 
     newData = (enet_uint8 *) enet_malloc (dataLength);
     memcpy (newData, packet -> data, packet -> dataLength);
-    free (packet -> data);
+    enet_free (packet -> data);
     
     packet -> data = newData;
     packet -> dataLength = dataLength;
