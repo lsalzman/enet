@@ -1,0 +1,290 @@
+enet.h - The file that should be included to use the ENet API.
+
+enet_uint8 - unsigned 8 bit integer
+enet_uint16 - unsigned 16 bit integer
+enet_uint32 - unsigned 32 bit integer
+
+typedef struct
+{  
+  enet_uint32 host; 
+  enet_uint16 port; 
+} ENetAddress;
+      
+  Portable internet address structure. The host must be specified in network 
+byte-order, and the port must be in host byte-order. The constant ENET_HOST_ANY
+may be used to specify the default server host.
+
+typedef struct
+{
+  enet_uint32 flags;
+  enet_uint8 * data;
+  size_t dataLength;
+} ENetPacket;
+
+  An ENet data packet that may be sent to or received from a peer. The shown fields
+should only be read and never modified. The data field contains the allocated data
+for the packet. The dataLength fields specifies the length of the allocated data.
+The flags field is either 0 (specifying no flags), or a bitwise-or of any
+combination of the following flags:
+  
+  ENET_PACKET_FLAG_RELIABLE -   
+  
+      Specifies that the packet must be received by the target peer and that resend
+    attempts should be made should delivery of the packet fail.
+
+typedef struct
+{
+  ENetAddress address;
+  void * data;
+  size_t channelCount;
+  enet_uint32 incomingBandwidth;
+  enet_uint32 outgoingBandwidth;
+  enet_uint32 roundTripTime;
+  enet_uint32 packetLoss;
+} ENetPeer;
+
+  An ENet peer which data packets may be sent or received from. No fields should be
+modified unless otherwise specified. The address field contains the internet address 
+of the peer. The data fields may be used to associate any desired data with the peer 
+and may be freely modified. The channelCount field tells the number of channels that
+have been allocated for use to communnicate with the peer. The incomingBandwidth field
+specifies the downstream bandwidth of the client in bytes per second. The 
+outgoingBandwidth field specifies the upstream bandwidth of the client in bytes per
+second. The roundTripTime field tells the mean round trip time from the sending of
+a reliable packet until the receipt of its acknowledgement in milliseconds. The
+packetLoss field tells the mean packet loss of reliable packets as a ratio with
+respect to the constant ENET_PEER_PACKET_LOSS_SCALE.
+
+typedef enum
+{
+   ENET_EVENT_TYPE_NONE,
+   ENET_EVENT_TYPE_CONNECT,
+   ENET_EVENT_TYPE_DISCONNECT,
+   ENET_EVENT_TYPE_RECEIVE
+} ENetEventType;
+
+typedef struct _ENetEvent
+{
+   ENetEventType        type;
+   ENetPeer *           peer;
+   enet_uint8                channelID;
+   ENetPacket *         packet;
+} ENetEvent;
+
+  An ENet event as returned by enet_host_service. The type field contains the type
+of the event, which may be any one of the following:
+  
+  ENET_EVENT_TYPE_NONE - No event occurred within the specified time limit.
+  ENET_EVENT_TYPE_CONNECT - 
+    
+    A connection request initiated by enet_host_connect has completed. The peer field
+  contains the peer which successfully connected.
+
+  ENET_EVENT_TYPE_DISCONNECT -
+    
+    A peer has disconnected. This event is generated on successful completion of a
+  disconnect iniated by enet_peer_disconnect, if a peer has timed out, or if a
+  connection request initialized by enet_host_connect has timed out. The peer field
+  contains the peer which disconnected.
+
+  ENET_EVENT_TYPE_RECEIVE -
+    
+    A packet has been received from a peer. The peer field specifies the peer which
+  send the packet. The channelID field specifies the channel number upon which the
+  packet was received. The packet field contains the packet that was destroyed; this
+  packet must be destroyed with enet_packet_destroy after use.
+
+typedef struct
+{
+  ENetAddress address;
+  enet_uint32 incomingBandwidth;
+  enet_uint32 outgoingBandwidth;
+  ENetPeer * peers;
+  size_t peerCount;
+} ENetHost;
+
+  An ENet host for communicating with peers. No fields should be modified. The address 
+field tells the internet address of the host. The incomingBandwidth field tells the downstream
+bandwidth of the host. The outgoingBandwidth field specifies the upstream bandwidth of the host.
+The peers field contains an array of the peers that have been allocated for this host. The 
+peerCount field specifies the number of peers that have been allocated for this host.
+
+unsigned ENET_HOST_TO_NET_8 (unsigned);
+unsigned ENET_HOST_TO_NET_16 (unsigned);
+unsigned ENET_HOST_TO_NET_32 (unsigned);
+
+  Macros that convert from host byte-order to network byte-order (big
+endian) for unsigned integers of 8 bits, 16 bits, and 32 bits repectively. 
+
+unsigned ENET_NET_TO_HOST_8 (unsigned);
+unsigned ENET_NET_TO_HOST_16 (unsigned);
+unsigned ENET_NET_TO_HOST_32 (unsigned);
+
+  Macros that convert from network byte-order (big endian) to host 
+byte-order for unsigned integers of 8 bits, 16 bits, and 32 bits repectively.
+
+enet_uint32 enet_time_get (void);
+
+  Returns the wall-time in milliseconds. Its initial value is unspecified unless
+otherwise set.
+
+void enet_time_set (enet_uint32);
+
+  Sets the current wall-time in milliseconds.
+
+int enet_initialize (void);
+
+  Initialize ENet for use. Must be called prior to using any functions in ENet.
+Returns 0 on success and -1 on failure.
+
+void enet_deinitialize (void);
+
+  Clean-up ENet after use. Should be called when a program that has initialized
+and used ENet exits.
+
+int enet_address_set_host (ENetAddress * address, const char * hostName);
+
+  Attempts to resolve the host named by the parameter hostName and sets the host
+field in the address parameter if successful. Returns 0 on success and -1 on
+failure.
+
+int enet_address_get_host (const ENetAddress * address, char * hostName, size_t nameLength);
+
+  Attempts to do a reverse lookup of the host field in the address parameter.
+If successful, the name of the host is placed in the string described by
+hostName and nameLength. The host name is always null-delimited and will
+not exceed nameLength in length. Returns 0 on success and -1 on failure.
+
+ENetPacket * enet_packet_create (const void * dataContents, size_t dataLength, enet_uint32 flags);
+
+  Creates a packet that may be sent to a peer. The dataContents parameter
+specifies the initial contents of the packet's data; the packet's data will
+remain uninitialized if dataContents is NULL. The dataLength parameter specifies
+the size of the data that is allocated for this packet. The flags parameter
+specifies flags for this packet as described for the ENetPacket structure.
+Returns the packet on success and NULL on failure.
+
+void enet_packet_destroy (ENetPacket * packet);
+
+  Destroys the packet and deallocates its data.
+
+int enet_packet_resize (ENetPacket * packet, size_t dataLength);
+
+  Attempts to resize the data in the packet to the length specified in the
+dataLength parameter. Returns 0 on success and -1 on failure.
+
+ENetHost * enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 incomingBandwidth, enet_uint32 outgoingBandwidth);
+
+  Creates a host for communicating with peers. The address parameter specifies 
+the address at which other peers may connect to this host; if the address parameter
+is NULL, then no peers may connect to the host. The peerCount parameter specifies
+the numbers of peers that should be allocated for the host; this limits the maximum
+number of peers that may connect to this host to peerCount. The incomingBandwidth
+parameter specifies the downstream bandwidth of the host in bytes per second; if
+the incomingBandwidth parameter is 0, ENet will assume the host has unlimited
+downstream bandwidth. The outgoingBandwidth parameter specifies the upstream bandwidth
+of the host in bytes per second; if the outgoingBandwidth parameter is 0, ENet will
+assume the host has unlimited upstream bandwidth. ENet will strategically drop packets
+on specific sides of a connection between hosts to ensure the host's bandwidth is not
+overwhelmed; the bandwidth parameters also determine the window size of a connection
+which limits the amount of reliable packets that may be in transit at any given time.
+Returns the host on success and NULL on failure.
+
+void enet_host_destroy (ENetHost * host);
+
+  Destroys the host and all resources associated with it.
+
+ENetPeer * enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelCount);
+  
+  Initiates a connection from the host specified in the host parameter to a foreign 
+host whose internet address is specified by the address parameter. The channelCount 
+parameter specifies the number of channels that should be allocated for communicating 
+with the foreign host. Returns a peer representing the foreign host on success and NULL
+on failure. The peer returned will have not completed the connection until enet_host_service
+notifies of an ENET_EVENT_TYPE_CONNECT event for the peer.
+
+int enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout);
+
+  Waits for events on the host specified by the host parameters and shuttles packets 
+between the host and its peers. The event parameter specifies an event structure
+where event details will be placed if one occurs. The timeout field specifies an
+amount of time in milliseconds that ENet should wait for events. Returns 1 if an
+event occured within the specified time limit, 0 if no event occurred within the 
+time limit, and -1 on failure. This function must be called frequently for adequate
+performance.
+
+void enet_host_flush (ENetHost * host);
+
+  Sends out any queued packets on the host specified in the host parameters to
+the designated peers. This function need only be used in circumstances where one
+wishes to send queued packets earlier than in a call to enet_host_service.
+
+void enet_host_broadcast (ENetHost * host, enet_uint8 channelID, ENetPacket * packet);
+
+  Queues a packet to be sent to all peers on the host specified in the host parameter
+over the channel number identified by the channelID parameter.
+
+void enet_host_bandwidth_limit (ENetHost * host, enet_uint32 incomingBandwidth, enet_uint32 outgoingBandwidth);
+
+  Adjusts the bandwidth limits of the host specified in the host parameter. The
+incomingBandwidth and outgoingBandwidth parameters are as specified in a call to 
+enet_host_create.
+
+int enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet);
+
+  Queues a packet to be sent to the peer specified by the peer parameter over the
+channel number identified by the channelID parameter. Returns 0 on success and -1
+on failure.
+
+ENetPacket * enet_peer_receive (ENetPeer * peer, enet_uint8 channelID);
+
+  Attempts to dequeue any incoming queued packets on the peer specified by the peer
+parameter on the channel number identified by the channelID parameter. Returns a packet
+if one is available and NULL if there are no available incoming queued packets.
+
+void enet_peer_ping (ENetPeer * peer);
+  
+  Sends a ping request to the peer specified by the peer parameter. Ping requests factor
+into the mean round trip time as designated by the roundTripTime field in the ENetPeer
+structure. ENet automatically pings all connected peer at an interval, however, this 
+function may be called to ensure more frequent ping requests.
+
+void enet_peer_reset (ENetPeer * peer);
+
+  Forcefully disconnects the peer specified by the peer parameter. The foreign host 
+represented by the peer is not notified of the disconnection and so will timeout on its
+connection to the local host.
+
+void enet_peer_disconnect (ENetPeer * peer);
+
+  Request a disconnection from the peer specified by the peer parameter. An
+ENET_EVENT_DISCONNECT event will be generated by enet_host_service once the
+disconnection is complete.
+
+void enet_peer_throttle_configure (ENetPeer * peer, enet_uint32 interval, enet_uint32 acceleration, enet_uint32 deceleration);
+
+  Configures throttle parameter for the peer specified by the peer parameter.
+Unreliable packets are dropped by ENet in response to the varying conditions of
+the internet connection to the peer. The throttle represents a probability that
+an unreliable packet should not be dropped and thus sent by ENet to the peer.
+The lowest mean round trip time from the sending of a reliable packet to the 
+receipt of its acknowledgement is measured over an amount of time specified 
+by the interval parameter in milliseconds; the constant ENET_PEER_PACKET_THROTTLE_INTERVAL
+is the default value for this parameter. If a measured round trip time happens 
+to be signifigantly less than the mean round trip time measured over the interval, 
+then the throttle probability is increased to allow more traffic by an amount
+specified in the acceleration parameter which is in ratio to the
+ENET_PEER_PACKET_THROTTLE_SCALE constant. If a measured round trip time happens
+to be signifigantly greater than the mean round trip time measured over the interval,
+then the throttle probability is decreased to limit traffic by an amount specified
+in the deceleration parameter which is in ratio to the ENET_PEER_PACKET_THROTTLE_SCALE
+constant. When the throttle has a value of ENET_PEER_PACKET_THROTTLE_SCALE, no unreliable
+packets are dropped by ENET, and so 100% of all unreliable packets will be sent. When the 
+throttle has a value of 0, all unreliable packets are dropped by ENet, and so 0% of all
+unreliable packets will be sent. Intermediate values for the throttle represent intermediate
+probabilities between 0% and 100% of unreliable packets being sent. The bandwidth limits
+of the local and foreign host are taken into account to determine a sensible limit for
+the throttle probability above which it should not raise even in the best of conditions.
+
+
+
