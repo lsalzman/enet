@@ -233,10 +233,10 @@ dispatching any events.
     enet_packet_resize (packet, strlen ("packetfoo") + 1);
     strcpy (& packet -> data [strlen ("packet")], "foo");
     
-    /* Send the packet to the peer over channel id 3. */
+    /* Send the packet to the peer over channel id 0. */
     /* One could also broadcast the packet by         */
-    /* enet_host_broadcast (host, 3, packet);         */
-    enet_peer_send (peer, 3, packet);
+    /* enet_host_broadcast (host, 0, packet);         */
+    enet_peer_send (peer, 0, packet);
     ...
     ...
     ...
@@ -262,7 +262,7 @@ foreign host. No event is generated.
 @code
     ENetEvent event;
     
-    enet_peer_disconnect (& client -> peers [0]);
+    enet_peer_disconnect (peer);
 
     /* Allow up to 3 seconds for the disconnect to succeed
      * and drop any packets received packets.
@@ -286,7 +286,7 @@ foreign host. No event is generated.
     
     /* We've arrived here, so the disconnect attempt didn't */
     /* succeed yet.  Force the connection down.             */
-    enet_peer_reset (& client -> peers [0]);
+    enet_peer_reset (peer);
     ...
     ...
     ...
