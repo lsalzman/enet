@@ -486,6 +486,7 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
       return 0;
 
     peer -> lastReceiveTime = timeCurrent;
+    peer -> earliestTimeout = 0;
 
     roundTripTime = ENET_TIME_DIFFERENCE (timeCurrent, receivedSentTime);
 
@@ -948,7 +949,14 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
        if (ENET_TIME_DIFFERENCE (timeCurrent, outgoingCommand -> sentTime) < outgoingCommand -> roundTripTimeout)
          continue;
 
-       if (outgoingCommand -> roundTripTimeout >= outgoingCommand -> roundTripTimeoutLimit)
+       if(peer -> earliestTimeout == 0 ||
+          ENET_TIME_LESS(outgoingCommand -> sentTime, peer -> earliestTimeout))
+           peer -> earliestTimeout = outgoingCommand -> sentTime;
+
+       if (peer -> earliestTimeout != 0 &&
+             (ENET_TIME_DIFFERENCE(timeCurrent, peer -> earliestTimeout) >= ENET_PEER_TIMEOUT_MAXIMUM ||
+               (outgoingCommand -> roundTripTimeout >= outgoingCommand -> roundTripTimeoutLimit &&
+                 ENET_TIME_DIFFERENCE(timeCurrent, peer -> earliestTimeout) >= ENET_PEER_TIMEOUT_MINIMUM)))
        {
           event -> type = ENET_EVENT_TYPE_DISCONNECT;
           event -> peer = peer;

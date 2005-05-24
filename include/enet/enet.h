@@ -167,8 +167,10 @@ enum
    ENET_PEER_PACKET_LOSS_INTERVAL         = 10000,
    ENET_PEER_WINDOW_SIZE_SCALE            = 64 * 1024,
    ENET_PEER_TIMEOUT_LIMIT                = 32,
+   ENET_PEER_TIMEOUT_MINIMUM              = 3000,
+   ENET_PEER_TIMEOUT_MAXIMUM              = 30000,
    ENET_PEER_PING_INTERVAL                = 500,
-   ENET_PEER_UNSEQUENCED_WINDOW_SIZE      = 4 * 32
+   ENET_PEER_UNSEQUENCED_WINDOW_SIZE      = 4 * 32,
 };
 
 typedef struct _ENetChannel
@@ -206,6 +208,7 @@ typedef struct _ENetPeer
    enet_uint32   lastSendTime;
    enet_uint32   lastReceiveTime;
    enet_uint32   nextTimeout;
+   enet_uint32   earliestTimeout;
    enet_uint32   packetLossEpoch;
    enet_uint32   packetsSent;
    enet_uint32   packetsLost;

@@ -351,6 +351,7 @@ enet_peer_reset (ENetPeer * peer)
     peer -> lastSendTime = 0;
     peer -> lastReceiveTime = 0;
     peer -> nextTimeout = 0;
+    peer -> earliestTimeout = 0;
     peer -> packetLossEpoch = 0;
     peer -> packetsSent = 0;
     peer -> packetsLost = 0;
