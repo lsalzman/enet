@@ -88,8 +88,9 @@ ENetSocket
 enet_socket_create (ENetSocketType type, const ENetAddress * address)
 {
     ENetSocket newSocket = socket (PF_INET, type == ENET_SOCKET_TYPE_DATAGRAM ? SOCK_DGRAM : SOCK_STREAM, 0);
-    u_long nonBlocking = 1,
-        receiveBufferSize = ENET_HOST_RECEIVE_BUFFER_SIZE;
+    u_long nonBlocking = 1;
+    int receiveBufferSize = ENET_HOST_RECEIVE_BUFFER_SIZE,
+        allowBroadcasting = 1;
     struct sockaddr_in sin;
 
     if (newSocket == ENET_SOCKET_NULL)
@@ -100,6 +101,7 @@ enet_socket_create (ENetSocketType type, const ENetAddress * address)
         ioctlsocket (newSocket, FIONBIO, & nonBlocking);
 
         setsockopt (newSocket, SOL_SOCKET, SO_RCVBUF, (char *) & receiveBufferSize, sizeof (int));
+        setsockopt (newSocket, SOL_SOCKET, SO_BROADCAST, (char *) & allowBroadcasting, sizeof (int));
     }
 
     memset (& sin, 0, sizeof (struct sockaddr_in));

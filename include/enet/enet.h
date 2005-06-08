@@ -44,7 +44,8 @@ typedef enum
 
 enum
 {
-   ENET_HOST_ANY = 0
+   ENET_HOST_ANY       = 0,            /**< specifies the default server host */
+   ENET_HOST_BROADCAST = 0xFFFFFFFF    /**< specifies a subnet-wide broadcast */
 };
 
 /**
@@ -52,11 +53,14 @@ enum
  *
  * The host must be specified in network byte-order, and the port must be in host 
  * byte-order. The constant ENET_HOST_ANY may be used to specify the default 
- * server host.
+ * server host. The constant ENET_HOST_BROADCAST may be used to specify the
+ * broadcast address (255.255.255.255).  This makes sense for enet_host_connect,
+ * but not for enet_host_create.  Once a server responds to a broadcast, the
+ * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
  */
 typedef struct _ENetAddress
 {
-   enet_uint32 host;  /**< may use ENET_HOST_ANY to specify default server host */
+   enet_uint32 host;
    enet_uint16 port;
 } ENetAddress;
 

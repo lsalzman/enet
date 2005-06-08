@@ -128,7 +128,8 @@ ENetSocket
 enet_socket_create (ENetSocketType type, const ENetAddress * address)
 {
     ENetSocket newSocket = socket (PF_INET, type == ENET_SOCKET_TYPE_DATAGRAM ? SOCK_DGRAM : SOCK_STREAM, 0);
-    int receiveBufferSize = ENET_HOST_RECEIVE_BUFFER_SIZE;
+    int receiveBufferSize = ENET_HOST_RECEIVE_BUFFER_SIZE,
+        allowBroadcasting = 1;
 #ifndef HAS_FCNTL
     int nonBlocking = 1;
 #endif
@@ -146,6 +147,7 @@ enet_socket_create (ENetSocketType type, const ENetAddress * address)
 #endif
 
         setsockopt (newSocket, SOL_SOCKET, SO_RCVBUF, (char *) & receiveBufferSize, sizeof (int));
+        setsockopt (newSocket, SOL_SOCKET, SO_BROADCAST, (char *) & allowBroadcasting, sizeof (int));
     }
     
     if (address == NULL)
