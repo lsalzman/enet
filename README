@@ -14,4 +14,3 @@ aclocal && automake -a -c --foreign && autoconf
 
 See pyenet/readme.txt for further information on Ling Lo's Python wrapper for
 ENet.
-
