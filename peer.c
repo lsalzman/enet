@@ -292,6 +292,9 @@ enet_peer_reset_incoming_commands (ENetList * queue)
             enet_packet_destroy (incomingCommand -> packet);
        }
 
+       if (incomingCommand -> fragments != NULL)
+         enet_free (incomingCommand -> fragments);
+
        enet_free (incomingCommand);
     }
 }
