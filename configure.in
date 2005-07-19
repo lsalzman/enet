@@ -1,5 +1,5 @@
-AC_INIT(libenet, 6-7-2005)
-AM_INIT_AUTOMAKE(libenet.a, 6-7-2005)
+AC_INIT(libenet, 7-18-2005)
+AM_INIT_AUTOMAKE(libenet.a, 7-18-2005)
 
 AC_PROG_CC
 AC_PROG_RANLIB
