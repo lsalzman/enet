@@ -334,6 +334,13 @@ typedef struct _ENetEvent
 */
 ENET_API int enet_initialize (void);
 
+/**
+  Initializes ENet and sets the callbacks provided in the ENetCallbacks structure.
+  Callbacks that are set to NULL will simply use the default ENet functions.
+  ENET_VERSION should be passed in as the first argument so that ENet may verify the
+  callbacks available. 
+  @returns 0 on success, < 0 on failure
+*/
 ENET_API int enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits);
 
 /** 
