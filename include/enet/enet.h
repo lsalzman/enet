@@ -12,7 +12,6 @@ extern "C"
 
 #include <stdlib.h>
 
-
 #ifdef WIN32
 #include "enet/win32.h"
 #else
@@ -144,10 +143,11 @@ typedef enum
    ENET_PEER_STATE_DISCONNECTED                = 0,
    ENET_PEER_STATE_CONNECTING                  = 1,
    ENET_PEER_STATE_ACKNOWLEDGING_CONNECT       = 2,
-   ENET_PEER_STATE_CONNECTED                   = 3,
-   ENET_PEER_STATE_DISCONNECTING               = 4,
-   ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT    = 5,
-   ENET_PEER_STATE_ZOMBIE                      = 6
+   ENET_PEER_STATE_CONNECTION_PENDING          = 3,
+   ENET_PEER_STATE_CONNECTED                   = 4,
+   ENET_PEER_STATE_DISCONNECTING               = 5,
+   ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT    = 6,
+   ENET_PEER_STATE_ZOMBIE                      = 7
 } ENetPeerState;
 
 #ifndef ENET_BUFFER_MAXIMUM
@@ -171,7 +171,7 @@ enum
    ENET_PEER_PACKET_LOSS_INTERVAL         = 10000,
    ENET_PEER_WINDOW_SIZE_SCALE            = 64 * 1024,
    ENET_PEER_TIMEOUT_LIMIT                = 32,
-   ENET_PEER_TIMEOUT_MINIMUM              = 3000,
+   ENET_PEER_TIMEOUT_MINIMUM              = 5000,
    ENET_PEER_TIMEOUT_MAXIMUM              = 30000,
    ENET_PEER_PING_INTERVAL                = 500,
    ENET_PEER_UNSEQUENCED_WINDOW_SIZE      = 4 * 32,
@@ -243,6 +243,7 @@ typedef struct _ENetPeer
    enet_uint32   incomingUnsequencedGroup;
    enet_uint32   outgoingUnsequencedGroup;
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
+   enet_uint32   disconnectData;
 } ENetPeer;
 
 /** An ENet host for communicating with peers.
@@ -297,7 +298,8 @@ typedef enum
      * completion of a disconnect initiated by enet_pper_disconnect, if 
      * a peer has timed out, or if a connection request intialized by 
      * enet_host_connect has timed out.  The peer field contains the peer 
-     * which disconnected. 
+     * which disconnected. The data field contains user supplied data 
+     * describing the disconnection, or 0, if none is available.
      */
    ENET_EVENT_TYPE_DISCONNECT = 2,  
 
@@ -319,8 +321,9 @@ typedef struct _ENetEvent
 {
    ENetEventType        type;      /**< type of the event */
    ENetPeer *           peer;      /**< peer that generated a connect, disconnect or receive event */
-   enet_uint8           channelID;
-   ENetPacket *         packet;
+   enet_uint8           channelID; /**< channel on the peer that generated the event, if appropriate */
+   enet_uint32          data;      /**< data associated with the event, if appropriate */
+   ENetPacket *         packet;    /**< packet associated with the event, if appropriate */
 } ENetEvent;
 
 /** @defgroup global ENet global functions
@@ -334,13 +337,6 @@ typedef struct _ENetEvent
 */
 ENET_API int enet_initialize (void);
 
-/**
-  Initializes ENet and sets the callbacks provided in the ENetCallbacks structure.
-  Callbacks that are set to NULL will simply use the default ENet functions.
-  ENET_VERSION should be passed in as the first argument so that ENet may verify the
-  callbacks available. 
-  @returns 0 on success, < 0 on failure
-*/
 ENET_API int enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits);
 
 /** 
@@ -419,8 +415,8 @@ ENET_API int                 enet_peer_send (ENetPeer *, enet_uint8, ENetPacket 
 ENET_API ENetPacket *        enet_peer_receive (ENetPeer *, enet_uint8);
 ENET_API void                enet_peer_ping (ENetPeer *);
 ENET_API void                enet_peer_reset (ENetPeer *);
-ENET_API void                enet_peer_disconnect (ENetPeer *);
-ENET_API void                enet_peer_disconnect_now (ENetPeer *);
+ENET_API void                enet_peer_disconnect (ENetPeer *, enet_uint32);
+ENET_API void                enet_peer_disconnect_now (ENetPeer *, enet_uint32);
 ENET_API void                enet_peer_throttle_configure (ENetPeer *, enet_uint32, enet_uint32, enet_uint32);
 extern int                   enet_peer_throttle (ENetPeer *, enet_uint32);
 extern void                  enet_peer_reset_queues (ENetPeer *);

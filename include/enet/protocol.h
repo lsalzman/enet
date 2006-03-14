@@ -112,6 +112,7 @@ typedef struct
 typedef struct
 {
    ENetProtocolCommandHeader header;
+   enet_uint32 data;
 } ENetProtocolDisconnect;
 
 typedef struct

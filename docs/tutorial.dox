@@ -262,7 +262,7 @@ foreign host. No event is generated.
 @code
     ENetEvent event;
     
-    enet_peer_disconnect (peer);
+    enet_peer_disconnect (peer, 0);
 
     /* Allow up to 3 seconds for the disconnect to succeed
      * and drop any packets received packets.

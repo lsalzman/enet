@@ -1,5 +1,5 @@
-AC_INIT(libenet, 7-18-2005)
-AM_INIT_AUTOMAKE(libenet.a, 7-18-2005)
+AC_INIT(libenet, 1.0)
+AM_INIT_AUTOMAKE(libenet.a, 1.0)
 
 AC_PROG_CC
 AC_PROG_RANLIB
@@ -8,6 +8,8 @@ AC_CHECK_FUNC(gethostbyaddr_r, [AC_DEFINE(HAS_GETHOSTBYADDR_R)])
 AC_CHECK_FUNC(gethostbyname_r, [AC_DEFINE(HAS_GETHOSTBYNAME_R)])
 AC_CHECK_FUNC(poll, [AC_DEFINE(HAS_POLL)])
 AC_CHECK_FUNC(fcntl, [AC_DEFINE(HAS_FCNTL)])
+AC_CHECK_FUNC(inet_pton, [AC_DEFINE(HAS_INET_PTON)])
+AC_CHECK_FUNC(inet_ntop, [AC_DEFINE(HAS_INET_NTOP)])
 
 AC_CHECK_MEMBER(struct msghdr.msg_flags, [AC_DEFINE(HAS_MSGHDR_FLAGS)], , [#include <sys/socket.h>])
 

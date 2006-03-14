@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <string.h>
@@ -19,6 +20,10 @@
 
 #ifdef HAS_FCNTL
 #include <fcntl.h>
+#endif
+
+#ifdef __APPLE__
+#undef HAS_POLL
 #endif
 
 #ifdef HAS_POLL
@@ -86,7 +91,15 @@ enet_address_set_host (ENetAddress * address, const char * name)
 
     if (hostEntry == NULL ||
         hostEntry -> h_addrtype != AF_INET)
-      return -1;
+    {
+#ifdef HAS_INET_PTON
+        if (! inet_pton (AF_INET, name, & address -> host))
+#else
+        if (! inet_aton (name, (struct in_addr *) & address -> host))
+#endif
+            return -1;
+        return 0;
+    }
 
     address -> host = * (enet_uint32 *) hostEntry -> h_addr_list [0];
 
@@ -117,7 +130,18 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
 #endif
 
     if (hostEntry == NULL)
-      return -1;
+    {
+#ifdef HAS_INET_NTOP
+        if (inet_ntop (AF_INET, & address -> host, name, nameLength) == NULL)
+#else
+        char * addr = inet_ntoa (* (struct in_addr *) & address -> host);
+        if (addr != NULL)
+            strncpy (name, addr, nameLength);
+        else
+#endif
+            return -1;
+        return 0;
+    }
 
     strncpy (name, hostEntry -> h_name, nameLength);
 
