@@ -20,6 +20,8 @@ or dependent tasks.
 
 @ref Tutorial
 
+@ref DiscussionForum
+
 @ref MailingList
 
 @ref Extending
@@ -61,10 +63,17 @@ sent via email to @ref MailingList.
 /**
 @page Extending Extending and Modifying ENet
 
-Since ENet is distributed in source form, you can easily extend and
-modify it to suit your needs.  For example, some users prefer to use
-their own memory management routines and can thus replace the
-appropriate functions in memory.c
+Since ENet is distributed in source form under a liberal MIT-style license, 
+you can easily extend and modify it to suit your needs.
+
+*/
+
+/**
+@page DiscussionForum ENet Discussion Forum
+
+The <a href="http://jbserver.com/forums/ForumHome.asp?ForumId=6">
+ENet discussion forum</a> provides a convenient place to ask for help,
+share code and ideas, or report bugs.
 
 */
 
