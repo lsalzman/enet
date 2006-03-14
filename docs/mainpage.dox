@@ -33,10 +33,10 @@ or dependent tasks.
 /**
 @page SourceDistro Source Distribution
 
-You can retrieve the source to ENet by downloading it in either .zip
-form, .tar.gz form, or accessing the cvs distribution directly.
+You can retrieve the source to ENet by downloading it in either .tar.gz form
+or accessing the cvs distribution directly.
 
-The most recent CVS can be downloaded <a href="http://enet.bespin.org/download/enet.tar.gz">here</a>
+The most recent stable release (1.0) can be downloaded <a href="http://enet.bespin.org/download/enet-1.0.tar.gz">here</a>.
 
 To access ENet via anonymous CVS, you must use the CVSROOT
 :pserver:anonymous\@bespin.org:/var/lib/cvs/enet with an empty
@@ -75,10 +75,5 @@ The <a
 href="http://lists.cubik.org/mailman/listinfo/enet-discuss">
 enet-discuss</a> list is for discussion of ENet, including bug reports
 or feature requests.
-
-The CVS commits are also sent to <a
-href="http://lists.cubik.org/mailman/listinfo/enet-cvs">enet-cvs</a>,
-so feel free to subscribe if you want to keep up with the latest
-developments.
 
 */
