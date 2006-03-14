@@ -12,5 +12,3 @@ aclocal && automake -a -c --foreign && autoconf
 
 ./configure && make && make install
 
-See pyenet/readme.txt for further information on Ling Lo's Python wrapper for
-ENet.
