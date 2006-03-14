@@ -24,8 +24,6 @@ or dependent tasks.
 
 @ref MailingList
 
-@ref Extending
-
 @ref FAQ
 
 @ref License
@@ -57,23 +55,6 @@ This will create a CVS directory in the current directory, and with
 the second command will proceed to check the enet module out of CVS.
 Any problems with CVS access or request for write access should be
 sent via email to @ref MailingList.
-
-*/
-
-/**
-@page Extending Extending and Modifying ENet
-
-Since ENet is distributed in source form under a liberal MIT-style license, 
-you can easily extend and modify it to suit your needs.
-
-*/
-
-/**
-@page DiscussionForum ENet Discussion Forum
-
-The <a href="http://jbserver.com/forums/ForumHome.asp?ForumId=6">
-ENet discussion forum</a> provides a convenient place to ask for help,
-share code and ideas, or report bugs.
 
 */
 
