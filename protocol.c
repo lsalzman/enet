@@ -777,14 +777,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
               break;
 
            case ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT:
-              if ((command -> header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_DISCONNECT)
-                enet_peer_queue_acknowledgement (peer, command, header -> sentTime);
-              break;
-
-           case ENET_PEER_STATE_ACKNOWLEDGING_CONNECT:
-              if ((command -> header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_DISCONNECT)
-                enet_peer_queue_acknowledgement (peer, command, header -> sentTime);
-              break;
+              if (command -> header.command != ENET_PROTOCOL_COMMAND_DISCONNECT)
+                break;
 
            default:   
               enet_peer_queue_acknowledgement (peer, command, header -> sentTime);        
