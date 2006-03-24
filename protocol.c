@@ -722,57 +722,46 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
        {
        case ENET_PROTOCOL_COMMAND_ACKNOWLEDGE:
           enet_protocol_handle_acknowledge (host, event, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_CONNECT:
           peer = enet_protocol_handle_connect (host, header, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_VERIFY_CONNECT:
           enet_protocol_handle_verify_connect (host, event, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_DISCONNECT:
           enet_protocol_handle_disconnect (host, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_PING:
           enet_protocol_handle_ping (host, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_SEND_RELIABLE:
           enet_protocol_handle_send_reliable (host, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_SEND_UNRELIABLE:
           enet_protocol_handle_send_unreliable (host, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_SEND_UNSEQUENCED:
           enet_protocol_handle_send_unsequenced (host, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_SEND_FRAGMENT:
           enet_protocol_handle_send_fragment (host, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_BANDWIDTH_LIMIT:
           enet_protocol_handle_bandwidth_limit (host, peer, command);
-
           break;
 
        case ENET_PROTOCOL_COMMAND_THROTTLE_CONFIGURE:
           enet_protocol_handle_throttle_configure (host, peer, command);
-
           break;
 
        default:
@@ -788,12 +777,17 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
               break;
 
            case ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT:
-              if (command -> header.command != ENET_PROTOCOL_COMMAND_DISCONNECT)
-                break;
+              if ((command -> header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_DISCONNECT)
+                enet_peer_queue_acknowledgement (peer, command, header -> sentTime);
+              break;
+
+           case ENET_PEER_STATE_ACKNOWLEDGING_CONNECT:
+              if ((command -> header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_DISCONNECT)
+                enet_peer_queue_acknowledgement (peer, command, header -> sentTime);
+              break;
 
            default:   
               enet_peer_queue_acknowledgement (peer, command, header -> sentTime);        
-
               break;
            }
        }
