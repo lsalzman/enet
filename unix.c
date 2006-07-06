@@ -80,7 +80,7 @@ enet_address_set_host (ENetAddress * address, const char * name)
     char buffer [2048];
     int errnum;
 
-#ifdef linux
+#if defined(linux) || defined(FREEBSD)
     gethostbyname_r (name, & hostData, buffer, sizeof (buffer), & hostEntry, & errnum);
 #else
     hostEntry = gethostbyname_r (name, & hostData, buffer, sizeof (buffer), & errnum);
@@ -118,7 +118,7 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
 
     in.s_addr = address -> host;
 
-#ifdef linux
+#if defined(linux) || defined(FREEBSD)
     gethostbyaddr_r ((char *) & in, sizeof (struct in_addr), AF_INET, & hostData, buffer, sizeof (buffer), & hostEntry, & errnum);
 #else
     hostEntry = gethostbyaddr_r ((char *) & in, sizeof (struct in_addr), AF_INET, & hostData, buffer, sizeof (buffer), & errnum);
@@ -153,6 +153,7 @@ enet_socket_create (ENetSocketType type, const ENetAddress * address)
 {
     ENetSocket newSocket = socket (PF_INET, type == ENET_SOCKET_TYPE_DATAGRAM ? SOCK_DGRAM : SOCK_STREAM, 0);
     int receiveBufferSize = ENET_HOST_RECEIVE_BUFFER_SIZE,
+        sendBufferSize = ENET_HOST_SEND_BUFFER_SIZE,
         allowBroadcasting = 1;
 #ifndef HAS_FCNTL
     int nonBlocking = 1;
@@ -171,6 +172,7 @@ enet_socket_create (ENetSocketType type, const ENetAddress * address)
 #endif
 
         setsockopt (newSocket, SOL_SOCKET, SO_RCVBUF, (char *) & receiveBufferSize, sizeof (int));
+        setsockopt (newSocket, SOL_SOCKET, SO_SNDBUF, (char *) & sendBufferSize, sizeof (int));
         setsockopt (newSocket, SOL_SOCKET, SO_BROADCAST, (char *) & allowBroadcasting, sizeof (int));
     }
     

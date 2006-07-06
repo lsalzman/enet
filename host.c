@@ -30,6 +30,9 @@ enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 inc
     ENetHost * host = (ENetHost *) enet_malloc (sizeof (ENetHost));
     ENetPeer * currentPeer;
 
+    if (peerCount > ENET_PROTOCOL_MAXIMUM_PEER_ID)
+      return NULL;
+
     host -> peers = (ENetPeer *) enet_malloc (peerCount * sizeof (ENetPeer));
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
@@ -135,7 +138,7 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     currentPeer -> address = * address;
     currentPeer -> channels = (ENetChannel *) enet_malloc (channelCount * sizeof (ENetChannel));
     currentPeer -> channelCount = channelCount;
-    currentPeer -> challenge = (enet_uint32) enet_rand ();
+    currentPeer -> sessionID = (enet_uint32) enet_rand ();
 
     if (host -> outgoingBandwidth == 0)
       currentPeer -> windowSize = ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE;
@@ -163,10 +166,8 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
         enet_list_clear (& channel -> incomingUnreliableCommands);
     }
         
-    command.header.command = ENET_PROTOCOL_COMMAND_CONNECT;
+    command.header.command = ENET_PROTOCOL_COMMAND_CONNECT | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
     command.header.channelID = 0xFF;
-    command.header.flags = ENET_PROTOCOL_FLAG_ACKNOWLEDGE;
-    command.header.commandLength = sizeof (ENetProtocolConnect);
     command.connect.outgoingPeerID = ENET_HOST_TO_NET_16 (currentPeer -> incomingPeerID);
     command.connect.mtu = ENET_HOST_TO_NET_16 (currentPeer -> mtu);
     command.connect.windowSize = ENET_HOST_TO_NET_32 (currentPeer -> windowSize);
@@ -176,6 +177,7 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     command.connect.packetThrottleInterval = ENET_HOST_TO_NET_32 (currentPeer -> packetThrottleInterval);
     command.connect.packetThrottleAcceleration = ENET_HOST_TO_NET_32 (currentPeer -> packetThrottleAcceleration);
     command.connect.packetThrottleDeceleration = ENET_HOST_TO_NET_32 (currentPeer -> packetThrottleDeceleration);
+    command.connect.sessionID = currentPeer -> sessionID;
     
     enet_peer_queue_outgoing_command (currentPeer, & command, NULL, 0, 0);
 
@@ -243,7 +245,7 @@ enet_host_bandwidth_throttle (ENetHost * host)
          peer < & host -> peers [host -> peerCount];
          ++ peer)
     {
-        if (peer -> state != ENET_PEER_STATE_CONNECTED)
+        if (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER)
           continue;
 
         ++ peersTotal;
@@ -276,7 +278,7 @@ enet_host_bandwidth_throttle (ENetHost * host)
         {
             enet_uint32 peerBandwidth;
             
-            if (peer -> state != ENET_PEER_STATE_CONNECTED ||
+            if ((peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
                 peer -> incomingBandwidth == 0 ||
                 peer -> outgoingBandwidthThrottleEpoch == timeCurrent)
               continue;
@@ -309,7 +311,7 @@ enet_host_bandwidth_throttle (ENetHost * host)
          peer < & host -> peers [host -> peerCount];
          ++ peer)
     {
-        if (peer -> state != ENET_PEER_STATE_CONNECTED ||
+        if ((peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
             peer -> outgoingBandwidthThrottleEpoch == timeCurrent)
           continue;
 
@@ -339,12 +341,12 @@ enet_host_bandwidth_throttle (ENetHost * host)
                 peer < & host -> peers [host -> peerCount];
                 ++ peer)
            {
-               if (peer -> state != ENET_PEER_STATE_CONNECTED ||
+               if ((peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
                    peer -> incomingBandwidthThrottleEpoch == timeCurrent)
                  continue;
 
                if (peer -> outgoingBandwidth > 0 &&
-                   bandwidthLimit > peer -> outgoingBandwidth)
+                   peer -> outgoingBandwidth >= bandwidthLimit)
                  continue;
 
                peer -> incomingBandwidthThrottleEpoch = timeCurrent;
@@ -359,13 +361,11 @@ enet_host_bandwidth_throttle (ENetHost * host)
             peer < & host -> peers [host -> peerCount];
             ++ peer)
        {
-           if (peer -> state != ENET_PEER_STATE_CONNECTED)
+           if (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER)
              continue;
 
-           command.header.command = ENET_PROTOCOL_COMMAND_BANDWIDTH_LIMIT;
+           command.header.command = ENET_PROTOCOL_COMMAND_BANDWIDTH_LIMIT | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
            command.header.channelID = 0xFF;
-           command.header.flags = ENET_PROTOCOL_FLAG_ACKNOWLEDGE;
-           command.header.commandLength = sizeof (ENetProtocolBandwidthLimit);
            command.bandwidthLimit.outgoingBandwidth = ENET_HOST_TO_NET_32 (host -> outgoingBandwidth);
 
            if (peer -> incomingBandwidthThrottleEpoch == timeCurrent)
