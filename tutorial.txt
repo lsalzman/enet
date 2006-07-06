@@ -239,7 +239,7 @@ host. No event is generated.
 i.e.
     ENetEvent event;
     
-    enet_peer_disconnect (& client -> peers [0]);
+    enet_peer_disconnect (& client -> peers [0], 0);
 
     /* Allow up to 3 seconds for the disconnect to succeed
      * and drop any packets received packets.
