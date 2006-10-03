@@ -362,6 +362,8 @@ enet_protocol_handle_send_reliable (ENetHost * host, ENetPeer * peer, const ENet
     packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendReliable),
                                  dataLength,
                                  ENET_PACKET_FLAG_RELIABLE);
+    if (packet == NULL)
+      return -1;
 
     enet_peer_queue_incoming_command (peer, command, packet, 0);
     return 0;
@@ -404,7 +406,9 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
     packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendUnsequenced),
                                  dataLength,
                                  ENET_PACKET_FLAG_UNSEQUENCED);
-
+    if (packet == NULL)
+      return -1;
+    
     enet_peer_queue_incoming_command (peer, command, packet, 0);
     return 0;
 }
@@ -427,6 +431,8 @@ enet_protocol_handle_send_unreliable (ENetHost * host, ENetPeer * peer, const EN
     packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendUnreliable),
                                  dataLength,
                                  0);
+    if (packet == NULL)
+      return -1;
 
     enet_peer_queue_incoming_command (peer, command, packet, 0);
     return 0;
@@ -487,7 +493,10 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
     if (currentCommand == enet_list_end (& channel -> incomingReliableCommands))
     {
        ENetProtocol hostCommand = * command;
-       
+       ENetPacket * packet = enet_packet_create (NULL, totalLength, ENET_PACKET_FLAG_RELIABLE);
+       if (packet == NULL)
+         return -1;
+
        hostCommand.header.reliableSequenceNumber = startSequenceNumber;
        hostCommand.sendFragment.startSequenceNumber = startSequenceNumber;
        hostCommand.sendFragment.dataLength = fragmentLength;
@@ -496,10 +505,7 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
        hostCommand.sendFragment.fragmentOffset = fragmentOffset;
        hostCommand.sendFragment.totalLength = totalLength;
 
-       startCommand = enet_peer_queue_incoming_command (peer, 
-                                                        & hostCommand, 
-                                                        enet_packet_create (NULL, totalLength, ENET_PACKET_FLAG_RELIABLE),
-                                                        fragmentCount);
+       startCommand = enet_peer_queue_incoming_command (peer, & hostCommand, packet, fragmentCount);
     }
     else
     if (totalLength != startCommand -> packet -> dataLength ||
@@ -1278,7 +1284,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 #else
            fprintf (stderr, 
 #endif
-                    "peer %u: %f%%+-%f%% packet loss, %u+-%u ms round trip time, %f%% throttle, %u/%u outgoing, %u/%u incoming\n", currentPeer -> incomingPeerID, currentPeer -> packetLoss / (float) ENET_PEER_PACKET_LOSS_SCALE, currentPeer -> packetLossVariance / (float) ENET_PEER_PACKET_LOSS_SCALE, currentPeer -> roundTripTime, currentPeer -> roundTripTimeVariance, currentPeer -> packetThrottle / (float) ENET_PEER_PACKET_THROTTLE_SCALE, enet_list_size (& currentPeer -> outgoingReliableCommands), enet_list_size (& currentPeer -> outgoingUnreliableCommands), currentPeer -> channels != NULL ? enet_list_size (& currentPeer -> channels -> incomingReliableCommands) : 0, enet_list_size (& currentPeer -> channels -> incomingUnreliableCommands));
+                    "peer %u: %f%%+-%f%% packet loss, %u+-%u ms round trip time, %f%% throttle, %u/%u outgoing, %u/%u incoming\n", currentPeer -> incomingPeerID, currentPeer -> packetLoss / (float) ENET_PEER_PACKET_LOSS_SCALE, currentPeer -> packetLossVariance / (float) ENET_PEER_PACKET_LOSS_SCALE, currentPeer -> roundTripTime, currentPeer -> roundTripTimeVariance, currentPeer -> packetThrottle / (float) ENET_PEER_PACKET_THROTTLE_SCALE, enet_list_size (& currentPeer -> outgoingReliableCommands), enet_list_size (& currentPeer -> outgoingUnreliableCommands), currentPeer -> channels != NULL ? enet_list_size (& currentPeer -> channels -> incomingReliableCommands) : 0, currentPeer -> channels != NULL ? enet_list_size (& currentPeer -> channels -> incomingUnreliableCommands) : 0);
 #endif
           
            currentPeer -> packetLossVariance -= currentPeer -> packetLossVariance / 4;
