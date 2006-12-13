@@ -116,7 +116,8 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
              fragmentNumber,
              fragmentOffset;
 
-      packet -> flags = ENET_PACKET_FLAG_RELIABLE;
+      packet -> flags |= ENET_PACKET_FLAG_RELIABLE;
+      packet -> flags &= ~ENET_PACKET_FLAG_UNSEQUENCED;
 
       for (fragmentNumber = 0,
              fragmentOffset = 0;
@@ -310,9 +311,6 @@ enet_peer_reset (ENetPeer * peer)
 {
     peer -> outgoingPeerID = ENET_PROTOCOL_MAXIMUM_PEER_ID;
     peer -> sessionID = 0;
-
-    peer -> address.host = ENET_HOST_ANY;
-    peer -> address.port = 0;
 
     peer -> state = ENET_PEER_STATE_DISCONNECTED;
 

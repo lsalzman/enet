@@ -183,7 +183,7 @@ enum
    ENET_PEER_TIMEOUT_MINIMUM              = 5000,
    ENET_PEER_TIMEOUT_MAXIMUM              = 30000,
    ENET_PEER_PING_INTERVAL                = 500,
-   ENET_PEER_UNSEQUENCED_WINDOW_SIZE      = 4 * 32,
+   ENET_PEER_UNSEQUENCED_WINDOW_SIZE      = 4 * 32
 };
 
 typedef struct _ENetChannel
@@ -396,7 +396,17 @@ ENET_API void       enet_socket_destroy (ENetSocket);
 */
 ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName);
 
-/** Attempts to do a reserve lookup of the host field in the address parameter.
+/** Gives the printable form of the ip address specified in the address parameter.
+    @param address    address printed
+    @param hostName   destination for name, must not be NULL
+    @param nameLength maximum length of hostName.
+    @returns the null-terminated name of the host in hostName on success
+    @retval 0 on success
+    @retval < 0 on failure
+*/
+ENET_API int enet_address_get_host_ip (const ENetAddress * address, char * hostName, size_t nameLength);
+
+/** Attempts to do a reverse lookup of the host field in the address parameter.
     @param address    address used for reverse lookup
     @param hostName   destination for name, must not be NULL
     @param nameLength maximum length of hostName.
