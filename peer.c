@@ -200,7 +200,7 @@ enet_peer_receive (ENetPeer * peer, enet_uint8 channelID)
       incomingCommand = (ENetIncomingCommand *) enet_list_front (& channel -> incomingReliableCommands);
 
       if (incomingCommand -> fragmentsRemaining > 0 ||
-          incomingCommand -> reliableSequenceNumber != channel -> incomingReliableSequenceNumber + 1)
+          incomingCommand -> reliableSequenceNumber != (enet_uint16) (channel -> incomingReliableSequenceNumber + 1))
         return NULL;
 
       channel -> incomingReliableSequenceNumber = incomingCommand -> reliableSequenceNumber;

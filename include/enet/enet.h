@@ -188,10 +188,10 @@ enum
 
 typedef struct _ENetChannel
 {
-   enet_uint32  outgoingReliableSequenceNumber;
-   enet_uint32  outgoingUnreliableSequenceNumber;
-   enet_uint32  incomingReliableSequenceNumber;
-   enet_uint32  incomingUnreliableSequenceNumber;
+   enet_uint16  outgoingReliableSequenceNumber;
+   enet_uint16  outgoingUnreliableSequenceNumber;
+   enet_uint16  incomingReliableSequenceNumber;
+   enet_uint16  incomingUnreliableSequenceNumber;
    ENetList     incomingReliableCommands;
    ENetList     incomingUnreliableCommands;
 } ENetChannel;
