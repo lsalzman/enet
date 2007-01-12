@@ -121,7 +121,7 @@ enet_protocol_notify_disconnect (ENetHost * host, ENetPeer * peer, ENetEvent * e
     if (peer -> state >= ENET_PEER_STATE_CONNECTION_PENDING)
         host -> recalculateBandwidthLimits = 1;
 
-    if (peer -> state < ENET_PEER_STATE_CONNECTION_SUCCEEDED)
+    if (peer -> state != ENET_PEER_STATE_CONNECTING && peer -> state < ENET_PEER_STATE_CONNECTION_SUCCEEDED)
         enet_peer_reset (peer);
     else
     if (event == NULL)
