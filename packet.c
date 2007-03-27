@@ -30,11 +30,11 @@ enet_packet_create (const void * data, size_t dataLength, enet_uint32 flags)
        {
           enet_free (packet);
           return NULL;
-       };
+       }
 
        if (data != NULL)
          memcpy (packet -> data, data, dataLength);
-    };
+    }
 
     packet -> referenceCount = 0;
     packet -> flags = flags;
