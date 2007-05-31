@@ -142,6 +142,7 @@ enet_socket_create (ENetSocketType type, const ENetAddress * address)
               sizeof (struct sockaddr_in)) == SOCKET_ERROR ||
         (type == ENET_SOCKET_TYPE_STREAM &&
           address != NULL &&
+          address -> port != ENET_PORT_ANY &&
           listen (newSocket, SOMAXCONN) == SOCKET_ERROR))
     {
        closesocket (newSocket);

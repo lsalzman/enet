@@ -44,7 +44,9 @@ typedef enum
 enum
 {
    ENET_HOST_ANY       = 0,            /**< specifies the default server host */
-   ENET_HOST_BROADCAST = 0xFFFFFFFF    /**< specifies a subnet-wide broadcast */
+   ENET_HOST_BROADCAST = 0xFFFFFFFF,   /**< specifies a subnet-wide broadcast */
+
+   ENET_PORT_ANY       = 0             /**< specifies that a port should be automatically chosen */
 };
 
 /**
