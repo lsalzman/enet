@@ -101,13 +101,18 @@ typedef void (ENET_CALLBACK * ENetPacketFreeCallback) (struct _ENetPacket *);
  *
  *    ENET_PACKET_FLAG_RELIABLE - packet must be received by the target peer
  *    and resend attempts should be made until the packet is delivered
+ *
+ *    ENET_PACKET_FLAG_UNSEQUENCED - packet will not be sequenced with other packets 
+ *    (not supported for reliable packets)
+ *
+ *    ENET_PACKET_FLAG_NO_ALLOCATE - packet will not allocate data, and user must supply it instead
  
    @sa ENetPacketFlag
  */
 typedef struct _ENetPacket
 {
    size_t                   referenceCount;  /**< internal use only */
-   enet_uint32              flags;           /**< bitwise or of ENetPacketFlag constants */
+   enet_uint32              flags;           /**< bitwise-or of ENetPacketFlag constants */
    enet_uint8 *             data;            /**< allocated data for packet */
    size_t                   dataLength;      /**< length of data */
    ENetPacketFreeCallback   freeCallback;    /**< function to be called when the packet is no longer in use */
