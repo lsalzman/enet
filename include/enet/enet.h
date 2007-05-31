@@ -350,7 +350,14 @@ typedef struct _ENetEvent
 */
 ENET_API int enet_initialize (void);
 
-ENET_API int enet_initialize_with_callbacks (ENetVersion, const ENetCallbacks *);
+/** 
+  Initializes ENet globally and supplies user-overridden callbacks. Must be called prior to using any functions in ENet. Do not use enet_initialize() if you use this variant.
+
+  @param version the constant ENET_VERSION should be supplied so ENet knows which version of ENetCallbacks struct to use
+  @param inits user-overriden callbacks where any NULL callbacks will use ENet's defaults
+  @returns 0 on success, < 0 on failure
+*/
+ENET_API int enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits);
 
 /** 
   Shuts down ENet globally.  Should be called when a program that has
