@@ -1,0 +1,19 @@
+ENet 1.1 (June 6, 2007):
+
+* optional CRC32 just in case someone needs a stronger checksum than UDP 
+provides (--enable-crc32 configure option)
+* the size of packet headers are half the size they used to be (so less 
+overhead when sending small packets)
+* enet_peer_disconnect_later() that waits till all queued outgoing 
+packets get sent before issuing an actual disconnect
+* freeCallback field in individual packets for notification of when a 
+packet is about to be freed
+* ENET_PACKET_FLAG_NO_ALLOCATE for supplying pre-allocated data to a 
+packet (can be used in concert with freeCallback to support some custom 
+allocation schemes that the normal memory allocation callbacks would 
+normally not allow)
+* enet_address_get_host_ip() for printing address numbers
+* promoted the enet_socket_*() functions to be part of the API now
+* a few stability/crash fixes
+
+
