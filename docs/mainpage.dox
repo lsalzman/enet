@@ -59,9 +59,6 @@ sent via email to @ref MailingList.
 /**
 @page MailingList ENet Mailing List
 
-The <a
-href="http://lists.cubik.org/mailman/listinfo/enet-discuss">
-enet-discuss</a> list is for discussion of ENet, including bug reports
-or feature requests.
+The <a href="http://lists.cubik.org/mailman/listinfo/enet-discuss">enet-discuss</a> list is for discussion of ENet, including bug reports or feature requests.
 
 */
