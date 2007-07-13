@@ -302,6 +302,12 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
         currentPeer -> incomingBandwidth == 0)
       currentPeer -> windowSize = ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE;
     else
+    if (host -> outgoingBandwidth == 0 ||
+        currentPeer -> incomingBandwidth == 0)
+      currentPeer -> windowSize = (ENET_MAX (host -> outgoingBandwidth, currentPeer -> incomingBandwidth) /
+                                    ENET_PEER_WINDOW_SIZE_SCALE) *
+                                      ENET_PROTOCOL_MINIMUM_WINDOW_SIZE;
+    else
       currentPeer -> windowSize = (ENET_MIN (host -> outgoingBandwidth, currentPeer -> incomingBandwidth) /
                                     ENET_PEER_WINDOW_SIZE_SCALE) * 
                                       ENET_PROTOCOL_MINIMUM_WINDOW_SIZE;
