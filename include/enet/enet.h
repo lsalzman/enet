@@ -286,6 +286,7 @@ typedef struct _ENetHost
    int                recalculateBandwidthLimits;
    ENetPeer *         peers;                       /**< array of peers allocated for this host */
    size_t             peerCount;                   /**< number of peers allocated for this host */
+   enet_uint32        serviceTime;
    ENetPeer *         lastServicedPeer;
    int                continueSending;
    size_t             packetSize;
@@ -440,6 +441,7 @@ extern enet_uint32    enet_crc32 (const ENetBuffer *, size_t);
 ENET_API ENetHost * enet_host_create (const ENetAddress *, size_t, enet_uint32, enet_uint32);
 ENET_API void       enet_host_destroy (ENetHost *);
 ENET_API ENetPeer * enet_host_connect (ENetHost *, const ENetAddress *, size_t);
+ENET_API int        enet_host_check_events (ENetHost *, ENetEvent *);
 ENET_API int        enet_host_service (ENetHost *, ENetEvent *, enet_uint32);
 ENET_API void       enet_host_flush (ENetHost *);
 ENET_API void       enet_host_broadcast (ENetHost *, enet_uint8, ENetPacket *);
