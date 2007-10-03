@@ -41,6 +41,14 @@ typedef enum
    ENET_SOCKET_WAIT_RECEIVE = (1 << 1)
 } ENetSocketWait;
 
+typedef enum
+{
+   ENET_SOCKOPT_NONBLOCK  = 1,
+   ENET_SOCKOPT_BROADCAST = 2,
+   ENET_SOCKOPT_RCVBUF    = 3,
+   ENET_SOCKOPT_SNDBUF    = 4
+} ENetSocketOption;
+
 enum
 {
    ENET_HOST_ANY       = 0,            /**< specifies the default server host */
@@ -394,6 +402,7 @@ ENET_API int        enet_socket_connect (ENetSocket, const ENetAddress *);
 ENET_API int        enet_socket_send (ENetSocket, const ENetAddress *, const ENetBuffer *, size_t);
 ENET_API int        enet_socket_receive (ENetSocket, ENetAddress *, ENetBuffer *, size_t);
 ENET_API int        enet_socket_wait (ENetSocket, enet_uint32 *, enet_uint32);
+ENET_API int        enet_socket_set_option (ENetSocket, ENetSocketOption, int);
 ENET_API void       enet_socket_destroy (ENetSocket);
 
 /** @} */

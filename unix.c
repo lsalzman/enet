@@ -156,30 +156,11 @@ ENetSocket
 enet_socket_create (ENetSocketType type, const ENetAddress * address)
 {
     ENetSocket newSocket = socket (PF_INET, type == ENET_SOCKET_TYPE_DATAGRAM ? SOCK_DGRAM : SOCK_STREAM, 0);
-    int receiveBufferSize = ENET_HOST_RECEIVE_BUFFER_SIZE,
-        sendBufferSize = ENET_HOST_SEND_BUFFER_SIZE,
-        allowBroadcasting = 1;
-#ifndef HAS_FCNTL
-    int nonBlocking = 1;
-#endif
     struct sockaddr_in sin;
 
     if (newSocket == ENET_SOCKET_NULL)
       return ENET_SOCKET_NULL;
 
-    if (type == ENET_SOCKET_TYPE_DATAGRAM)
-    {
-#ifdef HAS_FCNTL
-        fcntl (newSocket, F_SETFL, O_NONBLOCK | fcntl (newSocket, F_GETFL));
-#else
-        ioctl (newSocket, FIONBIO, & nonBlocking);
-#endif
-
-        setsockopt (newSocket, SOL_SOCKET, SO_RCVBUF, (char *) & receiveBufferSize, sizeof (int));
-        setsockopt (newSocket, SOL_SOCKET, SO_SNDBUF, (char *) & sendBufferSize, sizeof (int));
-        setsockopt (newSocket, SOL_SOCKET, SO_BROADCAST, (char *) & allowBroadcasting, sizeof (int));
-    }
-    
     if (address == NULL)
       return newSocket;
 
@@ -202,6 +183,38 @@ enet_socket_create (ENetSocketType type, const ENetAddress * address)
     }
 
     return newSocket;
+}
+
+int
+enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
+{
+    int result = -1;
+    switch (option)
+    {
+        case ENET_SOCKOPT_NONBLOCK:
+#ifdef HAS_FCNTL
+            result = fcntl (socket, F_SETFL, O_NONBLOCK | fcntl (socket, F_GETFL));
+#else
+            result = ioctl (socket, FIONBIO, & value);
+#endif
+            break;
+
+        case ENET_SOCKOPT_BROADCAST:
+            result = setsockopt (socket, SOL_SOCKET, SO_BROADCAST, (char *) & value, sizeof (int));
+            break;
+
+        case ENET_SOCKOPT_RCVBUF:
+            result = setsockopt (socket, SOL_SOCKET, SO_RCVBUF, (char *) & value, sizeof (int));
+            break;
+
+        case ENET_SOCKOPT_SNDBUF:
+            result = setsockopt (socket, SOL_SOCKET, SO_SNDBUF, (char *) & value, sizeof (int));
+            break;
+
+        default:
+            break;
+    }
+    return result == -1 ? -1 : 0;
 }
 
 int
