@@ -7,7 +7,17 @@ SourceDistro.
 
 @section Unix Unix-like Operating Systems
 
-[to be completed]
+If you are using an ENet release, then you should simply be able to build it
+by doing the following:
+
+./configure && make && make install
+
+If you obtained the package from CVS, you must have automake and autoconf
+available to generate the build system first by doing the following command
+before using the above mentioned build procedure:
+
+aclocal && automake -a -c --foreign && autoconf
+
 
 @subsection SolarisBSD Solaris and BSD
 
@@ -17,14 +27,27 @@ is linked in.
 
 @section Windows Microsoft Windows
 
-Using MSVC 6 under Windows simply drag all the ENet source files into
-your main project or, better yet, create a new static library project
-and make your executable dependent (Project|Dependencies) on ENet.
-There is also an enet.dsp provided.
+There is an included MSVC 6 project (enet.dsp) which you may use to
+build a suitable library file. Alternatively, you may simply drag all 
+the ENet source files into your main project.
 
 You will have to link to the Winsock2 libraries, so make sure to add
 ws2_32.lib to your library list (Project Settings | Link |
 Object/library modules).
+
+@subsection enet.dsp Building with the included enet.dsp
+
+Load the included enet.dsp. MSVC may ask you to convert it if you
+are on a newer version of MSVC - just allow the conversion and save
+the resulting project as "enet" or similar. After you build this
+project, it will output an "enet.lib" file to either the "Debug/"
+or "Release/" directory, depending on which configuration you have
+selected to build. By default, it should produce "Debug/enet.lib".
+
+You may then copy the resulting "enet.lib" file and the header files
+found in the "include/" directory to your other projects and add it to 
+their library lists. Make sure to also link against "ws2_32.lib" as 
+described above.
 
 @subsection DLL DLL
 
