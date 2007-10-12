@@ -183,7 +183,11 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
     reliableWindow = reliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
     channel = & peer -> channels [channelID];
     if (channel -> reliableWindows [reliableWindow] > 0)
-      -- channel -> reliableWindows [reliableWindow];
+    {
+       -- channel -> reliableWindows [reliableWindow];
+       if (! channel -> reliableWindows [reliableWindow])
+         channel -> usedReliableWindows &= ~ (1 << reliableWindow);
+    }
 
     commandNumber = outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK;
     
@@ -292,7 +296,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
         enet_list_clear (& channel -> incomingReliableCommands);
         enet_list_clear (& channel -> incomingUnreliableCommands);
 
-        channel -> currentReliableWindow = 0;
+        channel -> usedReliableWindows = 0;
         memset (channel -> reliableWindows, 0, sizeof (channel -> reliableWindows));
     }
 
@@ -1168,9 +1172,11 @@ enet_protocol_send_reliable_outgoing_commands (ENetHost * host, ENetPeer * peer)
 
        channel = outgoingCommand -> command.header.channelID < peer -> channelCount ? & peer -> channels [outgoingCommand -> command.header.channelID] : NULL;
        reliableWindow = outgoingCommand -> reliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
-       if (channel != NULL && outgoingCommand -> sendAttempts < 1 && 
-           channel -> currentReliableWindow != reliableWindow && 
-           channel -> reliableWindows [reliableWindow] > 0)
+       if (channel != NULL && 
+           outgoingCommand -> sendAttempts < 1 && 
+           ! (outgoingCommand -> reliableSequenceNumber % ENET_PEER_RELIABLE_WINDOW_SIZE) &&
+           channel -> usedReliableWindows & ((((1 << (ENET_PEER_RELIABLE_WINDOWS / 2)) - 1) << reliableWindow) | 
+             (((1 << (ENET_PEER_RELIABLE_WINDOWS / 2)) - 1) >> (ENET_PEER_RELIABLE_WINDOW_SIZE - reliableWindow))))
          break;
   
        commandSize = commandSizes [outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK];
@@ -1200,7 +1206,7 @@ enet_protocol_send_reliable_outgoing_commands (ENetHost * host, ENetPeer * peer)
 
        if (channel != NULL && outgoingCommand -> sendAttempts < 1)
        {
-          if (channel -> currentReliableWindow != reliableWindow) channel -> currentReliableWindow = reliableWindow;
+          channel -> usedReliableWindows |= 1 << reliableWindow;
           ++ channel -> reliableWindows [reliableWindow];
        }
 
