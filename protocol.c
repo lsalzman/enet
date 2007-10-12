@@ -163,8 +163,6 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
     ENetOutgoingCommand * outgoingCommand;
     ENetListIterator currentCommand;
     ENetProtocolCommand commandNumber;
-    ENetChannel * channel;
-    enet_uint16 reliableWindow;
 
     for (currentCommand = enet_list_begin (& peer -> sentReliableCommands);
          currentCommand != enet_list_end (& peer -> sentReliableCommands);
@@ -180,13 +178,16 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
     if (currentCommand == enet_list_end (& peer -> sentReliableCommands))
       return ENET_PROTOCOL_COMMAND_NONE;
 
-    reliableWindow = reliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
-    channel = & peer -> channels [channelID];
-    if (channel -> reliableWindows [reliableWindow] > 0)
+    if (channelID < peer -> channelCount)
     {
-       -- channel -> reliableWindows [reliableWindow];
-       if (! channel -> reliableWindows [reliableWindow])
-         channel -> usedReliableWindows &= ~ (1 << reliableWindow);
+       ENetChannel * channel = & peer -> channels [channelID];
+       enet_uint16 reliableWindow = reliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
+       if (channel -> reliableWindows [reliableWindow] > 0)
+       {
+          -- channel -> reliableWindows [reliableWindow];
+          if (! channel -> reliableWindows [reliableWindow])
+            channel -> usedReliableWindows &= ~ (1 << reliableWindow);
+       }
     }
 
     commandNumber = outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK;
