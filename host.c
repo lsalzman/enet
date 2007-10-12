@@ -170,7 +170,7 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
         enet_list_clear (& channel -> incomingReliableCommands);
         enet_list_clear (& channel -> incomingUnreliableCommands);
 
-        channel -> currentReliableWindow = 0;
+        channel -> usedReliableWindows = 0;
         memset (channel -> reliableWindows, 0, sizeof (channel -> reliableWindows));
     }
         

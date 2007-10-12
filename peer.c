@@ -192,8 +192,6 @@ enet_peer_receive (ENetPeer * peer, enet_uint8 channelID)
       {
          if (incomingCommand -> reliableSequenceNumber != channel -> incomingReliableSequenceNumber)
            incomingCommand = NULL;
-         else
-           channel -> incomingUnreliableSequenceNumber = incomingCommand -> unreliableSequenceNumber;
       }
    }
 
