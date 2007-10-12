@@ -479,8 +479,8 @@ enet_peer_queue_acknowledgement (ENetPeer * peer, const ENetProtocol * command, 
         enet_uint16 reliableWindow = command -> header.reliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE,
                     currentWindow = channel -> incomingReliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
 
-        if (reliableWindow < currentWindow)
-          reliableWindow += ENET_PEER_RELIABLE_WINDOWS;
+        if (command -> header.reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
+           reliableWindow += ENET_PEER_RELIABLE_WINDOWS;
 
         if (reliableWindow < currentWindow || reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1)
           return NULL;
@@ -580,10 +580,7 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
         currentWindow = channel -> incomingReliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
 
         if (reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
-        {
            reliableWindow += ENET_PEER_RELIABLE_WINDOWS;
-           reliableSequenceNumber += 0x10000;
-        }
 
         if (reliableWindow < currentWindow || reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1)
           goto freePacket;
@@ -602,8 +599,14 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
        {
           incomingCommand = (ENetIncomingCommand *) currentCommand;
 
-          if (reliableSequenceNumber >= 0x10000 && incomingCommand -> reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
-            reliableSequenceNumber -= 0x10000;
+          if (reliableSequenceNumber >= channel -> incomingReliableSequenceNumber)
+          {
+             if (incomingCommand -> reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
+               continue;
+          }
+          else
+          if (incomingCommand -> reliableSequenceNumber >= channel -> incomingReliableSequenceNumber)
+            break;
 
           if (incomingCommand -> reliableSequenceNumber <= reliableSequenceNumber)
           {
@@ -627,8 +630,14 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
           if ((incomingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK) != ENET_PROTOCOL_COMMAND_SEND_UNRELIABLE)
             continue;
 
-          if (reliableSequenceNumber >= 0x10000 && incomingCommand -> reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
-            reliableSequenceNumber -= 0x10000;
+          if (reliableSequenceNumber >= channel -> incomingReliableSequenceNumber)
+          {
+             if (incomingCommand -> reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
+               continue;
+          }
+          else
+          if (incomingCommand -> reliableSequenceNumber >= channel -> incomingReliableSequenceNumber)
+            break;
 
           if (incomingCommand -> reliableSequenceNumber < reliableSequenceNumber)
             break;
