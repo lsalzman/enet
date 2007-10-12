@@ -482,7 +482,7 @@ enet_peer_queue_acknowledgement (ENetPeer * peer, const ENetProtocol * command, 
         if (reliableWindow < currentWindow)
           reliableWindow += ENET_PEER_RELIABLE_WINDOWS;
 
-        if (reliableWindow < currentWindow || reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS)
+        if (reliableWindow < currentWindow || reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1)
           return NULL;
     }
 
@@ -585,7 +585,7 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
            reliableSequenceNumber += 0x10000;
         }
 
-        if (reliableWindow < currentWindow || reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS)
+        if (reliableWindow < currentWindow || reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1)
           goto freePacket;
     }
                     
