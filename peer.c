@@ -642,6 +642,9 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
           if (incomingCommand -> reliableSequenceNumber < reliableSequenceNumber)
             break;
 
+          if (incomingCommand -> reliableSequenceNumber > reliableSequenceNumber)
+            continue;
+
           if (incomingCommand -> unreliableSequenceNumber <= unreliableSequenceNumber)
           {
              if (incomingCommand -> unreliableSequenceNumber < unreliableSequenceNumber)
