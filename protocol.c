@@ -405,17 +405,23 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
 
     unsequencedGroup = ENET_NET_TO_HOST_16 (command -> sendUnsequenced.unsequencedGroup);
     index = unsequencedGroup % ENET_PEER_UNSEQUENCED_WINDOW_SIZE;
-    
-    if (unsequencedGroup >= peer -> incomingUnsequencedGroup + ENET_PEER_UNSEQUENCED_WINDOW_SIZE ||
-        peer -> incomingUnsequencedGroup >= 0xF000 && unsequencedGroup < 0x1000)
+   
+    if (unsequencedGroup < peer -> incomingUnsequencedGroup)
+      unsequencedGroup += 0x10000;
+
+    if (unsequencedGroup >= (enet_uint32) peer -> incomingUnsequencedGroup + ENET_PEER_FREE_UNSEQUENCED_WINDOWS * ENET_PEER_UNSEQUENCED_WINDOW_SIZE)
+      return 0;
+
+    unsequencedGroup &= 0xFFFF;
+
+    if (unsequencedGroup - index != peer -> incomingUnsequencedGroup)
     {
         peer -> incomingUnsequencedGroup = unsequencedGroup - index;
 
         memset (peer -> unsequencedWindow, 0, sizeof (peer -> unsequencedWindow));
     }
     else
-    if (unsequencedGroup < peer -> incomingUnsequencedGroup ||
-        peer -> unsequencedWindow [index / 32] & (1 << (index % 32)))
+    if (peer -> unsequencedWindow [index / 32] & (1 << (index % 32)))
       return 0;
       
     peer -> unsequencedWindow [index / 32] |= 1 << (index % 32);
@@ -466,8 +472,9 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
            startSequenceNumber,
            totalLength;
     ENetChannel * channel;
+    enet_uint16 startWindow, currentWindow;
     ENetListIterator currentCommand;
-    ENetIncomingCommand * startCommand;
+    ENetIncomingCommand * startCommand = NULL;
 
     if (command -> header.channelID >= peer -> channelCount ||
         (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER))
@@ -480,11 +487,13 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
 
     channel = & peer -> channels [command -> header.channelID];
     startSequenceNumber = ENET_NET_TO_HOST_16 (command -> sendFragment.startSequenceNumber);
-    if (channel -> incomingReliableSequenceNumber >= 0xF000 && startSequenceNumber < 0x1000)
-      startSequenceNumber += 0x10000;
+    startWindow = startSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
+    currentWindow = channel -> incomingReliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
 
-    if (startSequenceNumber < channel -> incomingReliableSequenceNumber ||
-        (channel -> incomingReliableSequenceNumber < 0x1000 && (startSequenceNumber & 0xFFFF) >= 0xF000))
+    if (startSequenceNumber < channel -> incomingReliableSequenceNumber)
+      startWindow += ENET_PEER_RELIABLE_WINDOWS;
+
+    if (startWindow < currentWindow || startWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1)
       return 0;
 
     fragmentNumber = ENET_NET_TO_HOST_32 (command -> sendFragment.fragmentNumber);
@@ -501,14 +510,33 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
          currentCommand != enet_list_end (& channel -> incomingReliableCommands);
          currentCommand = enet_list_previous (currentCommand))
     {
-       startCommand = (ENetIncomingCommand *) currentCommand;
+       ENetIncomingCommand * incomingCommand = (ENetIncomingCommand *) currentCommand;
 
-       if ((startCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_SEND_FRAGMENT &&
-           startCommand -> command.sendFragment.startSequenceNumber == (startSequenceNumber & 0xFFFF))
+       if (startSequenceNumber >= channel -> incomingReliableSequenceNumber)
+       {
+          if (incomingCommand -> reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
+            continue;
+       }
+       else
+       if (incomingCommand -> reliableSequenceNumber >= channel -> incomingReliableSequenceNumber)
          break;
+
+       if (incomingCommand -> reliableSequenceNumber <= startSequenceNumber)
+       {
+          if (incomingCommand -> reliableSequenceNumber < startSequenceNumber)
+            break;
+        
+          if ((incomingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK) != ENET_PROTOCOL_COMMAND_SEND_FRAGMENT ||
+              totalLength != incomingCommand -> packet -> dataLength ||
+              fragmentCount != incomingCommand -> fragmentCount)
+            return -1;
+
+          startCommand = incomingCommand;
+          break;
+       }
     }
  
-    if (currentCommand == enet_list_end (& channel -> incomingReliableCommands))
+    if (startCommand == NULL)
     {
        ENetProtocol hostCommand = * command;
        ENetPacket * packet = enet_packet_create (NULL, totalLength, ENET_PACKET_FLAG_RELIABLE);
@@ -524,11 +552,9 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
        hostCommand.sendFragment.totalLength = totalLength;
 
        startCommand = enet_peer_queue_incoming_command (peer, & hostCommand, packet, fragmentCount);
+       if (startCommand == NULL)
+         return -1;
     }
-    else
-    if (totalLength != startCommand -> packet -> dataLength ||
-        fragmentCount != startCommand -> fragmentCount)
-      return -1;
     
     if ((startCommand -> fragments [fragmentNumber / 32] & (1 << (fragmentNumber % 32))) == 0)
     {
