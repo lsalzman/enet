@@ -169,6 +169,9 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
 
         enet_list_clear (& channel -> incomingReliableCommands);
         enet_list_clear (& channel -> incomingUnreliableCommands);
+
+        channel -> currentReliableWindow = 0;
+        memset (channel -> reliableWindows, 0, sizeof (channel -> reliableWindows));
     }
         
     command.header.command = ENET_PROTOCOL_COMMAND_CONNECT | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;

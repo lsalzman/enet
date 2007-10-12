@@ -145,6 +145,9 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
 
    command.header.channelID = channelID;
 
+   if (! (packet -> flags & (ENET_PACKET_FLAG_RELIABLE | ENET_PACKET_FLAG_UNSEQUENCED)) && channel -> outgoingUnreliableSequenceNumber >= 0xFFFF)
+     packet -> flags |= ENET_PACKET_FLAG_RELIABLE;
+
    if (packet -> flags & ENET_PACKET_FLAG_RELIABLE)
    {
       command.header.command = ENET_PROTOCOL_COMMAND_SEND_RELIABLE | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
@@ -525,6 +528,7 @@ enet_peer_queue_outgoing_command (ENetPeer * peer, const ENetProtocol * command,
        outgoingCommand -> unreliableSequenceNumber = channel -> outgoingUnreliableSequenceNumber;
     }
    
+    outgoingCommand -> sendAttempts = 0;
     outgoingCommand -> sentTime = 0;
     outgoingCommand -> roundTripTimeout = 0;
     outgoingCommand -> roundTripTimeoutLimit = 0;
