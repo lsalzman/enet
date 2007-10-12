@@ -1104,9 +1104,10 @@ static int
 enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * event)
 {
     ENetOutgoingCommand * outgoingCommand;
-    ENetListIterator currentCommand;
+    ENetListIterator currentCommand, insertPosition;
 
     currentCommand = enet_list_begin (& peer -> sentReliableCommands);
+    insertPosition = enet_list_begin (& peer -> outgoingReliableCommands);
 
     while (currentCommand != enet_list_end (& peer -> sentReliableCommands))
     {
@@ -1138,8 +1139,7 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
 
        outgoingCommand -> roundTripTimeout *= 2;
 
-       enet_list_insert (enet_list_begin (& peer -> outgoingReliableCommands),
-                         enet_list_remove (& outgoingCommand -> outgoingCommandList));
+       enet_list_insert (insertPosition, enet_list_remove (& outgoingCommand -> outgoingCommandList));
 
        if (currentCommand == enet_list_begin (& peer -> sentReliableCommands) &&
            ! enet_list_empty (& peer -> sentReliableCommands))
