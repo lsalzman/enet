@@ -208,12 +208,11 @@ typedef struct _ENetChannel
 {
    enet_uint16  outgoingReliableSequenceNumber;
    enet_uint16  outgoingUnreliableSequenceNumber;
+   enet_uint16  usedReliableWindows;
+   enet_uint16  reliableWindows [ENET_PEER_RELIABLE_WINDOWS];
    enet_uint16  incomingReliableSequenceNumber;
-   enet_uint16  incomingUnreliableSequenceNumber;
    ENetList     incomingReliableCommands;
    ENetList     incomingUnreliableCommands;
-   enet_uint16  currentReliableWindow;
-   enet_uint16  reliableWindows [ENET_PEER_RELIABLE_WINDOWS];
 } ENetChannel;
 
 /**
