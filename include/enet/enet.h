@@ -201,7 +201,8 @@ enum
    ENET_PEER_PING_INTERVAL                = 500,
    ENET_PEER_UNSEQUENCED_WINDOW_SIZE      = 4 * 32,
    ENET_PEER_RELIABLE_WINDOWS             = 16,
-   ENET_PEER_RELIABLE_WINDOW_SIZE         = 0x1000
+   ENET_PEER_RELIABLE_WINDOW_SIZE         = 0x1000,
+   ENET_PEER_FREE_RELIABLE_WINDOWS        = 8
 };
 
 typedef struct _ENetChannel
