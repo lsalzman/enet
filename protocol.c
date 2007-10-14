@@ -176,7 +176,23 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
     }
 
     if (currentCommand == enet_list_end (& peer -> sentReliableCommands))
-      return ENET_PROTOCOL_COMMAND_NONE;
+    {
+       for (currentCommand = enet_list_begin (& peer -> outgoingReliableCommands);
+            currentCommand != enet_list_end (& peer -> outgoingReliableCommands);
+            currentCommand = enet_list_next (currentCommand))
+       {
+          outgoingCommand = (ENetOutgoingCommand *) currentCommand;
+
+          if (outgoingCommand -> sendAttempts < 1) return ENET_PROTOCOL_COMMAND_NONE;
+
+          if (outgoingCommand -> reliableSequenceNumber == reliableSequenceNumber &&
+              outgoingCommand -> command.header.channelID == channelID)
+            break;
+       }
+
+       if (currentCommand == enet_list_end (& peer -> outgoingReliableCommands))
+         return ENET_PROTOCOL_COMMAND_NONE;
+    }
 
     if (channelID < peer -> channelCount)
     {
