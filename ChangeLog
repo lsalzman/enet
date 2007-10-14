@@ -1,3 +1,13 @@
+ENet CVS (10-12-07):
+
+* fixed acknowledgements to check both the outgoing and sent queues
+when removing acknowledged packets
+* fixed accidental bit rot in the MSVC project file
+* revised sequence number overflow handling to address some possible
+disconnect bugs
+* added enet_host_check_events() for getting only local queued events
+* factored out socket option setting into enet_socket_set_option()
+
 ENet 1.1 (June 6, 2007):
 
 * optional CRC32 just in case someone needs a stronger checksum than UDP 
