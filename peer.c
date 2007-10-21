@@ -482,7 +482,7 @@ enet_peer_queue_acknowledgement (ENetPeer * peer, const ENetProtocol * command, 
         if (command -> header.reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
            reliableWindow += ENET_PEER_RELIABLE_WINDOWS;
 
-        if (reliableWindow < currentWindow || reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1)
+        if (reliableWindow >= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1 && reliableWindow <= currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS)
           return NULL;
     }
 
