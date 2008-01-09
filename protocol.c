@@ -740,7 +740,7 @@ enet_protocol_handle_verify_connect (ENetHost * host, ENetEvent * event, ENetPee
     enet_uint32 windowSize;
 
     if (peer -> state != ENET_PEER_STATE_CONNECTING)
-      return -1;
+      return 0;
 
     if (ENET_NET_TO_HOST_32 (command -> verifyConnect.channelCount) != peer -> channelCount ||
         ENET_NET_TO_HOST_32 (command -> verifyConnect.packetThrottleInterval) != peer -> packetThrottleInterval ||
