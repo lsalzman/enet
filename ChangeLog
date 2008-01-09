@@ -1,5 +1,7 @@
-ENet CVS (10-12-07):
+ENet CVS (1-8-2008):
 
+* fixed bug in VERIFY_CONNECT acknowledgement that could cause connect
+attempts to occasionally timeout
 * fixed acknowledgements to check both the outgoing and sent queues
 when removing acknowledged packets
 * fixed accidental bit rot in the MSVC project file
