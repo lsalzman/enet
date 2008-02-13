@@ -12,3 +12,4 @@ aclocal && automake -a -c --foreign && autoconf
 
 ./configure && make && make install
 
+

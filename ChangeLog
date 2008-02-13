@@ -1,4 +1,4 @@
-ENet CVS (1-8-2008):
+ENet 1.2 (February 12, 2008):
 
 * fixed bug in VERIFY_CONNECT acknowledgement that could cause connect
 attempts to occasionally timeout
@@ -8,7 +8,12 @@ when removing acknowledged packets
 * revised sequence number overflow handling to address some possible
 disconnect bugs
 * added enet_host_check_events() for getting only local queued events
-* factored out socket option setting into enet_socket_set_option()
+* factored out socket option setting into enet_socket_set_option() so
+that socket options are now set separately from enet_socket_create()
+
+Caveats: While this release is superficially protocol compatible with 1.1,
+differences in the sequence number overflow handling can potentially cause
+random disconnects.
 
 ENet 1.1 (June 6, 2007):
 
