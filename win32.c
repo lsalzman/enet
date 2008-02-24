@@ -225,6 +225,8 @@ enet_socket_send (ENetSocket socket,
 
     if (address != NULL)
     {
+        memset (& sin, 0, sizeof (struct sockaddr_in));
+
         sin.sin_family = AF_INET;
         sin.sin_port = ENET_HOST_TO_NET_16 (address -> port);
         sin.sin_addr.s_addr = address -> host;
