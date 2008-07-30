@@ -422,7 +422,7 @@ enet_peer_disconnect (ENetPeer * peer, enet_uint32 data)
 
     if (peer -> state == ENET_PEER_STATE_DISCONNECTING ||
         peer -> state == ENET_PEER_STATE_DISCONNECTED ||
-        peer -> state == ENET_PEER_STATE_ACKNOWLEDING_DISCONNECT ||
+        peer -> state == ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT ||
         peer -> state == ENET_PEER_STATE_ZOMBIE)
       return;
 
