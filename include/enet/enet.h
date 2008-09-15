@@ -46,7 +46,8 @@ typedef enum
    ENET_SOCKOPT_NONBLOCK  = 1,
    ENET_SOCKOPT_BROADCAST = 2,
    ENET_SOCKOPT_RCVBUF    = 3,
-   ENET_SOCKOPT_SNDBUF    = 4
+   ENET_SOCKOPT_SNDBUF    = 4,
+   ENET_SOCKOPT_REUSEADDR = 5
 } ENetSocketOption;
 
 enum
@@ -403,7 +404,9 @@ ENET_API void enet_time_set (enet_uint32);
 /** @defgroup socket ENet socket functions
     @{
 */
-ENET_API ENetSocket enet_socket_create (ENetSocketType, const ENetAddress *);
+ENET_API ENetSocket enet_socket_create (ENetSocketType);
+ENET_API int        enet_socket_bind (ENetSocket, const ENetAddress *);
+ENET_API int        enet_socket_listen (ENetSocket, int);
 ENET_API ENetSocket enet_socket_accept (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_connect (ENetSocket, const ENetAddress *);
 ENET_API int        enet_socket_send (ENetSocket, const ENetAddress *, const ENetBuffer *, size_t);
@@ -411,6 +414,7 @@ ENET_API int        enet_socket_receive (ENetSocket, ENetAddress *, ENetBuffer *
 ENET_API int        enet_socket_wait (ENetSocket, enet_uint32 *, enet_uint32);
 ENET_API int        enet_socket_set_option (ENetSocket, ENetSocketOption, int);
 ENET_API void       enet_socket_destroy (ENetSocket);
+ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSocketSet *, enet_uint32);
 
 /** @} */
 

@@ -36,9 +36,12 @@ enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 inc
     host -> peers = (ENetPeer *) enet_malloc (peerCount * sizeof (ENetPeer));
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
-    host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM, address);
-    if (host -> socket == ENET_SOCKET_NULL)
+    host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM);
+    if (host -> socket == ENET_SOCKET_NULL || (address != NULL && enet_socket_bind (host -> socket, address) < 0))
     {
+       if (host -> socket != ENET_SOCKET_NULL)
+         enet_socket_destroy (host -> socket);
+
        enet_free (host -> peers);
        enet_free (host);
 
