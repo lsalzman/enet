@@ -159,6 +159,8 @@ enet_socket_bind (ENetSocket socket, const ENetAddress * address)
 
     memset (& sin, 0, sizeof (struct sockaddr_in));
 
+    sin.sin_family = AF_INET;
+
     if (address != NULL)
     {
        sin.sin_port = ENET_HOST_TO_NET_16 (address -> port);
