@@ -22,6 +22,8 @@ or dependent tasks.
 
 @ref MailingList
 
+@ref IRCChannel
+
 @ref FAQ
 
 @ref License
@@ -62,3 +64,11 @@ sent via email to @ref MailingList.
 The <a href="http://lists.cubik.org/mailman/listinfo/enet-discuss">enet-discuss</a> list is for discussion of ENet, including bug reports or feature requests.
 
 */
+
+/**
+@page IRCChannel ENet IRC Channel
+
+Join the \#enet channel on the freenode IRC network (irc.freenode.net) for real-time discussion about the ENet library.
+
+*/
+
