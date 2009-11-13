@@ -1,8 +1,10 @@
-ENet - (current):
+ENet 1.2.1 (November 12, 2009):
 
+* fixed bug that could cause disconnect events to be dropped
 * added thin wrapper around select() for portable usage
 * added ENET_SOCKOPT_REUSEADDR socket option
 * factored enet_socket_bind()/enet_socket_listen() out of enet_socket_create()
+* added contributed Code::Blocks build file
 
 ENet 1.2 (February 12, 2008):
 
