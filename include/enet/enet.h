@@ -23,25 +23,25 @@ extern "C"
 #include "enet/list.h"
 #include "enet/callbacks.h"
 
-typedef enum
+typedef enum _ENetVersion
 {
    ENET_VERSION = 1
 } ENetVersion;
 
-typedef enum
+typedef enum _ENetSocketType
 {
    ENET_SOCKET_TYPE_STREAM   = 1,
    ENET_SOCKET_TYPE_DATAGRAM = 2
 } ENetSocketType;
 
-typedef enum
+typedef enum _ENetSocketWait
 {
    ENET_SOCKET_WAIT_NONE    = 0,
    ENET_SOCKET_WAIT_SEND    = (1 << 0),
    ENET_SOCKET_WAIT_RECEIVE = (1 << 1)
 } ENetSocketWait;
 
-typedef enum
+typedef enum _ENetSocketOption
 {
    ENET_SOCKOPT_NONBLOCK  = 1,
    ENET_SOCKOPT_BROADCAST = 2,
@@ -83,7 +83,7 @@ typedef struct _ENetAddress
  
    @sa ENetPacket
 */
-typedef enum
+typedef enum _ENetPacketFlag
 {
    /** packet must be received by the target peer and resend attempts should be
      * made until the packet is delivered */
@@ -161,7 +161,7 @@ typedef struct _ENetIncomingCommand
    ENetPacket *     packet;
 } ENetIncomingCommand;
 
-typedef enum
+typedef enum _ENetPeerState
 {
    ENET_PEER_STATE_DISCONNECTED                = 0,
    ENET_PEER_STATE_CONNECTING                  = 1,
@@ -319,7 +319,7 @@ typedef struct _ENetHost
 /**
  * An ENet event type, as specified in @ref ENetEvent.
  */
-typedef enum
+typedef enum _ENetEventType
 {
    /** no event occurred within the specified time limit */
    ENET_EVENT_TYPE_NONE       = 0,  

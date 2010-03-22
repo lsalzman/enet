@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-typedef struct
+typedef struct _ENetCallbacks
 {
     void * (ENET_CALLBACK * malloc) (size_t size);
     void (ENET_CALLBACK * free) (void * memory);
