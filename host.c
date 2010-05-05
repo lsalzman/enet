@@ -27,13 +27,23 @@
 ENetHost *
 enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 incomingBandwidth, enet_uint32 outgoingBandwidth)
 {
-    ENetHost * host = (ENetHost *) enet_malloc (sizeof (ENetHost));
+    ENetHost * host;
     ENetPeer * currentPeer;
 
     if (peerCount > ENET_PROTOCOL_MAXIMUM_PEER_ID)
       return NULL;
 
+    host = (ENetHost *) enet_malloc (sizeof (ENetHost));
+    if (host == NULL)
+      return NULL;
+
     host -> peers = (ENetPeer *) enet_malloc (peerCount * sizeof (ENetPeer));
+    if (host -> peers == NULL)
+    {
+       enet_free (host);
+
+       return NULL;
+    }
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
     host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM);
@@ -142,10 +152,12 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     if (currentPeer >= & host -> peers [host -> peerCount])
       return NULL;
 
+    currentPeer -> channels = (ENetChannel *) enet_malloc (channelCount * sizeof (ENetChannel));
+    if (currentPeer -> channels == NULL)
+      return NULL;
+    currentPeer -> channelCount = channelCount;
     currentPeer -> state = ENET_PEER_STATE_CONNECTING;
     currentPeer -> address = * address;
-    currentPeer -> channels = (ENetChannel *) enet_malloc (channelCount * sizeof (ENetChannel));
-    currentPeer -> channelCount = channelCount;
     currentPeer -> sessionID = (enet_uint32) enet_rand ();
 
     if (host -> outgoingBandwidth == 0)
