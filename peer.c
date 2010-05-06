@@ -141,7 +141,10 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
             
             return -1;
          }
-                
+         
+         fragment -> fragmentOffset = fragmentOffset;
+         fragment -> fragmentLength = fragmentLength;
+         fragment -> packet = packet;
          fragment -> command.header.command = ENET_PROTOCOL_COMMAND_SEND_FRAGMENT | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
          fragment -> command.header.channelID = channelID;
          fragment -> command.sendFragment.startSequenceNumber = startSequenceNumber;
@@ -154,11 +157,13 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
          enet_list_insert (enet_list_end (& fragments), fragment);
       }
 
+      packet -> referenceCount += fragmentNumber;
+
       while (! enet_list_empty (& fragments))
       {
          fragment = (ENetOutgoingCommand *) enet_list_remove (enet_list_begin (& fragments));
  
-         enet_peer_setup_outgoing_command (peer, fragment, packet, fragmentOffset, fragmentLength);
+         enet_peer_setup_outgoing_command (peer, fragment);
       }
 
       return 0;
@@ -527,11 +532,11 @@ enet_peer_queue_acknowledgement (ENetPeer * peer, const ENetProtocol * command, 
 }
 
 void
-enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoingCommand, ENetPacket * packet, enet_uint32 offset, enet_uint16 length)
+enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoingCommand)
 {
     ENetChannel * channel = & peer -> channels [outgoingCommand -> command.header.channelID];
 
-    peer -> outgoingDataTotal += enet_protocol_command_size (outgoingCommand -> command.header.command) + length;
+    peer -> outgoingDataTotal += enet_protocol_command_size (outgoingCommand -> command.header.command) + outgoingCommand -> fragmentLength;
 
     if (outgoingCommand -> command.header.channelID == 0xFF)
     {
@@ -569,13 +574,7 @@ enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoin
     outgoingCommand -> sentTime = 0;
     outgoingCommand -> roundTripTimeout = 0;
     outgoingCommand -> roundTripTimeoutLimit = 0;
-    outgoingCommand -> fragmentOffset = offset;
-    outgoingCommand -> fragmentLength = length;
-    outgoingCommand -> packet = packet;
     outgoingCommand -> command.header.reliableSequenceNumber = ENET_HOST_TO_NET_16 (outgoingCommand -> reliableSequenceNumber);
-
-    if (packet != NULL)
-      ++ packet -> referenceCount;
 
     if (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE)
       enet_list_insert (enet_list_end (& peer -> outgoingReliableCommands), outgoingCommand);
@@ -591,8 +590,13 @@ enet_peer_queue_outgoing_command (ENetPeer * peer, const ENetProtocol * command,
       return NULL;
 
     outgoingCommand -> command = * command;
+    outgoingCommand -> fragmentOffset = offset;
+    outgoingCommand -> fragmentLength = length;
+    outgoingCommand -> packet = packet;
+    if (packet != NULL)
+      ++ packet -> referenceCount;
 
-    enet_peer_setup_outgoing_command (peer, outgoingCommand, packet, offset, length);
+    enet_peer_setup_outgoing_command (peer, outgoingCommand);
 
     return outgoingCommand;
 }
