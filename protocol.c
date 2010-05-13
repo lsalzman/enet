@@ -34,24 +34,20 @@ enet_protocol_command_size (enet_uint8 commandNumber)
 static int
 enet_protocol_dispatch_incoming_commands (ENetHost * host, ENetEvent * event)
 {
-    ENetPeer * currentPeer = host -> lastServicedPeer;
-    ENetChannel * channel;
-
-    do
+    while (! enet_list_empty (& host -> dispatchQueue))
     {
-       ++ currentPeer;
-       
-       if (currentPeer >= & host -> peers [host -> peerCount])
-         currentPeer = host -> peers;
+       ENetPeer * peer = (ENetPeer *) enet_list_remove (enet_list_begin (& host -> dispatchQueue));
 
-       switch (currentPeer -> state)
+       peer -> needsDispatch = 0;
+
+       switch (peer -> state)
        {
        case ENET_PEER_STATE_CONNECTION_PENDING:
        case ENET_PEER_STATE_CONNECTION_SUCCEEDED:
-           currentPeer -> state = ENET_PEER_STATE_CONNECTED;
+           peer -> state = ENET_PEER_STATE_CONNECTED;
 
            event -> type = ENET_EVENT_TYPE_CONNECT;
-           event -> peer = currentPeer;
+           event -> peer = peer;
 
            return 1;
            
@@ -59,72 +55,77 @@ enet_protocol_dispatch_incoming_commands (ENetHost * host, ENetEvent * event)
            host -> recalculateBandwidthLimits = 1;
 
            event -> type = ENET_EVENT_TYPE_DISCONNECT;
-           event -> peer = currentPeer;
-           event -> data = currentPeer -> disconnectData;
+           event -> peer = peer;
+           event -> data = peer -> disconnectData;
 
-           enet_peer_reset (currentPeer);
-
-           host -> lastServicedPeer = currentPeer;
+           enet_peer_reset (peer);
 
            return 1;
-       }
 
-       if (currentPeer -> state != ENET_PEER_STATE_CONNECTED)
-         continue;
-
-       for (channel = currentPeer -> channels;
-            channel < & currentPeer -> channels [currentPeer -> channelCount];
-            ++ channel)
-       {
-           if (enet_list_empty (& channel -> incomingReliableCommands) &&
-               enet_list_empty (& channel -> incomingUnreliableCommands))
+       case ENET_PEER_STATE_CONNECTED:
+           if (enet_list_empty (& peer -> dispatchedCommands))
              continue;
 
-           event -> packet = enet_peer_receive (currentPeer, channel - currentPeer -> channels);
+           event -> packet = enet_peer_receive (peer, & event -> channelID);
            if (event -> packet == NULL)
              continue;
              
            event -> type = ENET_EVENT_TYPE_RECEIVE;
-           event -> peer = currentPeer;
-           event -> channelID = (enet_uint8) (channel - currentPeer -> channels);
+           event -> peer = peer;
 
-           host -> lastServicedPeer = currentPeer;
+           if (! enet_list_empty (& peer -> dispatchedCommands))
+           {
+              peer -> needsDispatch = 1;
+         
+              enet_list_insert (enet_list_end (& host -> dispatchQueue), & peer -> dispatchList);
+           }
 
            return 1;
        }
-    } while (currentPeer != host -> lastServicedPeer);
+    }
 
     return 0;
 }
 
 static void
+enet_protocol_dispatch_state (ENetHost * host, ENetPeer * peer, ENetPeerState state)
+{
+    peer -> state = state;
+
+    if (! peer -> needsDispatch)
+    {
+       enet_list_insert (enet_list_end (& host -> dispatchQueue), & peer -> dispatchList);
+
+       peer -> needsDispatch = 1;
+    }    
+}
+    
+static void
 enet_protocol_notify_connect (ENetHost * host, ENetPeer * peer, ENetEvent * event)
 {
     host -> recalculateBandwidthLimits = 1;
 
-    if (event == NULL)
-       peer -> state = (peer -> state == ENET_PEER_STATE_CONNECTING ? ENET_PEER_STATE_CONNECTION_SUCCEEDED : ENET_PEER_STATE_CONNECTION_PENDING);
-    else
+    if (event != NULL)
     {
-       peer -> state = ENET_PEER_STATE_CONNECTED;
+        peer -> state = ENET_PEER_STATE_CONNECTED;
 
-       event -> type = ENET_EVENT_TYPE_CONNECT;
-       event -> peer = peer;
+        event -> type = ENET_EVENT_TYPE_CONNECT;
+        event -> peer = peer;
     }
+    else 
+        enet_protocol_dispatch_state (host, peer, peer -> state == ENET_PEER_STATE_CONNECTING ? ENET_PEER_STATE_CONNECTION_SUCCEEDED : ENET_PEER_STATE_CONNECTION_PENDING);
 }
 
 static void
 enet_protocol_notify_disconnect (ENetHost * host, ENetPeer * peer, ENetEvent * event)
 {
     if (peer -> state >= ENET_PEER_STATE_CONNECTION_PENDING)
-        host -> recalculateBandwidthLimits = 1;
+       host -> recalculateBandwidthLimits = 1;
 
     if (peer -> state != ENET_PEER_STATE_CONNECTING && peer -> state < ENET_PEER_STATE_CONNECTION_SUCCEEDED)
         enet_peer_reset (peer);
     else
-    if (event == NULL)
-        peer -> state = ENET_PEER_STATE_ZOMBIE;
-    else
+    if (event != NULL)
     {
         event -> type = ENET_EVENT_TYPE_DISCONNECT;
         event -> peer = peer;
@@ -132,6 +133,8 @@ enet_protocol_notify_disconnect (ENetHost * host, ENetPeer * peer, ENetEvent * e
 
         enet_peer_reset (peer);
     }
+    else 
+        enet_protocol_dispatch_state (host, peer, ENET_PEER_STATE_ZOMBIE);
 }
 
 static void
@@ -636,7 +639,7 @@ enet_protocol_handle_disconnect (ENetHost * host, ENetPeer * peer, const ENetPro
     enet_peer_reset_queues (peer);
 
     if (peer -> state == ENET_PEER_STATE_CONNECTION_SUCCEEDED)
-        peer -> state = ENET_PEER_STATE_ZOMBIE;
+        enet_protocol_dispatch_state (host, peer, ENET_PEER_STATE_ZOMBIE);
     else
     if (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER)
     {
@@ -648,7 +651,7 @@ enet_protocol_handle_disconnect (ENetHost * host, ENetPeer * peer, const ENetPro
     if (command -> header.command & ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE)
       peer -> state = ENET_PEER_STATE_ACKNOWLEDGING_DISCONNECT;
     else
-      peer -> state = ENET_PEER_STATE_ZOMBIE;
+      enet_protocol_dispatch_state (host, peer, ENET_PEER_STATE_ZOMBIE);
 
     peer -> disconnectData = ENET_NET_TO_HOST_32 (command -> disconnect.data);
     return 0;
@@ -751,7 +754,7 @@ enet_protocol_handle_verify_connect (ENetHost * host, ENetEvent * event, ENetPee
         ENET_NET_TO_HOST_32 (command -> verifyConnect.packetThrottleAcceleration) != peer -> packetThrottleAcceleration ||
         ENET_NET_TO_HOST_32 (command -> verifyConnect.packetThrottleDeceleration) != peer -> packetThrottleDeceleration)
     {
-        peer -> state = ENET_PEER_STATE_ZOMBIE;
+        enet_protocol_dispatch_state (host, peer, ENET_PEER_STATE_ZOMBIE);
 
         return -1;
     }
@@ -1047,7 +1050,7 @@ enet_protocol_send_acknowledgements (ENetHost * host, ENetPeer * peer)
        command -> acknowledge.receivedSentTime = ENET_HOST_TO_NET_16 (acknowledgement -> sentTime);
   
        if ((acknowledgement -> command.header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_DISCONNECT)
-         peer -> state = ENET_PEER_STATE_ZOMBIE;
+         enet_protocol_dispatch_state (host, peer, ENET_PEER_STATE_ZOMBIE);
 
        enet_list_remove (& acknowledgement -> acknowledgementList);
        enet_free (acknowledgement);

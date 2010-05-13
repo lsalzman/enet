@@ -72,13 +72,14 @@ enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 inc
     host -> recalculateBandwidthLimits = 0;
     host -> mtu = ENET_HOST_DEFAULT_MTU;
     host -> peerCount = peerCount;
-    host -> lastServicedPeer = host -> peers;
     host -> commandCount = 0;
     host -> bufferCount = 0;
     host -> receivedAddress.host = ENET_HOST_ANY;
     host -> receivedAddress.port = 0;
     host -> receivedDataLength = 0;
      
+    enet_list_clear (& host -> dispatchQueue);
+
     for (currentPeer = host -> peers;
          currentPeer < & host -> peers [host -> peerCount];
          ++ currentPeer)
@@ -92,6 +93,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 inc
        enet_list_clear (& currentPeer -> sentUnreliableCommands);
        enet_list_clear (& currentPeer -> outgoingReliableCommands);
        enet_list_clear (& currentPeer -> outgoingUnreliableCommands);
+       enet_list_clear (& currentPeer -> dispatchedCommands);
 
        enet_peer_reset (currentPeer);
     }
