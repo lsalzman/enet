@@ -786,11 +786,11 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     {
     case ENET_PROTOCOL_COMMAND_SEND_FRAGMENT:
     case ENET_PROTOCOL_COMMAND_SEND_RELIABLE:
-       enet_peer_dispatch_reliable_incoming_commands (peer, channel);
+       enet_peer_dispatch_incoming_reliable_commands (peer, channel);
        break;
 
     default:
-       enet_peer_dispatch_unreliable_incoming_commands (peer, channel);
+       enet_peer_dispatch_incoming_unreliable_commands (peer, channel);
        break;
     }
 
