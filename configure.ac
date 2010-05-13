@@ -1,8 +1,11 @@
-AC_INIT(libenet, 11-12-2009)
-AM_INIT_AUTOMAKE(libenet.a, 11-12-2009)
+AC_INIT([libenet], [5-13-2010])
+AC_CONFIG_SRCDIR([include/enet/enet.h])
+AM_INIT_AUTOMAKE([foreign])
+
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
-AC_PROG_RANLIB
+AC_PROG_LIBTOOL
 
 AC_CHECK_FUNC(gethostbyaddr_r, [AC_DEFINE(HAS_GETHOSTBYADDR_R)])
 AC_CHECK_FUNC(gethostbyname_r, [AC_DEFINE(HAS_GETHOSTBYNAME_R)])
@@ -32,5 +35,6 @@ AC_ARG_ENABLE(crc32,
      fi],
     [AC_MSG_RESULT(no)])
 
-AC_OUTPUT([Makefile include/Makefile include/enet/Makefile])
-
+AC_CONFIG_FILES([Makefile
+	libenet.pc])
+AC_OUTPUT
