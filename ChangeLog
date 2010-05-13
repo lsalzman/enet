@@ -1,3 +1,12 @@
+ENet CVS (May 13, 2010):
+
+* now uses dispatch queues for event dispatch rather than potentially
+unscalable array walking
+* fixed propagation of memory failures so that an abort is no longer 
+required if malloc fails
+* now uses packed attribute for protocol structures on platforms with 
+strange alignment rules
+
 ENet 1.2.1 (November 12, 2009):
 
 * fixed bug that could cause disconnect events to be dropped
