@@ -79,6 +79,11 @@ enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 inc
     host -> receivedAddress.port = 0;
     host -> receivedDataLength = 0;
      
+    host -> totalSentData = 0;
+    host -> totalSentPackets = 0;
+    host -> totalReceivedData = 0;
+    host -> totalReceivedPackets = 0;
+
     enet_list_clear (& host -> dispatchQueue);
 
     for (currentPeer = host -> peers;

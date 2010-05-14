@@ -1005,7 +1005,10 @@ enet_protocol_receive_incoming_commands (ENetHost * host, ENetEvent * event)
          return 0;
 
        host -> receivedDataLength = receivedLength;
-       
+      
+       host -> totalReceivedData += receivedLength;
+       host -> totalReceivedPackets ++;
+ 
        switch (enet_protocol_handle_incoming_commands (host, event))
        {
        case 1:
@@ -1424,6 +1427,9 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 
         if (sentLength < 0)
           return -1;
+
+        host -> totalSentData += sentLength;
+        host -> totalSentPackets ++;
     }
    
     return 0;

@@ -1,5 +1,8 @@
 ENet 1.2.2 (May 13, 2010):
 
+* added totalSentData, totalSentPackets, totalReceivedData, and
+totalReceivedPackets counters inside ENetHost for getting usage
+statistics
 * added enet_host_channel_limit() for limiting the maximum number of
 channels allowed by connected peers
 * now uses dispatch queues for event dispatch rather than potentially

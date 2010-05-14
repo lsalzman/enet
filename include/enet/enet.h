@@ -322,6 +322,10 @@ typedef struct _ENetHost
    ENetAddress        receivedAddress;
    enet_uint8         receivedData [ENET_PROTOCOL_MAXIMUM_MTU];
    size_t             receivedDataLength;
+   enet_uint32        totalSentData;               /**< total data sent, user should reset to 0 as needed to prevent overflow */
+   enet_uint32        totalSentPackets;            /**< total UDP packets sent, user should reset to 0 as needed to prevent overflow */
+   enet_uint32        totalReceivedData;           /**< total data received, user should reset to 0 as needed to prevent overflow */
+   enet_uint32        totalReceivedPackets;        /**< total UDP packets received, user should reset to 0 as needed to prevent overflow */
 } ENetHost;
 
 /**
