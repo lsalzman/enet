@@ -294,6 +294,7 @@ typedef struct _ENetPeer
     @sa enet_host_service()
     @sa enet_host_flush()
     @sa enet_host_broadcast()
+    @sa enet_host_channel_limit()
     @sa enet_host_bandwidth_limit()
     @sa enet_host_bandwidth_throttle()
   */
@@ -308,6 +309,7 @@ typedef struct _ENetHost
    int                recalculateBandwidthLimits;
    ENetPeer *         peers;                       /**< array of peers allocated for this host */
    size_t             peerCount;                   /**< number of peers allocated for this host */
+   size_t             channelLimit;                /**< maximum number of channels allowed for connected peers */
    enet_uint32        serviceTime;
    ENetList           dispatchQueue;
    int                continueSending;
@@ -471,6 +473,7 @@ ENET_API int        enet_host_check_events (ENetHost *, ENetEvent *);
 ENET_API int        enet_host_service (ENetHost *, ENetEvent *, enet_uint32);
 ENET_API void       enet_host_flush (ENetHost *);
 ENET_API void       enet_host_broadcast (ENetHost *, enet_uint8, ENetPacket *);
+ENET_API void       enet_host_channel_limit (ENetHost *, size_t);
 ENET_API void       enet_host_bandwidth_limit (ENetHost *, enet_uint32, enet_uint32);
 extern   void       enet_host_bandwidth_throttle (ENetHost *);
 

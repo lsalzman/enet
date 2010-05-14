@@ -66,6 +66,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, enet_uint32 inc
     if (address != NULL)
       host -> address = * address;
 
+    host -> channelLimit = ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT;
     host -> incomingBandwidth = incomingBandwidth;
     host -> outgoingBandwidth = outgoingBandwidth;
     host -> bandwidthThrottleEpoch = 0;
@@ -208,6 +209,22 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     return currentPeer;
 }
 
+/** Limits the maximum allowed channels of future incoming connections.
+    @param host host to limit
+    @param channelLimit the maximum number of channels allowed; if 0, then this is equivalent to ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT
+*/
+void
+enet_host_channel_limit (ENetHost * host, size_t channelLimit)
+{
+    if (! channelLimit || channelLimit > ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT)
+      channelLimit = ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT;
+    else
+    if (channelLimit < ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT)
+      channelLimit = ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT;
+
+    host -> channelLimit = channelLimit;
+}
+ 
 /** Queues a packet to be sent to all peers associated with the host.
     @param host host on which to broadcast the packet
     @param channelID channel on which to broadcast

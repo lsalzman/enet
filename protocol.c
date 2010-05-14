@@ -292,6 +292,8 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
     if (currentPeer >= & host -> peers [host -> peerCount])
       return NULL;
 
+    if (channelCount > host -> channelLimit)
+      channelCount = host -> channelLimit;
     currentPeer -> channels = (ENetChannel *) enet_malloc (channelCount * sizeof (ENetChannel));
     if (currentPeer -> channels == NULL)
       return NULL;
@@ -745,11 +747,14 @@ enet_protocol_handle_verify_connect (ENetHost * host, ENetEvent * event, ENetPee
 {
     enet_uint16 mtu;
     enet_uint32 windowSize;
+    size_t channelCount;
 
     if (peer -> state != ENET_PEER_STATE_CONNECTING)
       return 0;
 
-    if (ENET_NET_TO_HOST_32 (command -> verifyConnect.channelCount) != peer -> channelCount ||
+    channelCount = ENET_NET_TO_HOST_32 (command -> verifyConnect.channelCount);
+
+    if (channelCount < ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT || channelCount > ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT ||
         ENET_NET_TO_HOST_32 (command -> verifyConnect.packetThrottleInterval) != peer -> packetThrottleInterval ||
         ENET_NET_TO_HOST_32 (command -> verifyConnect.packetThrottleAcceleration) != peer -> packetThrottleAcceleration ||
         ENET_NET_TO_HOST_32 (command -> verifyConnect.packetThrottleDeceleration) != peer -> packetThrottleDeceleration)
@@ -761,6 +766,9 @@ enet_protocol_handle_verify_connect (ENetHost * host, ENetEvent * event, ENetPee
 
     enet_protocol_remove_sent_reliable_command (peer, 1, 0xFF);
     
+    if (channelCount < peer -> channelCount)
+      peer -> channelCount = channelCount;
+
     peer -> outgoingPeerID = ENET_NET_TO_HOST_16 (command -> verifyConnect.outgoingPeerID);
 
     mtu = ENET_NET_TO_HOST_16 (command -> verifyConnect.mtu);

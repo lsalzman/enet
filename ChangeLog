@@ -1,5 +1,7 @@
 ENet 1.2.2 (May 13, 2010):
 
+* added enet_host_channel_limit() for limiting the maximum number of
+channels allowed by connected peers
 * now uses dispatch queues for event dispatch rather than potentially
 unscalable array walking
 * added no_memory callback that is called when a malloc attempt fails,
