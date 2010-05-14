@@ -218,7 +218,8 @@ enet_peer_receive (ENetPeer * peer, enet_uint8 * channelID)
 
    incomingCommand = (ENetIncomingCommand *) enet_list_remove (enet_list_begin (& peer -> dispatchedCommands));
 
-   * channelID = incomingCommand -> command.header.channelID;
+   if (channelID != NULL)
+     * channelID = incomingCommand -> command.header.channelID;
 
    packet = incomingCommand -> packet;
 
