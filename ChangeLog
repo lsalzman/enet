@@ -1,9 +1,10 @@
-ENet CVS (May 13, 2010):
+ENet 1.2.2 (May 13, 2010):
 
 * now uses dispatch queues for event dispatch rather than potentially
 unscalable array walking
-* fixed propagation of memory failures so that an abort is no longer 
-required if malloc fails
+* added no_memory callback that is called when a malloc attempt fails,
+such that if no_memory returns rather than aborts (the default behavior),
+then the error is propagated to the return value of the API calls
 * now uses packed attribute for protocol structures on platforms with 
 strange alignment rules
 

@@ -23,10 +23,13 @@ extern "C"
 #include "enet/list.h"
 #include "enet/callbacks.h"
 
-typedef enum _ENetVersion
-{
-   ENET_VERSION = 1
-} ENetVersion;
+#define ENET_VERSION_MAJOR 1
+#define ENET_VERSION_MINOR 2
+#define ENET_VERSION_PATCH 2
+#define ENET_VERSION_CREATE(major, minor, patch) (((major)<<16) | ((minor)<<8) | (patch))
+#define ENET_VERSION ENET_VERSION_CREATE(ENET_VERSION_MAJOR, ENET_VERSION_MINOR, ENET_VERSION_PATCH)
+
+typedef enet_uint32 ENetVersion;
 
 typedef enum _ENetSocketType
 {
@@ -376,7 +379,7 @@ typedef struct _ENetEvent
 ENET_API int enet_initialize (void);
 
 /** 
-  Initializes ENet globally and supplies user-overridden callbacks. Must be called prior to using any functions in ENet. Do not use enet_initialize() if you use this variant.
+  Initializes ENet globally and supplies user-overridden callbacks. Must be called prior to using any functions in ENet. Do not use enet_initialize() if you use this variant. Make sure the ENetCallbacks structure is zeroed out so that any additional callbacks added in future versions will be properly ignored.
 
   @param version the constant ENET_VERSION should be supplied so ENet knows which version of ENetCallbacks struct to use
   @param inits user-overriden callbacks where any NULL callbacks will use ENet's defaults
