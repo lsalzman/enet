@@ -14,6 +14,12 @@ such that if no_memory returns rather than aborts (the default behavior),
 then the error is propagated to the return value of the API calls
 * now uses packed attribute for protocol structures on platforms with 
 strange alignment rules
+* improved autoconf build system contributed by Nathan Brink allowing 
+for easier building as a shared library
+
+Caveats: If you were using the compile-time option that enabled checksums,
+make sure to set the checksum callback inside ENetHost to enet_crc32 to
+regain the old behavior.
 
 ENet 1.2.1 (November 12, 2009):
 
