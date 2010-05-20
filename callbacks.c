@@ -22,7 +22,7 @@ enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits
    if (inits -> rand != NULL)
      callbacks.rand = inits -> rand;
 
-   if (version >= ENET_VERSION_CREATE(1, 2, 2))
+   if (version >= ENET_VERSION_CREATE (1, 2, 2))
    {
       if (inits -> no_memory != NULL)
         callbacks.no_memory = inits -> no_memory;

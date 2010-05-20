@@ -36,7 +36,7 @@ or dependent tasks.
 You can retrieve the source to ENet by downloading it in either .tar.gz form
 or accessing the cvs distribution directly.
 
-The most recent stable release (1.2.1) can be downloaded <a href="http://enet.bespin.org/download/enet-1.2.1.tar.gz">here</a>.
+The most recent stable release (1.2.2) can be downloaded <a href="http://enet.bespin.org/download/enet-1.2.2.tar.gz">here</a>.
 
 To access ENet via anonymous CVS, you must use the CVSROOT
 :pserver:anonymous\@bespin.org:/var/lib/cvs/enet with an empty
