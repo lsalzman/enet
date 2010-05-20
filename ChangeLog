@@ -1,7 +1,7 @@
 ENet 1.2.2 (May 20, 2010):
 
 * checksum functionality is now enabled by setting a checksum callback
-inside ENetHost instead of being a configure script option 
+inside ENetHost instead of being a configure script option
 * added totalSentData, totalSentPackets, totalReceivedData, and
 totalReceivedPackets counters inside ENetHost for getting usage
 statistics
@@ -19,7 +19,9 @@ for easier building as a shared library
 
 Caveats: If you were using the compile-time option that enabled checksums,
 make sure to set the checksum callback inside ENetHost to enet_crc32 to
-regain the old behavior.
+regain the old behavior. The ENetCallbacks structure has added new fields,
+so make sure to clear the structure to zero before use if 
+using enet_initialize_with_callbacks().
 
 ENet 1.2.1 (November 12, 2009):
 
