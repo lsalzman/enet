@@ -284,6 +284,9 @@ typedef struct _ENetPeer
    enet_uint32   disconnectData;
 } ENetPeer;
 
+/** Callback that computes the checksum of the data held in buffers [0..bufferCount-1] */
+typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (const ENetBuffer * buffers, size_t bufferCount);
+
 /** An ENet host for communicating with peers.
   *
   * No fields should be modified.
@@ -294,38 +297,40 @@ typedef struct _ENetPeer
     @sa enet_host_service()
     @sa enet_host_flush()
     @sa enet_host_broadcast()
+    @sa enet_host_checksum()
     @sa enet_host_channel_limit()
     @sa enet_host_bandwidth_limit()
     @sa enet_host_bandwidth_throttle()
   */
 typedef struct _ENetHost
 {
-   ENetSocket         socket;
-   ENetAddress        address;                     /**< Internet address of the host */
-   enet_uint32        incomingBandwidth;           /**< downstream bandwidth of the host */
-   enet_uint32        outgoingBandwidth;           /**< upstream bandwidth of the host */
-   enet_uint32        bandwidthThrottleEpoch;
-   enet_uint32        mtu;
-   int                recalculateBandwidthLimits;
-   ENetPeer *         peers;                       /**< array of peers allocated for this host */
-   size_t             peerCount;                   /**< number of peers allocated for this host */
-   size_t             channelLimit;                /**< maximum number of channels allowed for connected peers */
-   enet_uint32        serviceTime;
-   ENetList           dispatchQueue;
-   int                continueSending;
-   size_t             packetSize;
-   enet_uint16        headerFlags;
-   ENetProtocol       commands [ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS];
-   size_t             commandCount;
-   ENetBuffer         buffers [ENET_BUFFER_MAXIMUM];
-   size_t             bufferCount;
-   ENetAddress        receivedAddress;
-   enet_uint8         receivedData [ENET_PROTOCOL_MAXIMUM_MTU];
-   size_t             receivedDataLength;
-   enet_uint32        totalSentData;               /**< total data sent, user should reset to 0 as needed to prevent overflow */
-   enet_uint32        totalSentPackets;            /**< total UDP packets sent, user should reset to 0 as needed to prevent overflow */
-   enet_uint32        totalReceivedData;           /**< total data received, user should reset to 0 as needed to prevent overflow */
-   enet_uint32        totalReceivedPackets;        /**< total UDP packets received, user should reset to 0 as needed to prevent overflow */
+   ENetSocket           socket;
+   ENetAddress          address;                     /**< Internet address of the host */
+   enet_uint32          incomingBandwidth;           /**< downstream bandwidth of the host */
+   enet_uint32          outgoingBandwidth;           /**< upstream bandwidth of the host */
+   enet_uint32          bandwidthThrottleEpoch;
+   enet_uint32          mtu;
+   int                  recalculateBandwidthLimits;
+   ENetPeer *           peers;                       /**< array of peers allocated for this host */
+   size_t               peerCount;                   /**< number of peers allocated for this host */
+   size_t               channelLimit;                /**< maximum number of channels allowed for connected peers */
+   enet_uint32          serviceTime;
+   ENetList             dispatchQueue;
+   int                  continueSending;
+   size_t               packetSize;
+   enet_uint16          headerFlags;
+   ENetProtocol         commands [ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS];
+   size_t               commandCount;
+   ENetBuffer           buffers [ENET_BUFFER_MAXIMUM];
+   size_t               bufferCount;
+   ENetChecksumCallback checksum;
+   ENetAddress          receivedAddress;
+   enet_uint8           receivedData [ENET_PROTOCOL_MAXIMUM_MTU];
+   size_t               receivedDataLength;
+   enet_uint32          totalSentData;               /**< total data sent, user should reset to 0 as needed to prevent overflow */
+   enet_uint32          totalSentPackets;            /**< total UDP packets sent, user should reset to 0 as needed to prevent overflow */
+   enet_uint32          totalReceivedData;           /**< total data received, user should reset to 0 as needed to prevent overflow */
+   enet_uint32          totalReceivedPackets;        /**< total UDP packets received, user should reset to 0 as needed to prevent overflow */
 } ENetHost;
 
 /**

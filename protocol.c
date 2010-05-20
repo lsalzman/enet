@@ -245,9 +245,9 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
     ENetPeer * currentPeer;
     ENetProtocol verifyCommand;
 
-#ifdef USE_CRC32
+    if (host -> checksum != NULL)
     {
-        enet_uint32 crc = header -> checksum;
+        enet_uint32 checksum = header -> checksum;
         ENetBuffer buffer;
 
         command -> header.reliableSequenceNumber = ENET_HOST_TO_NET_16 (command -> header.reliableSequenceNumber);
@@ -257,12 +257,11 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
         buffer.data = host -> receivedData;
         buffer.dataLength = host -> receivedDataLength;
 
-        if (enet_crc32 (& buffer, 1) != crc)
+        if (host -> checksum (& buffer, 1) != checksum)
           return NULL;
 
         command -> header.reliableSequenceNumber = ENET_NET_TO_HOST_16 (command -> header.reliableSequenceNumber);
     }
-#endif
  
     channelCount = ENET_NET_TO_HOST_32 (command -> connect.channelCount);
 
@@ -834,9 +833,9 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
              peer -> address.host != ENET_HOST_BROADCAST))
          return 0;
 
-#ifdef USE_CRC32
+       if (host -> checksum != NULL)
        {
-           enet_uint32 crc = header -> checksum;
+           enet_uint32 checksum = header -> checksum;
            ENetBuffer buffer;
 
            header -> checksum = peer -> sessionID;
@@ -844,13 +843,12 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
            buffer.data = host -> receivedData;
            buffer.dataLength = host -> receivedDataLength;
 
-           if (enet_crc32 (& buffer, 1) != crc)
+           if (host -> checksum (& buffer, 1) != checksum)
              return 0;
        }
-#else
+       else
        if (header -> checksum != peer -> sessionID)
          return 0;
-#endif
 
        peer -> address.host = host -> receivedAddress.host;
        peer -> address.port = host -> receivedAddress.port;
@@ -1415,9 +1413,8 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         else
           host -> buffers -> dataLength = (size_t) & ((ENetProtocolHeader *) 0) -> sentTime;
  
-#ifdef USE_CRC32
-        header.checksum = enet_crc32 (host -> buffers, host -> bufferCount);
-#endif
+        if (host -> checksum != NULL)
+          header.checksum = host -> checksum (host -> buffers, host -> bufferCount);
 
         currentPeer -> lastSendTime = host -> serviceTime;
 

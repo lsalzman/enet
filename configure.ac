@@ -24,17 +24,6 @@ AC_CHECK_TYPE(socklen_t, [AC_DEFINE(HAS_SOCKLEN_T)], ,
 AC_EGREP_HEADER(MSG_MAXIOVLEN, /usr/include/sys/socket.h, AC_DEFINE(ENET_BUFFER_MAXIMUM, [MSG_MAXIOVLEN]))
 AC_EGREP_HEADER(MSG_MAXIOVLEN, socket.h, AC_DEFINE(ENET_BUFFER_MAXIMUM, [MSG_MAXIOVLEN]))
 
-AC_MSG_CHECKING(whether to use CRC32)
-AC_ARG_ENABLE(crc32,
-    [  --enable-crc32   enable CRC32 packet verification ],
-    [if test "$enableval" = yes; then
-        AC_MSG_RESULT(yes)
-        AC_DEFINE(USE_CRC32)
-     else
-        AC_MSG_RESULT(no)
-     fi],
-    [AC_MSG_RESULT(no)])
-
 AC_CONFIG_FILES([Makefile
 	libenet.pc])
 AC_OUTPUT
