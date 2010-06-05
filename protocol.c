@@ -589,6 +589,9 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
        memcpy (startCommand -> packet -> data + fragmentOffset,
                (enet_uint8 *) command + sizeof (ENetProtocolSendFragment),
                fragmentLength);
+
+        if (startCommand -> fragmentsRemaining <= 0)
+          enet_peer_dispatch_incoming_reliable_commands (peer, channel);
     }
 
     return 0;

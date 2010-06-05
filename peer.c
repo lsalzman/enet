@@ -585,7 +585,7 @@ enet_peer_queue_outgoing_command (ENetPeer * peer, const ENetProtocol * command,
     return outgoingCommand;
 }
 
-static void
+void
 enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * channel)
 {
     ENetListIterator currentCommand;
@@ -614,7 +614,7 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
     }
 }
 
-static void
+void
 enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * channel)
 {
     ENetListIterator currentCommand;

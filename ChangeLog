@@ -1,4 +1,4 @@
-ENet 1.2.2 (May 20, 2010):
+ENet 1.2.2 (June 5, 2010):
 
 * checksum functionality is now enabled by setting a checksum callback
 inside ENetHost instead of being a configure script option
