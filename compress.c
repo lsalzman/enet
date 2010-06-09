@@ -626,6 +626,10 @@ enet_range_coder_decompress (void * context, const enet_uint8 * inData, size_t i
     return (size_t) (outData - outStart);
 }
 
+/** @defgroup host ENet host functions
+    @{
+*/
+
 /** Sets the packet compressor the host should use to the default range coder.
     @param host host to enable the range coder for
     @returns 0 on success, < 0 on failure
@@ -645,5 +649,6 @@ enet_host_compress_with_range_coder (ENetHost * host)
     return 0;
 }
     
+/** @} */
     
      
