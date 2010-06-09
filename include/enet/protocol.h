@@ -16,7 +16,7 @@ enum
    ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE     = 32768,
    ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT   = 1,
    ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT   = 255,
-   ENET_PROTOCOL_MAXIMUM_PEER_ID         = 0x7FFF
+   ENET_PROTOCOL_MAXIMUM_PEER_ID         = 0xFFF
 };
 
 typedef enum _ENetProtocolCommand
@@ -43,8 +43,12 @@ typedef enum _ENetProtocolFlag
    ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE = (1 << 7),
    ENET_PROTOCOL_COMMAND_FLAG_UNSEQUENCED = (1 << 6),
 
-   ENET_PROTOCOL_HEADER_FLAG_SENT_TIME = (1 << 15),
-   ENET_PROTOCOL_HEADER_FLAG_MASK      = 0x8000
+   ENET_PROTOCOL_HEADER_FLAG_COMPRESSED = (1 << 14),
+   ENET_PROTOCOL_HEADER_FLAG_SENT_TIME  = (1 << 15),
+   ENET_PROTOCOL_HEADER_FLAG_MASK       = ENET_PROTOCOL_HEADER_FLAG_COMPRESSED | ENET_PROTOCOL_HEADER_FLAG_SENT_TIME,
+
+   ENET_PROTOCOL_HEADER_SESSION_MASK    = (3 << 12),
+   ENET_PROTOCOL_HEADER_SESSION_SHIFT   = 12
 } ENetProtocolFlag;
 
 #ifdef _MSC_VER_
@@ -58,7 +62,6 @@ typedef enum _ENetProtocolFlag
 
 typedef struct _ENetProtocolHeader
 {
-   enet_uint32 checksum;
    enet_uint16 peerID;
    enet_uint16 sentTime;
 } ENET_PACKED ENetProtocolHeader;
@@ -81,7 +84,9 @@ typedef struct _ENetProtocolConnect
 {
    ENetProtocolCommandHeader header;
    enet_uint16 outgoingPeerID;
-   enet_uint16 mtu;
+   enet_uint8  incomingSessionID;
+   enet_uint8  outgoingSessionID;
+   enet_uint32 mtu;
    enet_uint32 windowSize;
    enet_uint32 channelCount;
    enet_uint32 incomingBandwidth;
@@ -89,14 +94,17 @@ typedef struct _ENetProtocolConnect
    enet_uint32 packetThrottleInterval;
    enet_uint32 packetThrottleAcceleration;
    enet_uint32 packetThrottleDeceleration;
-   enet_uint32 sessionID;
+   enet_uint32 connectID;
+   enet_uint32 data;
 } ENET_PACKED ENetProtocolConnect;
 
 typedef struct _ENetProtocolVerifyConnect
 {
    ENetProtocolCommandHeader header;
    enet_uint16 outgoingPeerID;
-   enet_uint16 mtu;
+   enet_uint8  incomingSessionID;
+   enet_uint8  outgoingSessionID;
+   enet_uint32 mtu;
    enet_uint32 windowSize;
    enet_uint32 channelCount;
    enet_uint32 incomingBandwidth;
@@ -104,6 +112,7 @@ typedef struct _ENetProtocolVerifyConnect
    enet_uint32 packetThrottleInterval;
    enet_uint32 packetThrottleAcceleration;
    enet_uint32 packetThrottleDeceleration;
+   enet_uint32 connectID;
 } ENET_PACKED ENetProtocolVerifyConnect;
 
 typedef struct _ENetProtocolBandwidthLimit

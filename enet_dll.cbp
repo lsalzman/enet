@@ -44,6 +44,9 @@
 		<Unit filename="callbacks.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="compress.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="host.c">
 			<Option compilerVar="CC" />
 		</Unit>

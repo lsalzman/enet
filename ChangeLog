@@ -1,3 +1,20 @@
+ENet 1.3.0 (June 5, 2010):
+
+* enet_host_create() now requires the channel limit to be specified as
+a parameter
+* enet_host_connect() now accepts a data parameter which is supplied 
+to the receiving receiving host in the event data field for a connect event
+* added an adaptive order-2 PPM range coder as a built-in compressor option
+which can be set with enet_host_compress_with_range_coder()
+* added support for packet compression configurable with a callback
+* improved session number handling to not rely on the packet checksum
+field, saving 4 bytes per packet unless the checksum option is used
+* removed the dependence on the rand callback for session number handling
+
+Caveats: This version is not protocol compatible with the 1.2 series or 
+earlier. The enet_host_connect and enet_host_create API functions require
+supplying additional parameters.
+
 ENet 1.2.2 (June 5, 2010):
 
 * checksum functionality is now enabled by setting a checksum callback

@@ -7,10 +7,10 @@ network communication layer on top of UDP (User Datagram Protocol).
 The primary feature it provides is optional reliable, in-order
 delivery of packets.
 
-ENet is NOT intended to be a general purpose high level networking
-library that handles authentication, lobbying, server discovery,
-compression, encryption and other high level, often application level
-or dependent tasks.
+ENet omits certain higher level networking features such as authentication, 
+lobbying, server discovery, encryption, or other similar tasks that are
+particularly application specific so that the library remains flexible,
+portable, and easily embeddable.
 
 @ref Features
 
@@ -36,7 +36,8 @@ or dependent tasks.
 You can retrieve the source to ENet by downloading it in either .tar.gz form
 or accessing the cvs distribution directly.
 
-The most recent stable release (1.2.2) can be downloaded <a href="http://enet.bespin.org/download/enet-1.2.2.tar.gz">here</a>.
+The most recent stable release (1.3.0) can be downloaded <a href="http://enet.bespin.org/download/enet-1.3.0.tar.gz">here</a>. 
+The last release that is protocol compatible with the 1.2 series or earlier (1.2.2) can be downloaded <a href="http://enet.bespin.org/download/enet-1.3.0.tar.gz">here</a> 
 
 To access ENet via anonymous CVS, you must use the CVSROOT
 :pserver:anonymous\@bespin.org:/var/lib/cvs/enet with an empty

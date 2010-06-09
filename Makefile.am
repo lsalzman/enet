@@ -14,7 +14,7 @@ enetinclude_HEADERS = \
 	include/enet/win32.h
 
 lib_LTLIBRARIES = libenet.la
-libenet_la_SOURCES = host.c list.c callbacks.c packet.c peer.c protocol.c unix.c win32.c
+libenet_la_SOURCES = callbacks.c compress.c host.c list.c packet.c peer.c protocol.c unix.c win32.c
 # see info '(libtool) Updating version info' before making a release
 libenet_la_LDFLAGS = $(AM_LDFLAGS) -version-info 0:0:0
 INCLUDES = -Iinclude
