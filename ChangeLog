@@ -1,6 +1,7 @@
-ENet CVS (December 20, 2010):
+ENet CVS (December 23, 2010):
 
 * reliable data window size now scales with the throttle
+* fixed bug in fragment length calculation when checksums are used
 
 ENet 1.3.0 (June 5, 2010):
 
