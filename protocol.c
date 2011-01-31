@@ -1262,6 +1262,7 @@ enet_protocol_send_reliable_outgoing_commands (ENetHost * host, ENetPeer * peer)
     ENetChannel *channel;
     enet_uint16 reliableWindow;
     size_t commandSize;
+    int windowExceeded = 0;
 
     currentCommand = enet_list_begin (& peer -> outgoingReliableCommands);
     
@@ -1278,7 +1279,14 @@ enet_protocol_send_reliable_outgoing_commands (ENetHost * host, ENetPeer * peer)
              channel -> usedReliableWindows & ((((1 << ENET_PEER_FREE_RELIABLE_WINDOWS) - 1) << reliableWindow) | 
                (((1 << ENET_PEER_FREE_RELIABLE_WINDOWS) - 1) >> (ENET_PEER_RELIABLE_WINDOW_SIZE - reliableWindow)))))
          break;
-  
+ 
+       if (windowExceeded && outgoingCommand -> packet != NULL)
+       {
+          currentCommand = enet_list_next (currentCommand);
+
+          continue;
+       }
+
        commandSize = commandSizes [outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK];
        if (command >= & host -> commands [sizeof (host -> commands) / sizeof (ENetProtocol)] ||
            buffer + 1 >= & host -> buffers [sizeof (host -> buffers) / sizeof (ENetBuffer)] ||
@@ -1294,7 +1302,12 @@ enet_protocol_send_reliable_outgoing_commands (ENetHost * host, ENetPeer * peer)
           enet_uint32 windowSize = (peer -> packetThrottle * peer -> windowSize) / ENET_PEER_PACKET_THROTTLE_SCALE;
 
           if (peer -> reliableDataInTransit + outgoingCommand -> fragmentLength > ENET_MAX (windowSize, peer -> mtu))
-            break;
+          {
+             windowExceeded = 1;
+             currentCommand = enet_list_next (currentCommand);
+
+             continue;
+          }
 
           if ((enet_uint16) (peer -> mtu - host -> packetSize) < (enet_uint16) (commandSize + outgoingCommand -> fragmentLength))
           {

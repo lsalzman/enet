@@ -1,4 +1,4 @@
-ENet CVS (December 23, 2010):
+ENet CVS (January 31, 2011):
 
 * reliable data window size now scales with the throttle
 * fixed bug in fragment length calculation when checksums are used
