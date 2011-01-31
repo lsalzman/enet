@@ -1,5 +1,6 @@
 ENet CVS (January 31, 2011):
 
+* fixed bug in tracking of reliable data in transit
 * reliable data window size now scales with the throttle
 * fixed bug in fragment length calculation when checksums are used
 
