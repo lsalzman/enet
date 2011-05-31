@@ -575,12 +575,6 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
          return -1;
 
        hostCommand.header.reliableSequenceNumber = startSequenceNumber;
-       hostCommand.sendFragment.startSequenceNumber = startSequenceNumber;
-       hostCommand.sendFragment.dataLength = fragmentLength;
-       hostCommand.sendFragment.fragmentNumber = fragmentNumber;
-       hostCommand.sendFragment.fragmentCount = fragmentCount;
-       hostCommand.sendFragment.fragmentOffset = fragmentOffset;
-       hostCommand.sendFragment.totalLength = totalLength;
 
        startCommand = enet_peer_queue_incoming_command (peer, & hostCommand, packet, fragmentCount);
        if (startCommand == NULL)
@@ -696,19 +690,11 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
 
     if (startCommand == NULL)
     {
-       ENetProtocol hostCommand = * command;
        ENetPacket * packet = enet_packet_create (NULL, totalLength, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
        if (packet == NULL)
          return -1;
 
-       hostCommand.sendFragment.startSequenceNumber = startSequenceNumber;
-       hostCommand.sendFragment.dataLength = fragmentLength;
-       hostCommand.sendFragment.fragmentNumber = fragmentNumber;
-       hostCommand.sendFragment.fragmentCount = fragmentCount;
-       hostCommand.sendFragment.fragmentOffset = fragmentOffset;
-       hostCommand.sendFragment.totalLength = totalLength;
-
-       startCommand = enet_peer_queue_incoming_command (peer, & hostCommand, packet, fragmentCount);
+       startCommand = enet_peer_queue_incoming_command (peer, command, packet, fragmentCount);
        if (startCommand == NULL)
          return -1;
     }
@@ -1272,7 +1258,7 @@ enet_protocol_send_unreliable_outgoing_commands (ENetHost * host, ENetPeer * pee
            buffer + 1 >= & host -> buffers [sizeof (host -> buffers) / sizeof (ENetBuffer)] ||
            peer -> mtu - host -> packetSize < commandSize ||
            (outgoingCommand -> packet != NULL &&
-             peer -> mtu - host -> packetSize < commandSize + outgoingCommand -> packet -> dataLength))
+             peer -> mtu - host -> packetSize < commandSize + outgoingCommand -> fragmentLength))
        {
           host -> continueSending = 1;
 
@@ -1281,20 +1267,35 @@ enet_protocol_send_unreliable_outgoing_commands (ENetHost * host, ENetPeer * pee
 
        currentCommand = enet_list_next (currentCommand);
 
-       if (outgoingCommand -> packet != NULL)
+       if (outgoingCommand -> packet != NULL && outgoingCommand -> fragmentOffset == 0)
        {
           peer -> packetThrottleCounter += ENET_PEER_PACKET_THROTTLE_COUNTER;
           peer -> packetThrottleCounter %= ENET_PEER_PACKET_THROTTLE_SCALE;
           
           if (peer -> packetThrottleCounter > peer -> packetThrottle)
           {
-             -- outgoingCommand -> packet -> referenceCount;
+             enet_uint16 reliableSequenceNumber = outgoingCommand -> reliableSequenceNumber,
+                         unreliableSequenceNumber = outgoingCommand -> unreliableSequenceNumber;
+             for (;;)
+             {
+                -- outgoingCommand -> packet -> referenceCount;
 
-             if (outgoingCommand -> packet -> referenceCount == 0)
-               enet_packet_destroy (outgoingCommand -> packet);
+                if (outgoingCommand -> packet -> referenceCount == 0)
+                  enet_packet_destroy (outgoingCommand -> packet);
          
-             enet_list_remove (& outgoingCommand -> outgoingCommandList);
-             enet_free (outgoingCommand);
+                enet_list_remove (& outgoingCommand -> outgoingCommandList);
+                enet_free (outgoingCommand);
+
+                if (currentCommand == enet_list_end (& peer -> outgoingUnreliableCommands))
+                  break;
+
+                outgoingCommand = (ENetOutgoingCommand *) currentCommand;
+                if (outgoingCommand -> reliableSequenceNumber != reliableSequenceNumber ||
+                    outgoingCommand -> unreliableSequenceNumber != unreliableSequenceNumber)
+                  break;
+
+                currentCommand = enet_list_next (currentCommand);
+             }
            
              continue;
           }
@@ -1313,8 +1314,8 @@ enet_protocol_send_unreliable_outgoing_commands (ENetHost * host, ENetPeer * pee
        {
           ++ buffer;
           
-          buffer -> data = outgoingCommand -> packet -> data;
-          buffer -> dataLength = outgoingCommand -> packet -> dataLength;
+          buffer -> data = outgoingCommand -> packet -> data + outgoingCommand -> fragmentOffset;
+          buffer -> dataLength = outgoingCommand -> fragmentLength;
 
           host -> packetSize += buffer -> dataLength;
 
