@@ -1,3 +1,7 @@
+ENet 1.3.3 (June 28, 2011):
+
+* fixed bug with simultaneous disconnects not dispatching events
+
 ENet 1.3.2 (May 31, 2011):
 
 * added support for unreliable packet fragmenting via the packet flag
@@ -27,6 +31,10 @@ field, saving 4 bytes per packet unless the checksum option is used
 Caveats: This version is not protocol compatible with the 1.2 series or 
 earlier. The enet_host_connect and enet_host_create API functions require
 supplying additional parameters.
+
+ENet 1.2.5 (June 28, 2011):
+
+* fixed bug with simultaneous disconnects not dispatching events
 
 ENet 1.2.4 (May 31, 2011):
 
