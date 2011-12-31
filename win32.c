@@ -238,7 +238,7 @@ enet_socket_send (ENetSocket socket,
                    (DWORD) bufferCount,
                    & sentLength,
                    0,
-                   address != NULL ? (struct sockaddr *) & sin : 0,
+                   address != NULL ? (struct sockaddr *) & sin : NULL,
                    address != NULL ? sizeof (struct sockaddr_in) : 0,
                    NULL,
                    NULL) == SOCKET_ERROR)

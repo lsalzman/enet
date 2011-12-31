@@ -170,7 +170,7 @@ enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
 static ENetProtocolCommand
 enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliableSequenceNumber, enet_uint8 channelID)
 {
-    ENetOutgoingCommand * outgoingCommand;
+    ENetOutgoingCommand * outgoingCommand = NULL;
     ENetListIterator currentCommand;
     ENetProtocolCommand commandNumber;
     int wasSent = 1;

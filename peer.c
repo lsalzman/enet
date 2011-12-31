@@ -715,7 +715,7 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     static ENetIncomingCommand dummyCommand;
 
     ENetChannel * channel = & peer -> channels [command -> header.channelID];
-    enet_uint32 unreliableSequenceNumber = 0, reliableSequenceNumber;
+    enet_uint32 unreliableSequenceNumber = 0, reliableSequenceNumber = 0;
     enet_uint16 reliableWindow, currentWindow;
     ENetIncomingCommand * incomingCommand;
     ENetListIterator currentCommand;
