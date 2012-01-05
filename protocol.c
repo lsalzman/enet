@@ -1548,7 +1548,12 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
             ! enet_list_empty (& currentPeer -> sentReliableCommands) &&
             ENET_TIME_GREATER_EQUAL (host -> serviceTime, currentPeer -> nextTimeout) &&
             enet_protocol_check_timeouts (host, currentPeer, event) == 1)
-          return 1;
+        {
+            if (event != NULL && event -> type != ENET_EVENT_TYPE_NONE)
+              return 1;
+            else
+              continue;
+        }
 
         if ((enet_list_empty (& currentPeer -> outgoingReliableCommands) ||
               enet_protocol_send_reliable_outgoing_commands (host, currentPeer)) &&
