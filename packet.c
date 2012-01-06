@@ -26,6 +26,9 @@ enet_packet_create (const void * data, size_t dataLength, enet_uint32 flags)
     if (flags & ENET_PACKET_FLAG_NO_ALLOCATE)
       packet -> data = (enet_uint8 *) data;
     else
+    if (dataLength <= 0)
+      packet -> data = NULL;
+    else
     {
        packet -> data = (enet_uint8 *) enet_malloc (dataLength);
        if (packet -> data == NULL)
@@ -54,7 +57,8 @@ enet_packet_destroy (ENetPacket * packet)
 {
     if (packet -> freeCallback != NULL)
       (* packet -> freeCallback) (packet);
-    if (! (packet -> flags & ENET_PACKET_FLAG_NO_ALLOCATE))
+    if (! (packet -> flags & ENET_PACKET_FLAG_NO_ALLOCATE) &&
+        packet -> data != NULL)
       enet_free (packet -> data);
     enet_free (packet);
 }

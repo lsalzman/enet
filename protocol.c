@@ -406,7 +406,9 @@ enet_protocol_handle_send_reliable (ENetHost * host, ENetPeer * peer, const ENet
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendReliable.dataLength);
     * currentData += dataLength;
-    if (* currentData > & host -> receivedData [host -> receivedDataLength])
+    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        * currentData < host -> receivedData ||
+        * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
 
     packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendReliable),
@@ -432,7 +434,9 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendUnsequenced.dataLength);
     * currentData += dataLength;
-    if (* currentData > & host -> receivedData [host -> receivedDataLength])
+    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        * currentData < host -> receivedData ||
+        * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1; 
 
     unsequencedGroup = ENET_NET_TO_HOST_16 (command -> sendUnsequenced.unsequencedGroup);
@@ -480,7 +484,9 @@ enet_protocol_handle_send_unreliable (ENetHost * host, ENetPeer * peer, const EN
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendUnreliable.dataLength);
     * currentData += dataLength;
-    if (* currentData > & host -> receivedData [host -> receivedDataLength])
+    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        * currentData < host -> receivedData ||
+        * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
 
     packet = enet_packet_create ((const enet_uint8 *) command + sizeof (ENetProtocolSendUnreliable),
@@ -513,7 +519,9 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
 
     fragmentLength = ENET_NET_TO_HOST_16 (command -> sendFragment.dataLength);
     * currentData += fragmentLength;
-    if (* currentData > & host -> receivedData [host -> receivedDataLength])
+    if (fragmentLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        * currentData < host -> receivedData ||
+        * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
 
     channel = & peer -> channels [command -> header.channelID];
@@ -532,9 +540,11 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
     fragmentOffset = ENET_NET_TO_HOST_32 (command -> sendFragment.fragmentOffset);
     totalLength = ENET_NET_TO_HOST_32 (command -> sendFragment.totalLength);
     
-    if (fragmentOffset >= totalLength ||
-        fragmentOffset + fragmentLength > totalLength ||
-        fragmentNumber >= fragmentCount)
+    if (fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT ||
+        fragmentNumber >= fragmentCount ||
+        totalLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        fragmentOffset >= totalLength ||
+        fragmentLength > totalLength - fragmentOffset)
       return -1;
  
     for (currentCommand = enet_list_previous (enet_list_end (& channel -> incomingReliableCommands));
@@ -622,7 +632,9 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
 
     fragmentLength = ENET_NET_TO_HOST_16 (command -> sendFragment.dataLength);
     * currentData += fragmentLength;
-    if (* currentData > & host -> receivedData [host -> receivedDataLength])
+    if (fragmentLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        * currentData < host -> receivedData ||
+        * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
 
     channel = & peer -> channels [command -> header.channelID];
@@ -647,9 +659,11 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
     fragmentOffset = ENET_NET_TO_HOST_32 (command -> sendFragment.fragmentOffset);
     totalLength = ENET_NET_TO_HOST_32 (command -> sendFragment.totalLength);
 
-    if (fragmentOffset >= totalLength ||
-        fragmentOffset + fragmentLength > totalLength ||
-        fragmentNumber >= fragmentCount)
+    if (fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT ||
+        fragmentNumber >= fragmentCount ||
+        totalLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        fragmentOffset >= totalLength ||
+        fragmentLength > totalLength - fragmentOffset)
       return -1;
 
     for (currentCommand = enet_list_previous (enet_list_end (& channel -> incomingUnreliableCommands));

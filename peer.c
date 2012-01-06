@@ -104,7 +104,8 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
    size_t fragmentLength;
 
    if (peer -> state != ENET_PEER_STATE_CONNECTED ||
-       channelID >= peer -> channelCount)
+       channelID >= peer -> channelCount ||
+       packet -> dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE)
      return -1;
 
    fragmentLength = peer -> mtu - sizeof (ENetProtocolHeader) - sizeof (ENetProtocolSendFragment);
@@ -113,13 +114,16 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
 
    if (packet -> dataLength > fragmentLength)
    {
-      enet_uint32 fragmentCount = ENET_HOST_TO_NET_32 ((packet -> dataLength + fragmentLength - 1) / fragmentLength),
+      enet_uint32 fragmentCount = (packet -> dataLength + fragmentLength - 1) / fragmentLength,
              fragmentNumber,
              fragmentOffset;
       enet_uint8 commandNumber;
       enet_uint16 startSequenceNumber; 
       ENetList fragments;
       ENetOutgoingCommand * fragment;
+
+      if (fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT)
+        return -1;
 
       if ((packet -> flags & (ENET_PACKET_FLAG_RELIABLE | ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT)) == ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT &&
           channel -> outgoingUnreliableSequenceNumber < 0xFFFF)
@@ -164,7 +168,7 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
          fragment -> command.header.channelID = channelID;
          fragment -> command.sendFragment.startSequenceNumber = startSequenceNumber;
          fragment -> command.sendFragment.dataLength = ENET_HOST_TO_NET_16 (fragmentLength);
-         fragment -> command.sendFragment.fragmentCount = fragmentCount;
+         fragment -> command.sendFragment.fragmentCount = ENET_HOST_TO_NET_32 (fragmentCount);
          fragment -> command.sendFragment.fragmentNumber = ENET_HOST_TO_NET_32 (fragmentNumber);
          fragment -> command.sendFragment.totalLength = ENET_HOST_TO_NET_32 (packet -> dataLength);
          fragment -> command.sendFragment.fragmentOffset = ENET_NET_TO_HOST_32 (fragmentOffset);
@@ -832,7 +836,8 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     
     if (fragmentCount > 0)
     { 
-       incomingCommand -> fragments = (enet_uint32 *) enet_malloc ((fragmentCount + 31) / 32 * sizeof (enet_uint32));
+       if (fragmentCount <= ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT)
+         incomingCommand -> fragments = (enet_uint32 *) enet_malloc ((fragmentCount + 31) / 32 * sizeof (enet_uint32));
        if (incomingCommand -> fragments == NULL)
        {
           enet_free (incomingCommand);
