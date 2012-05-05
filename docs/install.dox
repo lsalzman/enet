@@ -12,7 +12,7 @@ by doing the following:
 
 ./configure && make && make install
 
-If you obtained the package from CVS, you must have automake and autoconf
+If you obtained the package from github, you must have automake and autoconf
 available to generate the build system first by doing the following command
 before using the above mentioned build procedure:
 
