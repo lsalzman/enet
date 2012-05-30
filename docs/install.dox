@@ -27,6 +27,10 @@ is linked in.
 
 @section Windows Microsoft Windows
 
+You may simply use the included "enet.lib" or "enet64.lib" static libraries. 
+However, if you wish to build the library yourself, then the following
+instructions apply:
+
 There is an included MSVC 6 project (enet.dsp) which you may use to
 build a suitable library file. Alternatively, you may simply drag all 
 the ENet source files into your main project.
