@@ -296,7 +296,7 @@ enet_peer_remove_incoming_commands (ENetList * queue, ENetListIterator startComm
 static void
 enet_peer_reset_incoming_commands (ENetList * queue)
 {
-    enet_peer_remove_incoming_commands(queue, enet_list_begin (queue), enet_list_end(queue));
+    enet_peer_remove_incoming_commands(queue, enet_list_begin (queue), enet_list_end (queue));
 }
  
 void
@@ -678,42 +678,71 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
 
        if ((incomingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_SEND_UNSEQUENCED)
          continue;
-       else
-       if (incomingCommand -> reliableSequenceNumber != channel -> incomingReliableSequenceNumber)
-         break;
-       else
-       if (incomingCommand -> fragmentsRemaining <= 0)
-         channel -> incomingUnreliableSequenceNumber = incomingCommand -> unreliableSequenceNumber;
-       else
-       if (startCommand == currentCommand)
-         startCommand = enet_list_next (currentCommand);
-       else
-       {
-            enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
 
-            if (! peer -> needsDispatch)
-            {
+       if (incomingCommand -> reliableSequenceNumber == channel -> incomingReliableSequenceNumber)
+       {
+          if (incomingCommand -> fragmentsRemaining <= 0)
+          {
+             channel -> incomingUnreliableSequenceNumber = incomingCommand -> unreliableSequenceNumber;
+             continue;
+          }
+
+          if (startCommand != currentCommand)
+          {
+             enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
+
+             if (! peer -> needsDispatch)
+             {
                 enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
 
                 peer -> needsDispatch = 1;
-            }
+             }
 
-            droppedCommand = startCommand = enet_list_next (currentCommand); 
+             droppedCommand = currentCommand;
+          }
+          else
+          if (droppedCommand != currentCommand)
+            droppedCommand = enet_list_previous (currentCommand);
        }
+       else 
+       {
+          enet_uint16 reliableWindow = incomingCommand -> reliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE,
+                      currentWindow = channel -> incomingReliableSequenceNumber / ENET_PEER_RELIABLE_WINDOW_SIZE;
+          if (incomingCommand -> reliableSequenceNumber < channel -> incomingReliableSequenceNumber)
+            reliableWindow += ENET_PEER_RELIABLE_WINDOWS;
+          if (reliableWindow >= currentWindow && reliableWindow < currentWindow + ENET_PEER_FREE_RELIABLE_WINDOWS - 1)
+            break;
+
+          droppedCommand = enet_list_next (currentCommand);
+
+          if (startCommand != currentCommand)
+          {
+             enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
+
+             if (! peer -> needsDispatch)
+             {
+                enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
+
+                peer -> needsDispatch = 1;
+             }
+          }
+       }
+          
+       startCommand = enet_list_next (currentCommand);
     }
 
     if (startCommand != currentCommand)
     {
-        enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
+       enet_list_move (enet_list_end (& peer -> dispatchedCommands), startCommand, enet_list_previous (currentCommand));
 
-        if (! peer -> needsDispatch)
-        {
-            enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
+       if (! peer -> needsDispatch)
+       {
+           enet_list_insert (enet_list_end (& peer -> host -> dispatchQueue), & peer -> dispatchList);
 
-            peer -> needsDispatch = 1;
-        }
+           peer -> needsDispatch = 1;
+       }
 
-        droppedCommand = startCommand = enet_list_next (currentCommand);
+       droppedCommand = currentCommand;
     }
 
     enet_peer_remove_incoming_commands (& channel -> incomingUnreliableCommands, enet_list_begin (& channel -> incomingUnreliableCommands), droppedCommand);
@@ -722,6 +751,7 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
 void
 enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * channel)
 {
+    enet_uint16 oldReliableSequenceNumber = channel -> incomingReliableSequenceNumber;
     ENetListIterator currentCommand;
 
     for (currentCommand = enet_list_begin (& channel -> incomingReliableCommands);
@@ -754,7 +784,8 @@ enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * ch
        peer -> needsDispatch = 1;
     }
 
-    enet_peer_dispatch_incoming_unreliable_commands (peer, channel);
+    if (! enet_list_empty (& channel -> incomingUnreliableCommands))
+       enet_peer_dispatch_incoming_unreliable_commands (peer, channel);
 }
 
 ENetIncomingCommand *
