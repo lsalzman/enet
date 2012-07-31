@@ -1,4 +1,9 @@
+ENet 1.3.5 (July 31, 2012):
+
+* fixed bug in unreliable packet fragment queuing
+
 ENet 1.3.4 (May 29, 2012):
+
 * added enet_peer_ping_interval() for configuring per-peer ping intervals
 * added enet_peer_timeout() for configuring per-peer timeouts
 * added protocol packet size limits
