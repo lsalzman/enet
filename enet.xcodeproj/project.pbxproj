@@ -1,0 +1,276 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A3AEBED115FC633E00901D3C /* callbacks.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBEC815FC633E00901D3C /* callbacks.c */; };
+		A3AEBED215FC633E00901D3C /* compress.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBEC915FC633E00901D3C /* compress.c */; };
+		A3AEBED315FC633E00901D3C /* host.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBECA15FC633E00901D3C /* host.c */; };
+		A3AEBED415FC633E00901D3C /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBECB15FC633E00901D3C /* list.c */; };
+		A3AEBED515FC633E00901D3C /* packet.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBECC15FC633E00901D3C /* packet.c */; };
+		A3AEBED615FC633E00901D3C /* peer.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBECD15FC633E00901D3C /* peer.c */; };
+		A3AEBED715FC633E00901D3C /* protocol.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBECE15FC633E00901D3C /* protocol.c */; };
+		A3AEBED815FC633E00901D3C /* unix.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBECF15FC633E00901D3C /* unix.c */; };
+		A3AEBED915FC633E00901D3C /* win32.c in Sources */ = {isa = PBXBuildFile; fileRef = A3AEBED015FC633E00901D3C /* win32.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A3AEBEB115FC62BB00901D3C /* libenet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libenet.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3AEBEBE15FC632200901D3C /* callbacks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
+		A3AEBEBF15FC632200901D3C /* enet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = enet.h; sourceTree = "<group>"; };
+		A3AEBEC015FC632200901D3C /* list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = list.h; sourceTree = "<group>"; };
+		A3AEBEC115FC632200901D3C /* protocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = protocol.h; sourceTree = "<group>"; };
+		A3AEBEC215FC632200901D3C /* time.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = time.h; sourceTree = "<group>"; };
+		A3AEBEC315FC632200901D3C /* types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		A3AEBEC415FC632200901D3C /* unix.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unix.h; sourceTree = "<group>"; };
+		A3AEBEC515FC632200901D3C /* utility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utility.h; sourceTree = "<group>"; };
+		A3AEBEC615FC632200901D3C /* win32.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = win32.h; sourceTree = "<group>"; };
+		A3AEBEC815FC633E00901D3C /* callbacks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = callbacks.c; sourceTree = "<group>"; };
+		A3AEBEC915FC633E00901D3C /* compress.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = compress.c; sourceTree = "<group>"; };
+		A3AEBECA15FC633E00901D3C /* host.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = host.c; sourceTree = "<group>"; };
+		A3AEBECB15FC633E00901D3C /* list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = list.c; sourceTree = "<group>"; };
+		A3AEBECC15FC633E00901D3C /* packet.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = packet.c; sourceTree = "<group>"; };
+		A3AEBECD15FC633E00901D3C /* peer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = peer.c; sourceTree = "<group>"; };
+		A3AEBECE15FC633E00901D3C /* protocol.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = protocol.c; sourceTree = "<group>"; };
+		A3AEBECF15FC633E00901D3C /* unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unix.c; sourceTree = "<group>"; };
+		A3AEBED015FC633E00901D3C /* win32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = win32.c; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A3AEBEAE15FC62BB00901D3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A3AEBEA615FC62BB00901D3C = {
+			isa = PBXGroup;
+			children = (
+				A3AEBEBC15FC632200901D3C /* include */,
+				A3AEBEC715FC632C00901D3C /* enet */,
+				A3AEBEB215FC62BB00901D3C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A3AEBEB215FC62BB00901D3C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A3AEBEB115FC62BB00901D3C /* libenet.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A3AEBEBC15FC632200901D3C /* include */ = {
+			isa = PBXGroup;
+			children = (
+				A3AEBEBD15FC632200901D3C /* enet */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		A3AEBEBD15FC632200901D3C /* enet */ = {
+			isa = PBXGroup;
+			children = (
+				A3AEBEBE15FC632200901D3C /* callbacks.h */,
+				A3AEBEBF15FC632200901D3C /* enet.h */,
+				A3AEBEC015FC632200901D3C /* list.h */,
+				A3AEBEC115FC632200901D3C /* protocol.h */,
+				A3AEBEC215FC632200901D3C /* time.h */,
+				A3AEBEC315FC632200901D3C /* types.h */,
+				A3AEBEC415FC632200901D3C /* unix.h */,
+				A3AEBEC515FC632200901D3C /* utility.h */,
+				A3AEBEC615FC632200901D3C /* win32.h */,
+			);
+			path = enet;
+			sourceTree = "<group>";
+		};
+		A3AEBEC715FC632C00901D3C /* enet */ = {
+			isa = PBXGroup;
+			children = (
+				A3AEBEC815FC633E00901D3C /* callbacks.c */,
+				A3AEBEC915FC633E00901D3C /* compress.c */,
+				A3AEBECA15FC633E00901D3C /* host.c */,
+				A3AEBECB15FC633E00901D3C /* list.c */,
+				A3AEBECC15FC633E00901D3C /* packet.c */,
+				A3AEBECD15FC633E00901D3C /* peer.c */,
+				A3AEBECE15FC633E00901D3C /* protocol.c */,
+				A3AEBECF15FC633E00901D3C /* unix.c */,
+				A3AEBED015FC633E00901D3C /* win32.c */,
+			);
+			name = enet;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		A3AEBEAF15FC62BB00901D3C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		A3AEBEB015FC62BB00901D3C /* enet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A3AEBEB515FC62BB00901D3C /* Build configuration list for PBXNativeTarget "enet" */;
+			buildPhases = (
+				A3AEBEAD15FC62BB00901D3C /* Sources */,
+				A3AEBEAE15FC62BB00901D3C /* Frameworks */,
+				A3AEBEAF15FC62BB00901D3C /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = enet;
+			productName = enet;
+			productReference = A3AEBEB115FC62BB00901D3C /* libenet.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A3AEBEA815FC62BB00901D3C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+				ORGANIZATIONNAME = "Sherief Farouk";
+			};
+			buildConfigurationList = A3AEBEAB15FC62BB00901D3C /* Build configuration list for PBXProject "enet" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = A3AEBEA615FC62BB00901D3C;
+			productRefGroup = A3AEBEB215FC62BB00901D3C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A3AEBEB015FC62BB00901D3C /* enet */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A3AEBEAD15FC62BB00901D3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A3AEBED115FC633E00901D3C /* callbacks.c in Sources */,
+				A3AEBED215FC633E00901D3C /* compress.c in Sources */,
+				A3AEBED315FC633E00901D3C /* host.c in Sources */,
+				A3AEBED415FC633E00901D3C /* list.c in Sources */,
+				A3AEBED515FC633E00901D3C /* packet.c in Sources */,
+				A3AEBED615FC633E00901D3C /* peer.c in Sources */,
+				A3AEBED715FC633E00901D3C /* protocol.c in Sources */,
+				A3AEBED815FC633E00901D3C /* unix.c in Sources */,
+				A3AEBED915FC633E00901D3C /* win32.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A3AEBEB315FC62BB00901D3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = ./include;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A3AEBEB415FC62BB00901D3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = ./include;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		A3AEBEB615FC62BB00901D3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A3AEBEB715FC62BB00901D3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A3AEBEAB15FC62BB00901D3C /* Build configuration list for PBXProject "enet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A3AEBEB315FC62BB00901D3C /* Debug */,
+				A3AEBEB415FC62BB00901D3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A3AEBEB515FC62BB00901D3C /* Build configuration list for PBXNativeTarget "enet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A3AEBEB615FC62BB00901D3C /* Debug */,
+				A3AEBEB715FC62BB00901D3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A3AEBEA815FC62BB00901D3C /* Project object */;
+}
