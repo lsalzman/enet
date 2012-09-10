@@ -220,7 +220,8 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
 void
 enet_socket_destroy (ENetSocket socket)
 {
-    closesocket (socket);
+    if (socket != INVALID_SOCKET)
+      closesocket (socket);
 }
 
 int
