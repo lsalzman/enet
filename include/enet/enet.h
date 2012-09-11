@@ -80,6 +80,16 @@ typedef struct _ENetAddress
 } ENetAddress;
 
 /**
+ * Structure for passing data around.
+ */
+typedef struct
+{
+    void * data;
+    size_t dataLength;
+} ENetBuffer;
+
+
+/**
  * Packet flag bit constants.
  *
  * The host must be specified in network byte-order, and the port must be in
