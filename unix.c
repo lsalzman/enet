@@ -258,6 +258,7 @@ int
 enet_socket_connect (ENetSocket socket, const ENetAddress * address)
 {
     struct sockaddr_in sin;
+    int result;
 
     memset (& sin, 0, sizeof (struct sockaddr_in));
 
@@ -265,7 +266,11 @@ enet_socket_connect (ENetSocket socket, const ENetAddress * address)
     sin.sin_port = ENET_HOST_TO_NET_16 (address -> port);
     sin.sin_addr.s_addr = address -> host;
 
-    return connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
+    result = connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
+    if ((result == -1) && ((errno == EINPROGRESS) || (errno == EWOULDBLOCK)))
+        result = 0;  /* non-blocking socket; connection attempt has started. */
+
+    return result;
 }
 
 ENetSocket
