@@ -24,12 +24,6 @@ enum
 #define ENET_NET_TO_HOST_16(value) (ntohs (value)) /**< macro that converts net to host byte-order of a 16-bit value */
 #define ENET_NET_TO_HOST_32(value) (ntohl (value)) /**< macro that converts net to host byte-order of a 32-bit value */
 
-typedef struct
-{
-    void * data;
-    size_t dataLength;
-} ENetBuffer;
-
 #define ENET_CALLBACK
 
 #define ENET_API extern

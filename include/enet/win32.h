@@ -28,12 +28,6 @@ enum
 #define ENET_NET_TO_HOST_16(value) (ntohs (value))
 #define ENET_NET_TO_HOST_32(value) (ntohl (value))
 
-typedef struct
-{
-    size_t dataLength;
-    void * data;
-} ENetBuffer;
-
 #define ENET_CALLBACK __cdecl
 
 #if defined ENET_DLL
