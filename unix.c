@@ -294,7 +294,8 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
 void
 enet_socket_destroy (ENetSocket socket)
 {
-    close (socket);
+    if (socket != -1)
+        close (socket);
 }
 
 int
