@@ -751,7 +751,6 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
 void
 enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * channel)
 {
-    enet_uint16 oldReliableSequenceNumber = channel -> incomingReliableSequenceNumber;
     ENetListIterator currentCommand;
 
     for (currentCommand = enet_list_begin (& channel -> incomingReliableCommands);
