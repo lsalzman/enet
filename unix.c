@@ -15,6 +15,27 @@
 #include <errno.h>
 #include <time.h>
 
+#ifdef __APPLE__  /* allow this to be built outside of the configure script. */
+#ifndef HAS_POLL
+#define HAS_POLL 1
+#endif
+#ifndef HAS_FCNTL
+#define HAS_FCNTL 1
+#endif
+#ifndef HAS_INET_PTON
+#define HAS_INET_PTON 1
+#endif
+#ifndef HAS_INET_NTOP
+#define HAS_INET_NTOP 1
+#endif
+#ifndef HAS_MSGHDR_FLAGS
+#define HAS_MSGHDR_FLAGS 1
+#endif
+#ifndef HAS_SOCKLEN_T
+#define HAS_SOCKLEN_T 1
+#endif
+#endif
+
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
 
