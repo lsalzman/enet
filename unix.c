@@ -295,7 +295,13 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
 
     return result;
 } 
-    
+
+int
+enet_socket_shutdown (ENetSocket socket, ENetSocketShutdown how)
+{
+    return shutdown (socket, (int) how);
+}
+
 void
 enet_socket_destroy (ENetSocket socket)
 {

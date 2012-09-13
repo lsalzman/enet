@@ -234,6 +234,12 @@ enet_socket_destroy (ENetSocket socket)
 }
 
 int
+enet_socket_shutdown (ENetSocket socket, ENetSocketShutdown how)
+{
+    return shutdown (socket, (int) how) == SOCKET_ERROR ? -1 : 0;
+}
+
+int
 enet_socket_send (ENetSocket socket,
                   const ENetAddress * address,
                   const ENetBuffer * buffers,
