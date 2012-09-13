@@ -230,7 +230,7 @@ void
 enet_socket_destroy (ENetSocket socket)
 {
     if (socket != INVALID_SOCKET)
-        closesocket (socket);
+      closesocket (socket);
 }
 
 int

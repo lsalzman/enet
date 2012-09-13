@@ -56,7 +56,7 @@ void
 enet_packet_destroy (ENetPacket * packet)
 {
     if (packet == NULL)
-        return;
+      return;
 
     if (packet -> freeCallback != NULL)
       (* packet -> freeCallback) (packet);
