@@ -98,6 +98,15 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     host -> totalReceivedData = 0;
     host -> totalReceivedPackets = 0;
 
+    /* this isn't the best random seed, but we're not trying to do crypto. */
+    host -> rngW = enet_time_get();
+    host -> rngZ = host -> randomSeed;
+
+    if (host -> rngW == 0)  /* this can't be zero. */
+       host -> rngW = 923941;
+    if (host -> rngZ == 0)  /* this can't be zero. */
+       host -> rngZ = 8323119;
+
     host -> compressor.context = NULL;
     host -> compressor.compress = NULL;
     host -> compressor.decompress = NULL;
