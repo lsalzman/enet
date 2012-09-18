@@ -55,6 +55,13 @@ typedef enum _ENetSocketOption
    ENET_SOCKOPT_SNDTIMEO  = 7
 } ENetSocketOption;
 
+typedef enum _ENetSocketShutdown
+{
+   ENET_SOCKSHUT_RD = 0,
+   ENET_SOCKSHUT_WR = 1,
+   ENET_SOCKSHUT_RDWR = 2
+} ENetSocketShutdown;
+
 enum
 {
    ENET_HOST_ANY       = 0,            /**< specifies the default server host */
@@ -294,6 +301,8 @@ typedef struct _ENetPeer
    enet_uint16   outgoingUnsequencedGroup;
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
    enet_uint32   eventData;
+   enet_uint32   simulatedIncomingLossPercent;
+   enet_uint32   simulatedOutgoingLossPercent;
 } ENetPeer;
 
 /** An ENet packet compressor for compressing UDP packets before socket sends or receives.
@@ -361,6 +370,8 @@ typedef struct _ENetHost
    enet_uint32          totalSentPackets;            /**< total UDP packets sent, user should reset to 0 as needed to prevent overflow */
    enet_uint32          totalReceivedData;           /**< total data received, user should reset to 0 as needed to prevent overflow */
    enet_uint32          totalReceivedPackets;        /**< total UDP packets received, user should reset to 0 as needed to prevent overflow */
+   enet_uint32          rngW;                        /**< seed for internal random number generation. Not cryptographically secure! */
+   enet_uint32          rngZ;                        /**< seed for internal random number generation. Not cryptographically secure! */
 } ENetHost;
 
 /**
@@ -460,6 +471,7 @@ ENET_API int        enet_socket_send (ENetSocket, const ENetAddress *, const ENe
 ENET_API int        enet_socket_receive (ENetSocket, ENetAddress *, ENetBuffer *, size_t);
 ENET_API int        enet_socket_wait (ENetSocket, enet_uint32 *, enet_uint32);
 ENET_API int        enet_socket_set_option (ENetSocket, ENetSocketOption, int);
+ENET_API int        enet_socket_shutdown (ENetSocket, ENetSocketShutdown);
 ENET_API void       enet_socket_destroy (ENetSocket);
 ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSocketSet *, enet_uint32);
 
@@ -529,6 +541,7 @@ ENET_API void                enet_peer_disconnect_now (ENetPeer *, enet_uint32);
 ENET_API void                enet_peer_disconnect_later (ENetPeer *, enet_uint32);
 ENET_API void                enet_peer_throttle_configure (ENetPeer *, enet_uint32, enet_uint32, enet_uint32);
 extern int                   enet_peer_throttle (ENetPeer *, enet_uint32);
+ENET_API void                enet_peer_simulate_packet_loss (ENetPeer *, enet_uint32, enet_uint32);
 extern void                  enet_peer_reset_queues (ENetPeer *);
 extern void                  enet_peer_setup_outgoing_command (ENetPeer *, ENetOutgoingCommand *);
 extern ENetOutgoingCommand * enet_peer_queue_outgoing_command (ENetPeer *, const ENetProtocol *, ENetPacket *, enet_uint32, enet_uint16);

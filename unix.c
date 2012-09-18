@@ -15,6 +15,27 @@
 #include <errno.h>
 #include <time.h>
 
+#ifdef __APPLE__  /* allow this to be built outside of the configure script. */
+#ifndef HAS_POLL
+#define HAS_POLL 1
+#endif
+#ifndef HAS_FCNTL
+#define HAS_FCNTL 1
+#endif
+#ifndef HAS_INET_PTON
+#define HAS_INET_PTON 1
+#endif
+#ifndef HAS_INET_NTOP
+#define HAS_INET_NTOP 1
+#endif
+#ifndef HAS_MSGHDR_FLAGS
+#define HAS_MSGHDR_FLAGS 1
+#endif
+#ifndef HAS_SOCKLEN_T
+#define HAS_SOCKLEN_T 1
+#endif
+#endif
+
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
 
@@ -254,6 +275,7 @@ int
 enet_socket_connect (ENetSocket socket, const ENetAddress * address)
 {
     struct sockaddr_in sin;
+    int result;
 
     memset (& sin, 0, sizeof (struct sockaddr_in));
 
@@ -261,7 +283,11 @@ enet_socket_connect (ENetSocket socket, const ENetAddress * address)
     sin.sin_port = ENET_HOST_TO_NET_16 (address -> port);
     sin.sin_addr.s_addr = address -> host;
 
-    return connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
+    result = connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
+    if ((result == -1) && ((errno == EINPROGRESS) || (errno == EWOULDBLOCK)))
+        result = 0;  /* non-blocking socket; connection attempt has started. */
+
+    return result;
 }
 
 ENetSocket
@@ -286,7 +312,13 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
 
     return result;
 } 
-    
+
+int
+enet_socket_shutdown (ENetSocket socket, ENetSocketShutdown how)
+{
+    return shutdown (socket, (int) how);
+}
+
 void
 enet_socket_destroy (ENetSocket socket)
 {

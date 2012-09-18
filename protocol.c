@@ -222,6 +222,9 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
        }
     }
 
+    if (outgoingCommand == NULL)
+       return ENET_PROTOCOL_COMMAND_NONE;
+
     commandNumber = (ENetProtocolCommand) (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK);
     
     enet_list_remove (& outgoingCommand -> outgoingCommandList);
@@ -950,6 +953,42 @@ enet_protocol_handle_verify_connect (ENetHost * host, ENetEvent * event, ENetPee
     return 0;
 }
 
+/*
+ * This is George Marsaglia's Multiply-with-carry RNG. It's fast, good,
+ *  and easy, which means we don't have to pull in the C runtime's
+ *  rand()/random(). We're only using this for harmless things.
+ *  Don't use it for cryptography.
+ *
+ * http://en.wikipedia.org/wiki/Random_number_generation#Computational_methods
+ */
+static enet_uint32
+enet_host_rng (ENetHost *host)
+{
+   host -> rngZ = 36969 * (host -> rngZ & 65535) + (host -> rngZ >> 16);
+   host -> rngW = 18000 * (host -> rngW & 65535) + (host -> rngW >> 16);
+   return (host -> rngZ << 16) + host -> rngW;
+}
+
+static int
+enet_peer_should_fake_loss (ENetPeer * peer, const enet_uint32 percent)
+{
+   if (percent == 0)
+      return 0;  /* skip it for efficiency. */
+   return ((enet_host_rng (peer -> host) % 100) < percent);
+}
+
+static int
+enet_peer_should_fake_loss_in (ENetPeer * peer)
+{
+   return enet_peer_should_fake_loss (peer, peer -> simulatedIncomingLossPercent);
+}
+
+static int
+enet_peer_should_fake_loss_out (ENetPeer * peer)
+{
+   return enet_peer_should_fake_loss (peer, peer -> simulatedOutgoingLossPercent);
+}
+
 static int
 enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
 {
@@ -992,8 +1031,11 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
            (peer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID &&
             sessionID != peer -> incomingSessionID))
          return 0;
+
+       if (enet_peer_should_fake_loss_in (peer))
+         return 0;
     }
- 
+
     if (flags & ENET_PROTOCOL_HEADER_FLAG_COMPRESSED)
     {
         size_t originalSize;
@@ -1680,7 +1722,15 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 
         currentPeer -> lastSendTime = host -> serviceTime;
 
-        sentLength = enet_socket_send (host -> socket, & currentPeer -> address, host -> buffers, host -> bufferCount);
+        if (!enet_peer_should_fake_loss_out (currentPeer))
+            sentLength = enet_socket_send (host -> socket, & currentPeer -> address, host -> buffers, host -> bufferCount);
+        else  /* we want everything to report success if we're faking packet loss, but not actually send. */
+        {
+            int i;
+            sentLength = 0;
+            for (i = 0; i < host -> bufferCount; i++)
+                sentLength += host -> buffers[i].dataLength;
+        }
 
         enet_protocol_remove_sent_unreliable_commands (currentPeer);
 

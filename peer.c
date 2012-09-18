@@ -25,7 +25,7 @@
     the mean round trip time measured over the interval, then the throttle probability
     is decreased to limit traffic by an amount specified in the deceleration parameter, which
     is a ratio to the ENET_PEER_PACKET_THROTTLE_SCALE constant.  When the throttle has
-    a value of ENET_PEER_PACKET_THROTTLE_SCALE, on unreliable packets are dropped by 
+    a value of ENET_PEER_PACKET_THROTTLE_SCALE, no unreliable packets are dropped by
     ENet, and so 100% of all unreliable packets will be sent.  When the throttle has a
     value of 0, all unreliable packets are dropped by ENet, and so 0% of all unreliable
     packets will be sent.  Intermediate values for the throttle represent intermediate
@@ -389,6 +389,8 @@ enet_peer_reset (ENetPeer * peer)
     peer -> incomingUnsequencedGroup = 0;
     peer -> outgoingUnsequencedGroup = 0;
     peer -> eventData = 0;
+    peer -> simulatedIncomingLossPercent = 0;
+    peer -> simulatedOutgoingLossPercent = 0;
 
     memset (peer -> unsequencedWindow, 0, sizeof (peer -> unsequencedWindow));
     
@@ -454,6 +456,30 @@ enet_peer_timeout (ENetPeer * peer, enet_uint32 timeoutLimit, enet_uint32 timeou
     peer -> timeoutLimit = timeoutLimit ? timeoutLimit : ENET_PEER_TIMEOUT_LIMIT;
     peer -> timeoutMinimum = timeoutMinimum ? timeoutMinimum : ENET_PEER_TIMEOUT_MINIMUM;
     peer -> timeoutMaximum = timeoutMaximum ? timeoutMaximum : ENET_PEER_TIMEOUT_MAXIMUM;
+}
+
+/** Make a peer simulate packet loss.
+
+    When packet loss simulation is enabled, the peer will randomly drop network packets.
+    When such a packet arrives, or is about to be sent, the peer will simply ignore it,
+    causing the system to act as if the data was quietly lost somewhere in the network.
+
+    During development, it's useful to see how your application behaves in lossy network
+    conditions, or when one side of the connection is working better than the other.
+
+    Setting these values to zero disables packet loss simulation. Setting them to 100
+    is effectively like unplugging the network cable. Around 50%, it's difficult to start
+    a connection to another enet host.
+
+    @param peer Peer to alter packet loss simulation.
+    @param incomingLossPercent Percentage of incoming packets (from 0 to 100) to drop.
+    @param outgoingLossPercent Percentage of outgoing packets (from 0 to 100) to drop.
+*/
+void
+enet_peer_simulate_packet_loss (ENetPeer * peer, enet_uint32 incomingLossPercent, enet_uint32 outgoingLossPercent)
+{
+    peer -> simulatedIncomingLossPercent = (incomingLossPercent < 100) ? incomingLossPercent : 100;
+    peer -> simulatedOutgoingLossPercent = (outgoingLossPercent < 100) ? outgoingLossPercent : 100;
 }
 
 /** Force an immediate disconnection from a peer.
@@ -751,7 +777,6 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
 void
 enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * channel)
 {
-    enet_uint16 oldReliableSequenceNumber = channel -> incomingReliableSequenceNumber;
     ENetListIterator currentCommand;
 
     for (currentCommand = enet_list_begin (& channel -> incomingReliableCommands);

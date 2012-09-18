@@ -184,6 +184,7 @@ int
 enet_socket_connect (ENetSocket socket, const ENetAddress * address)
 {
     struct sockaddr_in sin;
+    int result;
 
     memset (& sin, 0, sizeof (struct sockaddr_in));
 
@@ -191,7 +192,15 @@ enet_socket_connect (ENetSocket socket, const ENetAddress * address)
     sin.sin_port = ENET_HOST_TO_NET_16 (address -> port);
     sin.sin_addr.s_addr = address -> host;
 
-    return connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in)) == SOCKET_ERROR ? -1 : 0;
+    result = connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in)) == SOCKET_ERROR ? -1 : 0;
+    if (result == -1)
+    {
+        const int err = WSAGetLastError();
+        if ((err == WSAEINPROGRESS) || (err == WSAEWOULDBLOCK))
+            result = 0;  /* non-blocking socket; connection attempt has started. */
+    }
+
+    return result;
 }
 
 ENetSocket
@@ -222,6 +231,12 @@ enet_socket_destroy (ENetSocket socket)
 {
     if (socket != INVALID_SOCKET)
       closesocket (socket);
+}
+
+int
+enet_socket_shutdown (ENetSocket socket, ENetSocketShutdown how)
+{
+    return shutdown (socket, (int) how) == SOCKET_ERROR ? -1 : 0;
 }
 
 int
