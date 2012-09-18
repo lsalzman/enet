@@ -210,6 +210,9 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
        wasSent = 0;
     }
 
+    if (outgoingCommand == NULL)
+      return ENET_PROTOCOL_COMMAND_NONE;
+
     if (channelID < peer -> channelCount)
     {
        ENetChannel * channel = & peer -> channels [channelID];

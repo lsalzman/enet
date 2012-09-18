@@ -55,6 +55,13 @@ typedef enum _ENetSocketOption
    ENET_SOCKOPT_SNDTIMEO  = 7
 } ENetSocketOption;
 
+typedef enum _ENetSocketShutdown
+{
+    ENET_SOCKET_SHUTDOWN_READ       = 0,
+    ENET_SOCKET_SHUTDOWN_WRITE      = 1,
+    ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
+} ENetSocketShutdown;
+
 enum
 {
    ENET_HOST_ANY       = 0,            /**< specifies the default server host */
@@ -460,6 +467,7 @@ ENET_API int        enet_socket_send (ENetSocket, const ENetAddress *, const ENe
 ENET_API int        enet_socket_receive (ENetSocket, ENetAddress *, ENetBuffer *, size_t);
 ENET_API int        enet_socket_wait (ENetSocket, enet_uint32 *, enet_uint32);
 ENET_API int        enet_socket_set_option (ENetSocket, ENetSocketOption, int);
+ENET_API int        enet_socket_shutdown (ENetSocket, ENetSocketShutdown);
 ENET_API void       enet_socket_destroy (ENetSocket);
 ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSocketSet *, enet_uint32);
 
