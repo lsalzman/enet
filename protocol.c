@@ -1194,7 +1194,6 @@ enet_protocol_receive_incoming_commands (ENetHost * host, ENetEvent * event)
       
        host -> totalReceivedData += receivedLength;
        host -> totalReceivedPackets ++;
- 
        switch (enet_protocol_handle_incoming_commands (host, event))
        {
        case 1:
@@ -1204,6 +1203,13 @@ enet_protocol_receive_incoming_commands (ENetHost * host, ENetEvent * event)
           return -1;
 
        default:
+          //not an enet packet
+          if (event != NULL){                
+                event->type = ENET_EVENT_TYPE_RAWPACKET;
+                event->data = 0;
+                event->packet = enet_packet_create(host->receivedData, host->receivedDataLength, ENET_PACKET_FLAG_NO_ALLOCATE);
+                return 1;
+          }
           break;
        }
     }
