@@ -28,6 +28,7 @@ extern "C"
 #define ENET_VERSION_PATCH 5
 #define ENET_VERSION_CREATE(major, minor, patch) (((major)<<16) | ((minor)<<8) | (patch))
 #define ENET_VERSION ENET_VERSION_CREATE(ENET_VERSION_MAJOR, ENET_VERSION_MINOR, ENET_VERSION_PATCH)
+#define ENET_CAN_INTERCEPT_RAWPACKETS
 
 typedef enet_uint32 ENetVersion;
 
@@ -398,7 +399,16 @@ typedef enum _ENetEventType
      * the packet that was received; this packet must be destroyed with
      * enet_packet_destroy after use.
      */
-   ENET_EVENT_TYPE_RECEIVE    = 3
+   ENET_EVENT_TYPE_RECEIVE    = 3,
+
+   /** a non ENET packet was received from a remote host. The peer field is not used.
+       The source address of the packet will be held in host->receivedAddress
+       where host is the ENetHost passed passed to enet_host_service().
+       The packet field contains the packet that was received; this packet must
+       *NOT* be destroyed with enet_packet_destroy.
+     */
+    ENET_EVENT_TYPE_RAWPACKET = 4
+
 } ENetEventType;
 
 /**
