@@ -193,7 +193,7 @@ enet_socket_connect (ENetSocket socket, const ENetAddress * address)
     sin.sin_addr.s_addr = address -> host;
 
     result = connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
-    if (result == SOCKET_ERROR && WSAGetLastError () != EWOULDBLOCK)
+    if (result == SOCKET_ERROR && WSAGetLastError () != WSAEWOULDBLOCK)
       return -1;
 
     return 0;
