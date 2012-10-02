@@ -1194,7 +1194,25 @@ enet_protocol_receive_incoming_commands (ENetHost * host, ENetEvent * event)
       
        host -> totalReceivedData += receivedLength;
        host -> totalReceivedPackets ++;
- 
+
+       if (host -> intercept != NULL)
+       {
+          switch (host -> intercept (host, event))
+          {
+          case 1:
+             if (event != NULL && event -> type != ENET_EVENT_TYPE_NONE)
+               return 1;
+
+             continue;
+          
+          case -1:
+             return -1;
+        
+          default:
+             break;
+          }
+       }
+        
        switch (enet_protocol_handle_incoming_commands (host, event))
        {
        case 1:
