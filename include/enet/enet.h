@@ -31,6 +31,10 @@ extern "C"
 
 typedef enet_uint32 ENetVersion;
 
+struct _ENetHost;
+struct _ENetEvent;
+struct _ENetPacket;
+
 typedef enum _ENetSocketType
 {
    ENET_SOCKET_TYPE_STREAM   = 1,
@@ -111,7 +115,6 @@ typedef enum _ENetPacketFlag
    ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT = (1 << 3)
 } ENetPacketFlag;
 
-struct _ENetPacket;
 typedef void (ENET_CALLBACK * ENetPacketFreeCallback) (struct _ENetPacket *);
 
 /**
@@ -321,7 +324,7 @@ typedef struct _ENetCompressor
 typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (const ENetBuffer * buffers, size_t bufferCount);
 
 /** Callback for intercepting received raw UDP packets. Should return 1 to intercept, 0 to ignore, or -1 to propagate an error. */
-typedef int (ENET_CALLBACK * ENetInterceptCallback) (ENetHost * host, ENetEvent * event);
+typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, struct _ENetEvent * event);
  
 /** An ENet host for communicating with peers.
   *
