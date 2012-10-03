@@ -320,8 +320,12 @@ typedef struct _ENetCompressor
 /** Callback that computes the checksum of the data held in buffers[0:bufferCount-1] */
 typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (const ENetBuffer * buffers, size_t bufferCount);
 
-/** Callback for intercepting received raw UDP packets. Should return 1 to intercept, 0 to ignore, or -1 to propagate an error. */
-typedef int (ENET_CALLBACK * ENetInterceptCallback) (ENetHost * host, ENetEvent * event);
+// Need to forward declare these so it can be used in ENetInterceptCallback
+struct _ENetEvent;
+struct _ENetHost;
+ 
+ /** Callback for intercepting received raw UDP packets. Should return 1 to intercept, 0 to ignore, or -1 to propagate an error. */
+typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, struct _ENetEvent * event);
  
 /** An ENet host for communicating with peers.
   *
