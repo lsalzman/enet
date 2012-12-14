@@ -3,7 +3,6 @@
  @brief ENet host management functions
 */
 #define ENET_BUILDING_LIB 1
-#define __MINGW_USE_VC2005_COMPAT 1
 #include <string.h>
 #include <time.h>
 #include "enet/enet.h"
@@ -76,7 +75,12 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     if (channelLimit < ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT)
       channelLimit = ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT;
 
-    host -> randomSeed = (enet_uint32) time(NULL) + (enet_uint32) (size_t) host;
+    host -> randomSeed = (enet_uint32) (size_t) host;
+#ifdef WIN32
+    host -> randomSeed += (enet_uint32) timeGetTime();
+#else
+    host -> randomSeed += (enet_uint32) time(NULL);
+#endif
     host -> randomSeed = (host -> randomSeed << 16) | (host -> randomSeed >> 16);
     host -> channelLimit = channelLimit;
     host -> incomingBandwidth = incomingBandwidth;
