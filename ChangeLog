@@ -1,3 +1,4 @@
+* added ENET_PACKET_FLAG_SENT to indicate that a packet is being freed because it has been sent
 * added userData field to ENetPacket
 * changed how random seed is generated on Windows to avoid import warnings
 * fixed case where disconnects could be generated with no preceding connect event

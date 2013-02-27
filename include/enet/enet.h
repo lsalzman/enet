@@ -112,7 +112,10 @@ typedef enum _ENetPacketFlag
    ENET_PACKET_FLAG_NO_ALLOCATE = (1 << 2),
    /** packet will be fragmented using unreliable (instead of reliable) sends
      * if it exceeds the MTU */
-   ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT = (1 << 3)
+   ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT = (1 << 3),
+
+   /** whether the packet has been sent from all queues it has been entered into */
+   ENET_PACKET_FLAG_SENT = (1<<8)
 } ENetPacketFlag;
 
 typedef void (ENET_CALLBACK * ENetPacketFreeCallback) (struct _ENetPacket *);

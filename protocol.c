@@ -163,7 +163,11 @@ enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
            -- outgoingCommand -> packet -> referenceCount;
 
            if (outgoingCommand -> packet -> referenceCount == 0)
-             enet_packet_destroy (outgoingCommand -> packet);
+           {
+              outgoingCommand -> packet -> flags |= ENET_PACKET_FLAG_SENT;
+ 
+              enet_packet_destroy (outgoingCommand -> packet);
+           }
         }
 
         enet_free (outgoingCommand);
@@ -237,7 +241,11 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
        -- outgoingCommand -> packet -> referenceCount;
 
        if (outgoingCommand -> packet -> referenceCount == 0)
-         enet_packet_destroy (outgoingCommand -> packet);
+       {
+          outgoingCommand -> packet -> flags |= ENET_PACKET_FLAG_SENT;
+
+          enet_packet_destroy (outgoingCommand -> packet);
+       }
     }
 
     enet_free (outgoingCommand);
