@@ -1,3 +1,5 @@
+* added enet_socket_get_address() for querying the local address of a socket
+
 ENet 1.3.7 (March 6, 2013):
 
 * added ENET_PACKET_FLAG_SENT to indicate that a packet is being freed because it has been sent
