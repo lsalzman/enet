@@ -1804,7 +1804,9 @@ enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout)
             return 1;
 
         case -1:
+#ifdef ENET_DEBUG
             perror ("Error dispatching incoming packets");
+#endif
 
             return -1;
 
@@ -1828,7 +1830,9 @@ enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout)
           return 1;
 
        case -1:
+#ifdef ENET_DEBUG
           perror ("Error sending outgoing packets");
+#endif
 
           return -1;
 
@@ -1842,7 +1846,9 @@ enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout)
           return 1;
 
        case -1:
+#ifdef ENET_DEBUG
           perror ("Error receiving incoming packets");
+#endif
 
           return -1;
 
@@ -1856,7 +1862,9 @@ enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout)
           return 1;
 
        case -1:
+#ifdef ENET_DEBUG
           perror ("Error sending outgoing packets");
+#endif
 
           return -1;
 
@@ -1872,7 +1880,9 @@ enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout)
              return 1;
 
           case -1:
+#ifdef ENET_DEBUG
              perror ("Error dispatching incoming packets");
+#endif
 
              return -1;
 
