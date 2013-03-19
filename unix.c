@@ -291,6 +291,24 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
 
     return result;
 } 
+
+int
+enet_socket_get_address (ENetSocket socket, ENetAddress * address)
+{
+    // We're allocating only enough memory for an IPv4 address as IPv6 is
+    // currently unsupported. If socket were bound to an IPv6 address
+    // getsockname() would fail and enet_socket_get_address() would return -1.
+    struct sockaddr_in socket_address;
+    socklen_t socket_address_length = sizeof(struct sockaddr_in);
+
+    if (getsockname (socket, (struct sockaddr *) & socket_address, & socket_address_length) != 0)
+      return -1;
+
+    address->host = socket_address.sin_addr.s_addr;
+    address->port = socket_address.sin_port;
+
+    return 0;
+}
     
 int
 enet_socket_shutdown (ENetSocket socket, ENetSocketShutdown how)

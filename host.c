@@ -31,6 +31,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
 {
     ENetHost * host;
     ENetPeer * currentPeer;
+    ENetAddress actualAddress;
 
     if (peerCount > ENET_PROTOCOL_MAXIMUM_PEER_ID)
       return NULL;
@@ -66,7 +67,9 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_RCVBUF, ENET_HOST_RECEIVE_BUFFER_SIZE);
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_SNDBUF, ENET_HOST_SEND_BUFFER_SIZE);
 
-    if (address != NULL)
+    if (enet_socket_get_address (host -> socket, & actualAddress) == 0)
+      host -> address = actualAddress;
+    else if (address != NULL)
       host -> address = * address;
 
     if (! channelLimit || channelLimit > ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT)
