@@ -471,6 +471,7 @@ ENET_API void enet_time_set (enet_uint32);
 */
 ENET_API ENetSocket enet_socket_create (ENetSocketType);
 ENET_API int        enet_socket_bind (ENetSocket, const ENetAddress *);
+ENET_API int        enet_socket_get_address (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_listen (ENetSocket, int);
 ENET_API ENetSocket enet_socket_accept (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_connect (ENetSocket, const ENetAddress *);

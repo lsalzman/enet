@@ -126,6 +126,21 @@ enet_socket_bind (ENetSocket socket, const ENetAddress * address)
 }
 
 int
+enet_socket_get_address (ENetSocket socket, ENetAddress * address)
+{
+    struct sockaddr_in sin;
+    int sinLength = sizeof (struct sockaddr_in);
+
+    if (getsockname (socket, (struct sockaddr *) & sin, & sinLength) == -1)
+      return -1;
+
+    address -> host = (enet_uint32) sin.sin_addr.s_addr;
+    address -> port = ENET_NET_TO_HOST_16 (sin.sin_port);
+
+    return 0;
+}
+
+int
 enet_socket_listen (ENetSocket socket, int backlog)
 {
     return listen (socket, backlog < 0 ? SOMAXCONN : backlog) == SOCKET_ERROR ? -1 : 0;
