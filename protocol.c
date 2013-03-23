@@ -1260,7 +1260,8 @@ enet_protocol_send_acknowledgements (ENetHost * host, ENetPeer * peer)
     ENetBuffer * buffer = & host -> buffers [host -> bufferCount];
     ENetAcknowledgement * acknowledgement;
     ENetListIterator currentAcknowledgement;
-  
+    enet_uint16 reliableSequenceNumber;
+ 
     currentAcknowledgement = enet_list_begin (& peer -> acknowledgements);
          
     while (currentAcknowledgement != enet_list_end (& peer -> acknowledgements))
@@ -1282,10 +1283,13 @@ enet_protocol_send_acknowledgements (ENetHost * host, ENetPeer * peer)
        buffer -> dataLength = sizeof (ENetProtocolAcknowledge);
 
        host -> packetSize += buffer -> dataLength;
- 
+
+       reliableSequenceNumber = ENET_HOST_TO_NET_16 (acknowledgement -> command.header.reliableSequenceNumber);
+  
        command -> header.command = ENET_PROTOCOL_COMMAND_ACKNOWLEDGE;
        command -> header.channelID = acknowledgement -> command.header.channelID;
-       command -> acknowledge.receivedReliableSequenceNumber = ENET_HOST_TO_NET_16 (acknowledgement -> command.header.reliableSequenceNumber);
+       command -> header.reliableSequenceNumber = reliableSequenceNumber;
+       command -> acknowledge.receivedReliableSequenceNumber = reliableSequenceNumber;
        command -> acknowledge.receivedSentTime = ENET_HOST_TO_NET_16 (acknowledgement -> sentTime);
   
        if ((acknowledgement -> command.header.command & ENET_PROTOCOL_COMMAND_MASK) == ENET_PROTOCOL_COMMAND_DISCONNECT)
