@@ -277,7 +277,12 @@ enet_socket_connect (ENetSocket socket, const ENetAddress * address)
     sin.sin_port = ENET_HOST_TO_NET_16 (address -> port);
     sin.sin_addr.s_addr = address -> host;
 
-    result = connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
+    do
+    {
+      result = connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
+    }
+    while (result == -1 && errno == EINTR);
+    
     if (result == -1 && errno == EINPROGRESS)
       return 0;
 
@@ -291,9 +296,13 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
     struct sockaddr_in sin;
     socklen_t sinLength = sizeof (struct sockaddr_in);
 
-    result = accept (socket, 
-                     address != NULL ? (struct sockaddr *) & sin : NULL, 
-                     address != NULL ? & sinLength : NULL);
+    do
+    {
+      result = accept (socket, 
+                       address != NULL ? (struct sockaddr *) & sin : NULL, 
+                       address != NULL ? & sinLength : NULL);
+    }
+    while (result == -1 && errno == EINTR);
     
     if (result == -1)
       return ENET_SOCKET_NULL;
@@ -347,7 +356,11 @@ enet_socket_send (ENetSocket socket,
     msgHdr.msg_iov = (struct iovec *) buffers;
     msgHdr.msg_iovlen = bufferCount;
 
-    sentLength = sendmsg (socket, & msgHdr, MSG_NOSIGNAL);
+    do
+    {
+      sentLength = sendmsg (socket, & msgHdr, MSG_NOSIGNAL);
+    }
+    while (sentLength == -1 && errno == EINTR);
     
     if (sentLength == -1)
     {
@@ -381,7 +394,11 @@ enet_socket_receive (ENetSocket socket,
     msgHdr.msg_iov = (struct iovec *) buffers;
     msgHdr.msg_iovlen = bufferCount;
 
-    recvLength = recvmsg (socket, & msgHdr, MSG_NOSIGNAL);
+    do
+    {
+      recvLength = recvmsg (socket, & msgHdr, MSG_NOSIGNAL);
+    }
+    while (recvLength == -1 && errno == EINTR);
 
     if (recvLength == -1)
     {
@@ -409,11 +426,13 @@ int
 enet_socketset_select (ENetSocket maxSocket, ENetSocketSet * readSet, ENetSocketSet * writeSet, enet_uint32 timeout)
 {
     struct timeval timeVal;
+    int selectCount;
 
     timeVal.tv_sec = timeout / 1000;
     timeVal.tv_usec = (timeout % 1000) * 1000;
 
-    return select (maxSocket + 1, readSet, writeSet, NULL, & timeVal);
+    selectCount = select (maxSocket + 1, readSet, writeSet, NULL, & timeVal);
+    return selectCount == -1 && errno == EINTR ? -2 : selectCount;
 }
 
 int
@@ -435,7 +454,7 @@ enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint32 timeou
     pollCount = poll (& pollSocket, 1, timeout);
 
     if (pollCount < 0)
-      return -1;
+      return errno == EINTR ? -2 : -1;
 
     * condition = ENET_SOCKET_WAIT_NONE;
 
@@ -469,7 +488,7 @@ enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint32 timeou
     selectCount = select (socket + 1, & readSet, & writeSet, NULL, & timeVal);
 
     if (selectCount < 0)
-      return -1;
+      return errno == EINTR ? -2 : -1;
 
     * condition = ENET_SOCKET_WAIT_NONE;
 
