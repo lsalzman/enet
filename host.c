@@ -130,12 +130,17 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
        enet_peer_reset (currentPeer);
     }
 
+    enet_list_clear( & host -> dataJobs);
+    host -> nextDataJobId = 0;
+
     return host;
 }
 
 /** Destroys the host and all resources associated with it.
     @param host pointer to the host to destroy
 */
+/*forward*/ void enet_host_release_datajob( ENetHost* host, ENetDataJob* job);
+
 void
 enet_host_destroy (ENetHost * host)
 {
@@ -155,6 +160,12 @@ enet_host_destroy (ENetHost * host)
 
     if (host -> compressor.context != NULL && host -> compressor.destroy)
       (* host -> compressor.destroy) (host -> compressor.context);
+
+   while (! enet_list_empty (& host -> dataJobs))
+   {
+      ENetDataJob* job = (ENetDataJob*) enet_list_remove (enet_list_begin (& host -> dataJobs));
+      enet_host_release_datajob( host, job);
+   }
 
     enet_free (host -> peers);
     enet_free (host);
@@ -487,5 +498,120 @@ enet_host_bandwidth_throttle (ENetHost * host)
         peer -> outgoingDataTotal = 0;
     }
 }
-    
+
+static void enet_host_release_datajob( ENetHost* host, ENetDataJob* job)
+{
+	for( enet_uint32 i = 0; i < job->nbPackets; ++ i)
+	{
+		-- job->packets[i]->referenceCount;
+		if( job->packets[i]->referenceCount == 0) // should always be the case except maybe when terminating a job because the peer is no longer connected
+		{
+			enet_packet_destroy( job->packets[i]);
+		}
+	}
+	enet_free( job->packets);
+	// NULL tells the job callback it should cleanup
+	(void) job->callback( job->opaque, NULL);
+	enet_free( job);
+}
+
+enet_uint32 enet_host_register_datajob( ENetHost* host, ENetPeer* sendee, enet_uint8 channel, ENetDataJobCallback cb, void* opaque, enet_uint32 num_blocks, size_t block_size)
+{
+	if( sendee->state == ENET_PEER_STATE_CONNECTED)
+	{
+		ENetDataJob* job = (ENetDataJob*) enet_malloc( sizeof( ENetDataJob));
+		// valid IDs are non-0
+		job -> id = ++ host -> nextDataJobId;
+		job->callback = cb;
+		job->opaque = opaque;
+		job->sendee = sendee;
+		job->channel = channel;
+		job->nbPackets = num_blocks;
+		job->packets = ( ENetPacket**) enet_malloc( num_blocks * sizeof( ENetPacket*));
+		if( block_size == 0)
+			block_size = sendee -> mtu - sizeof (ENetProtocolHeader) - sizeof (ENetProtocolSendFragment);
+		for( enet_uint32 i = 0; i < num_blocks; ++ i)
+		{
+			ENetPacket* packet = enet_packet_create( NULL, block_size, ENET_PACKET_FLAG_RELIABLE);
+			// we keep an additional reference on the packet because we don't want to discard it when successfully received
+			++ packet->referenceCount;
+			// store allocated block size in userdata for internal checks
+			packet->userData = (void*) block_size;
+			job->packets[i] = packet;
+		}
+		enet_list_insert( enet_list_end( &host->dataJobs), job);
+		return job -> id;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+enet_uint32 enet_host_process_datajobs( ENetHost * host)
+{
+	enet_uint32 count = 0;
+	// disconnect all jobs from the host's list and bind it to another list
+	// this is necessary because it is a bad idea to remove a job from the list while it is iterated over
+	ENetList unfinishedJataJobs;
+	{
+		ENetListNode* jobsFront = (ENetListNode*) enet_list_front( & host -> dataJobs);
+		enet_list_clear( &unfinishedJataJobs);
+		if( jobsFront != &host->dataJobs.sentinel)
+		{
+			// this chains the jobs together without the list sentinel
+			enet_list_remove( &host->dataJobs.sentinel);
+			enet_list_clear( & host -> dataJobs);
+			// front can be seen as the head of a list where we want to insert another node, which happens to be unfinishedJataJobs's sentinel
+			enet_list_insert( jobsFront, enet_list_end( &unfinishedJataJobs));
+		}
+	}
+
+	// active jobs are scanned by removing them from our list
+	while (! enet_list_empty (& unfinishedJataJobs))
+	{
+		ENetDataJob * job = (ENetDataJob *) enet_list_remove (enet_list_begin (& unfinishedJataJobs));
+		if( job->sendee->state == ENET_PEER_STATE_CONNECTED)
+		{
+			size_t refcount_total = 0;
+			// find an unused packet
+			for( enet_uint32 i = 0; i < job->nbPackets; ++ i)
+			{
+				ENetPacket *packet = job->packets[i];
+				// we hold the only reference: ENet is not using this packet
+				if( packet->referenceCount == 1)
+				{
+					enet_uint32 amount = job->callback( job->opaque, packet->data);
+					if( amount > 0)
+					{
+						// callback shouldn't say it wrote more than the packet's userdata length
+						//assert( (void*) amount <= packet->userData);
+						packet->dataLength = amount;
+						enet_peer_send( job->sendee, job->channel, packet);
+					}
+				}
+				refcount_total += packet->referenceCount;
+			}
+			if( refcount_total == job->nbPackets)
+			{
+				// all packets have a refcount of 1: job has completed
+				enet_host_release_datajob( host, job);
+			}
+			else
+			{
+				// job has not completed yet: move it back into the host's list
+				enet_list_insert( enet_list_end( &host->dataJobs), &job->dataJobNode);
+			}
+			++ count;
+		}
+		else
+		{
+			// peer is no longer connected: terminate the job
+			enet_host_release_datajob( host, job);
+		}
+	}
+	// return the number of jobs successfully processed
+	return count;
+}
+
 /** @} */
