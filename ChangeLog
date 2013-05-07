@@ -1,4 +1,6 @@
+* added enet_linked_version() for checking the linked version 
 * added enet_socket_get_address() for querying the local address of a socket
+* silenced some debugging prints unless ENET_DEBUG is defined during compilation
 
 ENet 1.3.7 (March 6, 2013):
 
