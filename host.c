@@ -321,6 +321,16 @@ enet_host_bandwidth_limit (ENetHost * host, enet_uint32 incomingBandwidth, enet_
     host -> incomingBandwidth = incomingBandwidth;
     host -> outgoingBandwidth = outgoingBandwidth;
     host -> recalculateBandwidthLimits = 1;
+		
+		ENetPeer * peer;
+    for (peer = host -> peers;
+         peer < & host -> peers [host -> peerCount];
+         ++ peer)
+    {
+        peer -> incomingDataTotal = 0;
+        peer -> outgoingDataTotal = 0;
+    }
+
 }
 
 void
@@ -340,6 +350,11 @@ enet_host_bandwidth_throttle (ENetHost * host)
 
     if (elapsedTime < ENET_HOST_BANDWIDTH_THROTTLE_INTERVAL)
       return;
+
+		host -> bandwidthThrottleEpoch = timeCurrent;
+
+		if( host -> outgoingBandwidth == 0 && host -> incomingBandwidth == 0 )
+			return;
 
     for (peer = host -> peers;
          peer < & host -> peers [host -> peerCount];
@@ -476,8 +491,6 @@ enet_host_bandwidth_throttle (ENetHost * host)
            enet_peer_queue_outgoing_command (peer, & command, NULL, 0, 0);
        } 
     }
-
-    host -> bandwidthThrottleEpoch = timeCurrent;
 
     for (peer = host -> peers;
          peer < & host -> peers [host -> peerCount];
