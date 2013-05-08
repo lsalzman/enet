@@ -332,7 +332,23 @@ typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (const ENetBuffer * b
 
 /** Callback for intercepting received raw UDP packets. Should return 1 to intercept, 0 to ignore, or -1 to propagate an error. */
 typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, struct _ENetEvent * event);
- 
+
+/** callback used to provide data to be sent by a data job */
+typedef enet_uint32 (ENET_CALLBACK * ENetDataJobCallback) (void* _opaque, void* _buffer);
+typedef struct _ENetDataJob
+{
+	/** data jobs are stored in a chained list */
+	ENetListNode dataJobNode;
+	enet_uint32 id;
+	/** each job uses a fixed number of packets in flight */
+	ENetPacket** packets;
+	enet_uint32 nbPackets;
+	ENetPeer* sendee;
+	enet_uint8 channel;
+	ENetDataJobCallback callback;
+	void* opaque;
+} ENetDataJob;
+
 /** An ENet host for communicating with peers.
   *
   * No fields should be modified unless otherwise stated.
@@ -382,6 +398,8 @@ typedef struct _ENetHost
    enet_uint32          totalReceivedData;           /**< total data received, user should reset to 0 as needed to prevent overflow */
    enet_uint32          totalReceivedPackets;        /**< total UDP packets received, user should reset to 0 as needed to prevent overflow */
    ENetInterceptCallback intercept;                  /**< callback the user can set to intercept received raw UDP packets */
+   ENetList             dataJobs;
+   enet_uint32          nextDataJobId;
 } ENetHost;
 
 /**
@@ -534,18 +552,21 @@ ENET_API void         enet_packet_destroy (ENetPacket *);
 ENET_API int          enet_packet_resize  (ENetPacket *, size_t);
 ENET_API enet_uint32  enet_crc32 (const ENetBuffer *, size_t);
                 
-ENET_API ENetHost * enet_host_create (const ENetAddress *, size_t, size_t, enet_uint32, enet_uint32);
-ENET_API void       enet_host_destroy (ENetHost *);
-ENET_API ENetPeer * enet_host_connect (ENetHost *, const ENetAddress *, size_t, enet_uint32);
-ENET_API int        enet_host_check_events (ENetHost *, ENetEvent *);
-ENET_API int        enet_host_service (ENetHost *, ENetEvent *, enet_uint32);
-ENET_API void       enet_host_flush (ENetHost *);
-ENET_API void       enet_host_broadcast (ENetHost *, enet_uint8, ENetPacket *);
-ENET_API void       enet_host_compress (ENetHost *, const ENetCompressor *);
-ENET_API int        enet_host_compress_with_range_coder (ENetHost * host);
-ENET_API void       enet_host_channel_limit (ENetHost *, size_t);
-ENET_API void       enet_host_bandwidth_limit (ENetHost *, enet_uint32, enet_uint32);
-extern   void       enet_host_bandwidth_throttle (ENetHost *);
+ENET_API ENetHost *   enet_host_create (const ENetAddress *, size_t, size_t, enet_uint32, enet_uint32);
+ENET_API void         enet_host_destroy (ENetHost *);
+ENET_API ENetPeer *   enet_host_connect (ENetHost *, const ENetAddress *, size_t, enet_uint32);
+ENET_API int          enet_host_check_events (ENetHost *, ENetEvent *);
+ENET_API int          enet_host_service (ENetHost *, ENetEvent *, enet_uint32);
+ENET_API void         enet_host_flush (ENetHost *);
+ENET_API void         enet_host_broadcast (ENetHost *, enet_uint8, ENetPacket *);
+ENET_API void         enet_host_compress (ENetHost *, const ENetCompressor *);
+ENET_API int          enet_host_compress_with_range_coder (ENetHost * host);
+ENET_API void         enet_host_channel_limit (ENetHost *, size_t);
+ENET_API void         enet_host_bandwidth_limit (ENetHost *, enet_uint32, enet_uint32);
+extern   void         enet_host_bandwidth_throttle (ENetHost *);
+ENET_API enet_uint32  enet_host_register_datajob( ENetHost*, ENetPeer*, enet_uint8, ENetDataJobCallback, void*, enet_uint32, size_t);
+ENET_API enet_uint32  enet_host_process_datajobs( ENetHost * host);
+
 
 ENET_API int                 enet_peer_send (ENetPeer *, enet_uint8, ENetPacket *);
 ENET_API ENetPacket *        enet_peer_receive (ENetPeer *, enet_uint8 * channelID);
