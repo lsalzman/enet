@@ -2,7 +2,7 @@
  @file  win32.c
  @brief ENet Win32 system specific functions
 */
-#ifdef WIN32
+#ifdef _WIN32
 
 #include <time.h>
 #define ENET_BUILDING_LIB 1

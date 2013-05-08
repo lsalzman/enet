@@ -12,7 +12,7 @@ extern "C"
 
 #include <stdlib.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include "enet/win32.h"
 #else
 #include "enet/unix.h"
@@ -27,6 +27,9 @@ extern "C"
 #define ENET_VERSION_MINOR 3
 #define ENET_VERSION_PATCH 7
 #define ENET_VERSION_CREATE(major, minor, patch) (((major)<<16) | ((minor)<<8) | (patch))
+#define ENET_VERSION_GET_MAJOR(version) (((version)>>16)&0xFF)
+#define ENET_VERSION_GET_MINOR(version) (((version)>>8)&0xFF)
+#define ENET_VERSION_GET_PATCH(version) ((version)&0xFF)
 #define ENET_VERSION ENET_VERSION_CREATE(ENET_VERSION_MAJOR, ENET_VERSION_MINOR, ENET_VERSION_PATCH)
 
 typedef enet_uint32 ENetVersion;
@@ -451,6 +454,12 @@ ENET_API int enet_initialize_with_callbacks (ENetVersion version, const ENetCall
   initialized ENet exits.
 */
 ENET_API void enet_deinitialize (void);
+
+/**
+  Gives the linked version of the ENet library.
+  @returns the version number 
+*/
+ENET_API ENetVersion enet_linked_version (void);
 
 /** @} */
 
