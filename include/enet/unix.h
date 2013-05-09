@@ -11,6 +11,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#ifdef MSG_MAXIOVLEN
+#define ENET_BUFFER_MAXIMUM MSG_MAXIOVLEN
+#endif
+
 typedef int ENetSocket;
 
 enum
