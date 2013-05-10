@@ -435,7 +435,16 @@ enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint32 timeou
     pollCount = poll (& pollSocket, 1, timeout);
 
     if (pollCount < 0)
-      return -1;
+    {
+        if (errno == EINTR && * condition & ENET_SOCKET_WAIT_INTERRUPT)
+        {
+            * condition = ENET_SOCKET_WAIT_INTERRUPT;
+
+            return 0;
+        }
+
+        return -1;
+    }
 
     * condition = ENET_SOCKET_WAIT_NONE;
 
@@ -469,7 +478,16 @@ enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint32 timeou
     selectCount = select (socket + 1, & readSet, & writeSet, NULL, & timeVal);
 
     if (selectCount < 0)
-      return -1;
+    {
+        if (errno == EINTR && * condition & ENET_SOCKET_WAIT_INTERRUPT)
+        {
+            * condition = ENET_SOCKET_WAIT_INTERRUPT;
+
+            return 0;
+        }
+      
+        return -1;
+    }
 
     * condition = ENET_SOCKET_WAIT_NONE;
 
