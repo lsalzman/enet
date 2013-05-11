@@ -383,6 +383,8 @@ typedef struct _ENetHost
    enet_uint32          totalReceivedData;           /**< total data received, user should reset to 0 as needed to prevent overflow */
    enet_uint32          totalReceivedPackets;        /**< total UDP packets received, user should reset to 0 as needed to prevent overflow */
    ENetInterceptCallback intercept;                  /**< callback the user can set to intercept received raw UDP packets */
+   size_t               connectedPeers;
+   size_t               bandwidthLimitedPeers;
 } ENetHost;
 
 /**
@@ -566,6 +568,8 @@ extern ENetIncomingCommand * enet_peer_queue_incoming_command (ENetPeer *, const
 extern ENetAcknowledgement * enet_peer_queue_acknowledgement (ENetPeer *, const ENetProtocol *, enet_uint16);
 extern void                  enet_peer_dispatch_incoming_unreliable_commands (ENetPeer *, ENetChannel *);
 extern void                  enet_peer_dispatch_incoming_reliable_commands (ENetPeer *, ENetChannel *);
+extern void                  enet_peer_on_connect (ENetPeer *);
+extern void                  enet_peer_on_disconnect (ENetPeer *);
 
 ENET_API void * enet_range_coder_create (void);
 ENET_API void   enet_range_coder_destroy (void *);
