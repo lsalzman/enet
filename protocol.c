@@ -46,7 +46,7 @@ enet_protocol_change_state (ENetHost * host, ENetPeer * peer, ENetPeerState stat
 static void
 enet_protocol_dispatch_state (ENetHost * host, ENetPeer * peer, ENetPeerState state)
 {
-    enet_peer_change_state (host, peer, state);
+    enet_protocol_change_state (host, peer, state);
 
     if (! peer -> needsDispatch)
     {
