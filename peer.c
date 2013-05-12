@@ -546,7 +546,7 @@ enet_peer_disconnect (ENetPeer * peer, enet_uint32 data)
 
     if (peer -> state == ENET_PEER_STATE_CONNECTED || peer -> state == ENET_PEER_STATE_DISCONNECT_LATER)
     {
-        enet_peer_notify_disconnect (peer);
+        enet_peer_on_disconnect (peer);
 
         peer -> state = ENET_PEER_STATE_DISCONNECTING;
     }
