@@ -1,4 +1,4 @@
-/** 
+/**
  @file  win32.c
  @brief ENet Win32 system specific functions
 */
@@ -15,7 +15,7 @@ enet_initialize (void)
 {
     WORD versionRequested = MAKEWORD (1, 1);
     WSADATA wsaData;
-   
+
     if (WSAStartup (versionRequested, & wsaData))
        return -1;
 
@@ -23,7 +23,7 @@ enet_initialize (void)
         HIBYTE (wsaData.wVersion) != 1)
     {
        WSACleanup ();
-       
+
        return -1;
     }
 
@@ -88,9 +88,9 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
 {
     struct in_addr in;
     struct hostent * hostEntry;
-    
+
     in.s_addr = address -> host;
-    
+
     hostEntry = gethostbyaddr ((char *) & in, sizeof (struct in_addr), AF_INET);
     if (hostEntry == NULL)
       return enet_address_get_host_ip (address, name, nameLength);
@@ -221,8 +221,8 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
     struct sockaddr_in sin;
     int sinLength = sizeof (struct sockaddr_in);
 
-    result = accept (socket, 
-                     address != NULL ? (struct sockaddr *) & sin : NULL, 
+    result = accept (socket,
+                     address != NULL ? (struct sockaddr *) & sin : NULL,
                      address != NULL ? & sinLength : NULL);
 
     if (result == INVALID_SOCKET)
@@ -268,7 +268,7 @@ enet_socket_send (ENetSocket socket,
         sin.sin_addr.s_addr = address -> host;
     }
 
-    if (WSASendTo (socket, 
+    if (WSASendTo (socket,
                    (LPWSABUF) buffers,
                    (DWORD) bufferCount,
                    & sentLength,
@@ -347,10 +347,10 @@ enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint32 timeou
     fd_set readSet, writeSet;
     struct timeval timeVal;
     int selectCount;
-    
+
     timeVal.tv_sec = timeout / 1000;
     timeVal.tv_usec = (timeout % 1000) * 1000;
-    
+
     FD_ZERO (& readSet);
     FD_ZERO (& writeSet);
 
@@ -372,12 +372,11 @@ enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint32 timeou
 
     if (FD_ISSET (socket, & writeSet))
       * condition |= ENET_SOCKET_WAIT_SEND;
-    
+
     if (FD_ISSET (socket, & readSet))
       * condition |= ENET_SOCKET_WAIT_RECEIVE;
 
     return 0;
-} 
+}
 
 #endif
-

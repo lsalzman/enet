@@ -1,11 +1,11 @@
-/** 
+/**
  @file list.c
  @brief ENet linked list functions
 */
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
 
-/** 
+/**
     @defgroup list ENet linked list utility functions
     @ingroup private
     @{
@@ -54,7 +54,7 @@ enet_list_move (ENetListIterator position, void * dataFirst, void * dataLast)
 
    first -> previous -> next = first;
    position -> previous = last;
-    
+
    return first;
 }
 
@@ -68,7 +68,7 @@ enet_list_size (ENetList * list)
         position != enet_list_end (list);
         position = enet_list_next (position))
      ++ size;
-   
+
    return size;
 }
 
