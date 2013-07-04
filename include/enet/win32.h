@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <winsock2.h>
+#include <ws2tcpip.h> // previously not included on MinGW for some reason
 
 typedef SOCKET ENetSocket;
 
