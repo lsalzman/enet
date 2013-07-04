@@ -292,8 +292,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
          ++ currentPeer)
     {
         if (currentPeer -> state != ENET_PEER_STATE_DISCONNECTED &&
-            currentPeer -> address.host == host -> receivedAddress.host &&
-            currentPeer -> address.port == host -> receivedAddress.port &&
+            ENET_ADDRESS_COMPARE(&(currentPeer -> address), &(host -> receivedAddress)) &&
             currentPeer -> connectID == command -> connect.connectID)
           return NULL;
     }
@@ -1026,9 +1025,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
 
        if (peer -> state == ENET_PEER_STATE_DISCONNECTED ||
            peer -> state == ENET_PEER_STATE_ZOMBIE ||
-           ((host -> receivedAddress.host != peer -> address.host ||
-             host -> receivedAddress.port != peer -> address.port) &&
-             peer -> address.host != ENET_HOST_BROADCAST) ||
+           (!ENET_ADDRESS_COMPARE(&(peer -> address), &(host -> receivedAddress)) &&
+            peer -> address.ip.v4.host != ENET_HOST_BROADCAST) || // BAD: IGNORES IPv6 CASE!
            (peer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID &&
             sessionID != peer -> incomingSessionID))
          return 0;
@@ -1070,9 +1068,22 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
 
     if (peer != NULL)
     {
-       peer -> address.host = host -> receivedAddress.host;
-       peer -> address.port = host -> receivedAddress.port;
+       peer -> address.port       = host -> receivedAddress.port;
        peer -> incomingDataTotal += host -> receivedDataLength;
+
+       switch (peer -> address.family)
+       {
+       case AF_INET:
+           peer -> address.ip.v4.host = host -> receivedAddress.ip.v4.host;
+           break;
+       case AF_INET6:
+           peer -> address.ip.v6.flow_info = host -> receivedAddress.ip.v6.flow_info;
+           peer -> address.ip.v6.scope_id  = host -> receivedAddress.ip.v6.scope_id;
+           {
+               int i = 0;
+               for (; i < 4; i++) peer -> address.ip.v6.host[i] = host -> receivedAddress.ip.v6.host[i];
+           }
+       }
     }
 
     currentData = host -> receivedData + headerSize;

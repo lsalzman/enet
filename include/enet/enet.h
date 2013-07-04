@@ -79,20 +79,67 @@ enum
 };
 
 /**
- * Portable internet address structure.
+ * Better typed internet address structure.
  *
- * The host must be specified in network byte-order, and the port must be in host
- * byte-order. The constant ENET_HOST_ANY may be used to specify the default
- * server host. The constant ENET_HOST_BROADCAST may be used to specify the
- * broadcast address (255.255.255.255).  This makes sense for enet_host_connect,
- * but not for enet_host_create.  Once a server responds to a broadcast, the
- * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
+ * IPv4, IPv6, and other address types (mostly abandon abandoned) before are not
+ * stored in a union as one might expect, but are instead traditionally cast
+ * around. This mostly adapts the existing POSIX standard IPv4 and IPv6 address
+ * types, in order to minimize the bit twiddling needed to communicate with the
+ * sockets API, but stores each type of address in an actual union unlike the
+ * POSIX original.
+ *
+ * The host must be specified in network byte-order, as in the POSIX
+ * specification. Unlike the POSIX specification, however, the port number must
+ * be in host byte-order.
+ *
+ * The constants in the enum above, and documented in the following paragraph
+ * are only usable with IPv4. The constant ENET_HOST_ANY may be used to specify
+ * the default server host. The constant ENET_HOST_BROADCAST may be used to
+ * specify the broadcast address (255.255.255.255). This makes sense for
+ * enet_host_connect, but not for enet_host_create. Once a server responds to a
+ * broadcast, the address is updated from ENET_HOST_BROADCAST to the server's
+ * actual IP address.
  */
 typedef struct _ENetAddress
 {
-   enet_uint32 host;
+   enet_uint16 family;
    enet_uint16 port;
+   union {
+     struct {
+       enet_uint32 host;
+       // using uint32, not uint8 for padding to help with alignment
+       enet_uint32 padding[5];
+     } v4;
+     struct {
+       enet_uint32 flow_info;
+       enet_uint32 host[4];
+       enet_uint32 scope_id;
+     } v6;
+   } ip;
 } ENetAddress;
+
+/** returns whether two addresses are equal */
+static inline int
+ENET_ADDRESS_COMPARE (ENetAddress * a1, ENetAddress * a2)
+{
+    if (a1 -> family != a2 -> family ||
+        a1 -> port   != a2 -> port     ) return 1 == 0;
+
+    switch (a1 -> family)
+    {
+    case AF_INET:
+        return (a1->ip.v4.host == a2->ip.v4.host);
+    case AF_INET6:
+        return (a1->ip.v6.flow_info == a2->ip.v6.flow_info &&
+                a1->ip.v6.host[0]   == a2->ip.v6.host[0]   &&
+                a1->ip.v6.host[1]   == a2->ip.v6.host[1]   &&
+                a1->ip.v6.host[2]   == a2->ip.v6.host[2]   &&
+                a1->ip.v6.host[3]   == a2->ip.v6.host[3]   &&
+                a1->ip.v6.scope_id  == a2->ip.v6.scope_id);
+    default:
+        return 1 == 0;
+    }
+}
 
 /**
  * Packet flag bit constants.
