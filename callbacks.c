@@ -1,4 +1,4 @@
-/** 
+/**
  @file callbacks.c
  @brief ENet callback functions
 */
@@ -21,7 +21,7 @@ enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits
       callbacks.malloc = inits -> malloc;
       callbacks.free = inits -> free;
    }
-      
+
    if (inits -> no_memory != NULL)
      callbacks.no_memory = inits -> no_memory;
 
@@ -33,7 +33,7 @@ enet_linked_version (void)
 {
     return ENET_VERSION;
 }
-           
+
 void *
 enet_malloc (size_t size)
 {
@@ -50,4 +50,3 @@ enet_free (void * memory)
 {
    callbacks.free (memory);
 }
-
