@@ -41,6 +41,12 @@ enet_deinitialize (void)
 }
 
 enet_uint32
+enet_host_random_seed (void)
+{
+    return (enet_uint32) timeGetTime ();
+}
+
+enet_uint32
 enet_time_get (void)
 {
     return (enet_uint32) timeGetTime () - timeBase;

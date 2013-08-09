@@ -69,6 +69,12 @@ enet_deinitialize (void)
 }
 
 enet_uint32
+enet_host_random_seed (void)
+{
+    return (enet_uint32) time (NULL);
+}
+
+enet_uint32
 enet_time_get (void)
 {
     struct timeval timeVal;
