@@ -275,10 +275,12 @@ int
 enet_socket_get_option (ENetSocket socket, ENetSocketOption option, int * value)
 {
     int result = -1;
+    socklen_t len;
     switch (option)
     {
         case ENET_SOCKOPT_ERROR:
-            result = getsockopt (socket, SOL_SOCKET, SO_ERROR, (char *) value, sizeof (int));
+            len = sizeof (int);
+            result = getsockopt (socket, SOL_SOCKET, SO_ERROR, value, & len);
             break;
 
         default:
