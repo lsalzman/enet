@@ -272,6 +272,19 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
 }
 
 int
+enet_socket_get_option (ENetSocket socket, ENetSocketOption option, int * value)
+{
+    int result = -1;
+    switch (option)
+    {
+        case ENET_SOCKOPT_ERROR:
+            result = setsockopt (socket, SOL_SOCKET, SO_ERROR, (char *) value, sizeof (int));
+            break;
+    }
+    return result == -1 ? -1 : 0;
+}
+
+int
 enet_socket_connect (ENetSocket socket, const ENetAddress * address)
 {
     struct sockaddr_in sin;
