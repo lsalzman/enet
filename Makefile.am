@@ -16,7 +16,7 @@ enetinclude_HEADERS = \
 lib_LTLIBRARIES = libenet.la
 libenet_la_SOURCES = callbacks.c compress.c host.c list.c packet.c peer.c protocol.c unix.c win32.c
 # see info '(libtool) Updating version info' before making a release
-libenet_la_LDFLAGS = $(AM_LDFLAGS) -version-info 5:0:3
+libenet_la_LDFLAGS = $(AM_LDFLAGS) -version-info 6:0:4
 INCLUDES = -I$(top_srcdir)/include
 
 ACLOCAL_AMFLAGS = -Im4
