@@ -99,6 +99,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
 
     host -> connectedPeers = 0;
     host -> bandwidthLimitedPeers = 0;
+    host -> duplicatePeers = ENET_PROTOCOL_MAXIMUM_PEER_ID;
 
     host -> compressor.context = NULL;
     host -> compressor.compress = NULL;

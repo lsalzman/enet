@@ -386,6 +386,7 @@ typedef struct _ENetHost
    ENetInterceptCallback intercept;                  /**< callback the user can set to intercept received raw UDP packets */
    size_t               connectedPeers;
    size_t               bandwidthLimitedPeers;
+   size_t               duplicatePeers;              /**< optional number of allowed peers from duplicate IPs, defaults to ENET_PROTOCOL_MAXIMUM_PEER_ID */
 } ENetHost;
 
 /**
