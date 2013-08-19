@@ -71,13 +71,9 @@ typedef enum _ENetSocketShutdown
     ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
 } ENetSocketShutdown;
 
-enum
-{
-   ENET_HOST_ANY       = 0,            /**< specifies the default server host */
-   ENET_HOST_BROADCAST = 0xFFFFFFFF,   /**< specifies a subnet-wide broadcast */
-
-   ENET_PORT_ANY       = 0             /**< specifies that a port should be automatically chosen */
-};
+#define ENET_HOST_ANY       0
+#define ENET_HOST_BROADCAST 0xFFFFFFFFU
+#define ENET_PORT_ANY       0
 
 /**
  * Portable internet address structure. 

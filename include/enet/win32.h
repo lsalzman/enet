@@ -19,10 +19,7 @@
 
 typedef SOCKET ENetSocket;
 
-enum
-{
-    ENET_SOCKET_NULL = INVALID_SOCKET
-};
+#define ENET_SOCKET_NULL INVALID_SOCKET
 
 #define ENET_HOST_TO_NET_16(value) (htons (value))
 #define ENET_HOST_TO_NET_32(value) (htonl (value))
