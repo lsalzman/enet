@@ -297,7 +297,8 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
               peer = currentPeer;
         }
         else 
-        if (currentPeer -> address.host == host -> receivedAddress.host)
+        if (currentPeer -> state != ENET_PEER_STATE_CONNECTING &&
+            currentPeer -> address.host == host -> receivedAddress.host)
         {
             if (currentPeer -> address.port == host -> receivedAddress.port &&
                 currentPeer -> connectID == command -> connect.connectID)
