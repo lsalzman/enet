@@ -3,7 +3,7 @@
 
 ENet evolved specifically as a UDP networking layer for the
 multiplayer first person shooter Cube. Cube necessitated low latency
-communcation with data sent out very frequently, so TCP was an
+communication with data sent out very frequently, so TCP was an
 unsuitable choice due to its high latency and stream orientation. UDP,
 however, lacks many sometimes necessary features from TCP such as
 reliability, sequencing, unrestricted packet sizes, and connection
