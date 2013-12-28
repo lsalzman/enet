@@ -44,7 +44,7 @@ packet streams that simplify the transfer of various types of data.
 
 ENet provides sequencing for all packets by assigning to each sent
 packet a sequence number that is incremented as packets are sent. ENet
-guarentees that no packet with a higher sequence number will be
+guarantees that no packet with a higher sequence number will be
 delivered before a packet with a lower sequence number, thus ensuring
 packets are delivered exactly in the order they are sent.
 
