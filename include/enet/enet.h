@@ -446,7 +446,7 @@ ENET_API int enet_initialize (void);
   Initializes ENet globally and supplies user-overridden callbacks. Must be called prior to using any functions in ENet. Do not use enet_initialize() if you use this variant. Make sure the ENetCallbacks structure is zeroed out so that any additional callbacks added in future versions will be properly ignored.
 
   @param version the constant ENET_VERSION should be supplied so ENet knows which version of ENetCallbacks struct to use
-  @param inits user-overriden callbacks where any NULL callbacks will use ENet's defaults
+  @param inits user-overridden callbacks where any NULL callbacks will use ENet's defaults
   @returns 0 on success, < 0 on failure
 */
 ENET_API int enet_initialize_with_callbacks (ENetVersion version, const ENetCallbacks * inits);
@@ -510,7 +510,7 @@ ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSock
 */
 ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName);
 
-/** Gives the printable form of the ip address specified in the address parameter.
+/** Gives the printable form of the IP address specified in the address parameter.
     @param address    address printed
     @param hostName   destination for name, must not be NULL
     @param nameLength maximum length of hostName.
