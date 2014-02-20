@@ -517,6 +517,7 @@ ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName
     @returns the null-terminated name of the host in hostName on success
     @retval 0 on success
     @retval < 0 on failure
+    @remarks if the name's length matches or exceeds nameLength, the result may not be null-terminated
 */
 ENET_API int enet_address_get_host_ip (const ENetAddress * address, char * hostName, size_t nameLength);
 
@@ -527,6 +528,7 @@ ENET_API int enet_address_get_host_ip (const ENetAddress * address, char * hostN
     @returns the null-terminated name of the host in hostName on success
     @retval 0 on success
     @retval < 0 on failure
+    @remarks if the name's length matches or exceeds nameLength, the result may not be null-terminated
 */
 ENET_API int enet_address_get_host (const ENetAddress * address, char * hostName, size_t nameLength);
 
