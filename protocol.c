@@ -1904,6 +1904,9 @@ enet_host_service (ENetHost * host, ENetEvent * event, enet_uint32 timeout)
           }
        }
 
+       if (ENET_TIME_GREATER_EQUAL (host -> serviceTime, timeout))
+         return 0;
+
        do
        {
           host -> serviceTime = enet_time_get ();
