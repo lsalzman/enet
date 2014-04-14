@@ -105,7 +105,7 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
 
    if (peer -> state != ENET_PEER_STATE_CONNECTED ||
        channelID >= peer -> channelCount ||
-       packet -> dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE)
+       packet -> dataLength > peer -> host -> maximumPacketSize)
      return -1;
 
    fragmentLength = peer -> mtu - sizeof (ENetProtocolHeader) - sizeof (ENetProtocolSendFragment);
@@ -240,6 +240,8 @@ enet_peer_receive (ENetPeer * peer, enet_uint8 * channelID)
      enet_free (incomingCommand -> fragments);
 
    enet_free (incomingCommand);
+
+   peer -> totalWaitingData -= packet -> dataLength;
 
    return packet;
 }
@@ -415,6 +417,7 @@ enet_peer_reset (ENetPeer * peer)
     peer -> incomingUnsequencedGroup = 0;
     peer -> outgoingUnsequencedGroup = 0;
     peer -> eventData = 0;
+    peer -> totalWaitingData = 0;
 
     memset (peer -> unsequencedWindow, 0, sizeof (peer -> unsequencedWindow));
     
@@ -952,7 +955,11 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     }
 
     if (packet != NULL)
-      ++ packet -> referenceCount;
+    {
+       ++ packet -> referenceCount;
+      
+       peer -> totalWaitingData += packet -> dataLength;
+    }
 
     enet_list_insert (enet_list_next (currentCommand), incomingCommand);
 

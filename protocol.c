@@ -428,12 +428,13 @@ enet_protocol_handle_send_reliable (ENetHost * host, ENetPeer * peer, const ENet
     size_t dataLength;
 
     if (command -> header.channelID >= peer -> channelCount ||
-        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER))
+        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
+        peer -> totalWaitingData >= host -> maximumWaitingData)
       return -1;
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendReliable.dataLength);
     * currentData += dataLength;
-    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (dataLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
@@ -456,12 +457,13 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
     size_t dataLength;
 
     if (command -> header.channelID >= peer -> channelCount ||
-        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER))
+        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
+        peer -> totalWaitingData >= host -> maximumWaitingData)
       return -1;
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendUnsequenced.dataLength);
     * currentData += dataLength;
-    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (dataLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1; 
@@ -506,12 +508,13 @@ enet_protocol_handle_send_unreliable (ENetHost * host, ENetPeer * peer, const EN
     size_t dataLength;
 
     if (command -> header.channelID >= peer -> channelCount ||
-        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER))
+        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
+        peer -> totalWaitingData >= host -> maximumWaitingData)
       return -1;
 
     dataLength = ENET_NET_TO_HOST_16 (command -> sendUnreliable.dataLength);
     * currentData += dataLength;
-    if (dataLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (dataLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
@@ -541,12 +544,13 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
     ENetIncomingCommand * startCommand = NULL;
 
     if (command -> header.channelID >= peer -> channelCount ||
-        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER))
+        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
+        peer -> totalWaitingData >= host -> maximumWaitingData)
       return -1;
 
     fragmentLength = ENET_NET_TO_HOST_16 (command -> sendFragment.dataLength);
     * currentData += fragmentLength;
-    if (fragmentLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (fragmentLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
@@ -569,7 +573,7 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
     
     if (fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT ||
         fragmentNumber >= fragmentCount ||
-        totalLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        totalLength > host -> maximumPacketSize ||
         fragmentOffset >= totalLength ||
         fragmentLength > totalLength - fragmentOffset)
       return -1;
@@ -654,12 +658,13 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
     ENetIncomingCommand * startCommand = NULL;
 
     if (command -> header.channelID >= peer -> channelCount ||
-        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER))
+        (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER) ||
+        peer -> totalWaitingData >= host -> maximumWaitingData)
       return -1;
 
     fragmentLength = ENET_NET_TO_HOST_16 (command -> sendFragment.dataLength);
     * currentData += fragmentLength;
-    if (fragmentLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+    if (fragmentLength > host -> maximumPacketSize ||
         * currentData < host -> receivedData ||
         * currentData > & host -> receivedData [host -> receivedDataLength])
       return -1;
@@ -688,7 +693,7 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
 
     if (fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT ||
         fragmentNumber >= fragmentCount ||
-        totalLength > ENET_PROTOCOL_MAXIMUM_PACKET_SIZE ||
+        totalLength > host -> maximumPacketSize ||
         fragmentOffset >= totalLength ||
         fragmentLength > totalLength - fragmentOffset)
       return -1;
