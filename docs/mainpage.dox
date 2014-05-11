@@ -1,4 +1,4 @@
-/** @mainpage enet
+/** @mainpage ENet
  <center>http://enet.bespin.org</center>
  <hr>
 
@@ -14,7 +14,7 @@ portable, and easily embeddable.
 
 @ref Features
 
-@ref SourceDistro
+@ref Downloads
 
 @ref Installation
 
@@ -31,7 +31,7 @@ portable, and easily embeddable.
  */
 
 /**
-@page SourceDistro Source Distribution
+@page Downloads Downloads
 
 You can retrieve the source to ENet by downloading it in either .tar.gz form
 or accessing the github distribution directly.
@@ -44,14 +44,14 @@ You can find the most recent ENet source at <a href="https://github.com/lsalzman
 */
 
 /**
-@page MailingList ENet Mailing List
+@page MailingList Mailing List
 
 The <a href="http://lists.cubik.org/mailman/listinfo/enet-discuss">enet-discuss</a> list is for discussion of ENet, including bug reports or feature requests.
 
 */
 
 /**
-@page IRCChannel ENet IRC Channel
+@page IRCChannel IRC Channel
 
 Join the \#enet channel on the freenode IRC network (irc.freenode.net) for real-time discussion about the ENet library.
 
