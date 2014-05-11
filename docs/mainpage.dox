@@ -1,6 +1,4 @@
 /** @mainpage ENet
- <center>http://enet.bespin.org</center>
- <hr>
 
 ENet's purpose is to provide a relatively thin, simple and robust
 network communication layer on top of UDP (User Datagram Protocol).
@@ -27,6 +25,8 @@ portable, and easily embeddable.
 @ref FAQ
 
 @ref License
+
+<a class="el" href="usergroup0.html">Documentation</a>
 
  */
 

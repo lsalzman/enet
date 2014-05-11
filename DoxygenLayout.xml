@@ -11,7 +11,7 @@
     <tab type="user" visible="yes" title="IRC Channel" url="@ref IRCChannel" />
     <tab type="user" visible="yes" title="FAQ" url="@ref FAQ" />
     <tab type="user" visible="yes" title="License" url="@ref License" />
-    <tab type="usergroup" title="Documentation">
+    <tab type="usergroup" visible="yes" title="Documentation" briefdescription="Documentation">
         <tab type="modules" visible="yes" title="Functions" intro=""/>
         <tab type="classlist" visible="yes" title="Data Structures" intro=""/>
         <tab type="filelist" visible="yes" title="Files" intro=""/>
