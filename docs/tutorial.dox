@@ -127,6 +127,15 @@ enet_host_service() will return immediately if there are no events to
 dispatch. enet_host_service() will return 1 if an event was dispatched
 within the specified timeout.
 
+Beware that most processing of the network with the ENet stack is done 
+inside enet_host_service(). Both hosts that make up the sides of a connection 
+must regularly call this function to ensure packets are actually sent and
+received. A common symptom of not actively calling enet_host_service()
+on both ends is that one side receives events while the other does not.
+The best way to schedule this activity to ensure adequate service is, for
+example, to call enet_host_service() with a 0 timeout (meaning non-blocking)
+at the beginning of every frame in a game loop.
+
 Currently there are only four types of significant events in ENet:
 
 An event of type ENET_EVENT_TYPE_NONE is returned if no event occurred
