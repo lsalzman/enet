@@ -246,7 +246,7 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
     {
         case ENET_SOCKOPT_NONBLOCK:
 #ifdef HAS_FCNTL
-            result = fcntl (socket, F_SETFL, O_NONBLOCK | fcntl (socket, F_GETFL));
+            result = fcntl (socket, F_SETFL, (value ? O_NONBLOCK : 0) | (fcntl (socket, F_GETFL) & ~O_NONBLOCK));
 #else
             result = ioctl (socket, FIONBIO, & value);
 #endif
