@@ -765,6 +765,10 @@ enet_protocol_handle_bandwidth_limit (ENetHost * host, ENetPeer * peer, const EN
     if (peer -> incomingBandwidth == 0 && host -> outgoingBandwidth == 0)
       peer -> windowSize = ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE;
     else
+    if (peer -> incomingBandwidth == 0 || host -> outgoingBandwidth == 0)
+      peer -> windowSize = (ENET_MAX (peer -> incomingBandwidth, host -> outgoingBandwidth) /
+                             ENET_PEER_WINDOW_SIZE_SCALE) * ENET_PROTOCOL_MINIMUM_WINDOW_SIZE;
+    else
       peer -> windowSize = (ENET_MIN (peer -> incomingBandwidth, host -> outgoingBandwidth) /
                              ENET_PEER_WINDOW_SIZE_SCALE) * ENET_PROTOCOL_MINIMUM_WINDOW_SIZE;
 
