@@ -8,6 +8,7 @@
 #include "enet/enet.h"
 #include <windows.h>
 #include <mmsystem.h>
+#include <Ws2tcpip.h>
 
 static enet_uint32 timeBase = 0;
 
@@ -68,10 +69,10 @@ enet_address_set_host (ENetAddress * address, const char * name)
     if (hostEntry == NULL ||
         hostEntry -> h_addrtype != AF_INET)
     {
-        unsigned long host = inet_addr (name);
-        if (host == INADDR_NONE)
+        struct sockaddr_in sa;
+        if (inet_pton(AF_INET, name, &sa.sin_addr) <= 0)
             return -1;
-        address -> host = host;
+        address -> host = (enet_uint32)sa.sin_addr.S_un.S_addr;
         return 0;
     }
 
