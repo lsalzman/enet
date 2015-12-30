@@ -138,7 +138,11 @@ typedef void (ENET_CALLBACK * ENetPacketFreeCallback) (struct _ENetPacket *);
  *    (not supported for reliable packets)
  *
  *    ENET_PACKET_FLAG_NO_ALLOCATE - packet will not allocate data, and user must supply it instead
- 
+ *
+ *    ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT - packet will be fragmented using unreliable
+ *    (instead of reliable) sends if it exceeds the MTU
+ *
+ *    ENET_PACKET_FLAG_SENT - whether the packet has been sent from all queues it has been entered into
    @sa ENetPacketFlag
  */
 typedef struct _ENetPacket
