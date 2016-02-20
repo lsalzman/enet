@@ -204,7 +204,7 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
         return 0;
     }
     if (err != EAI_NONAME)
-      return 0;
+      return -1;
 #else
     struct in_addr in;
     struct hostent * hostEntry = NULL;
