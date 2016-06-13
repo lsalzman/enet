@@ -8,6 +8,7 @@
 #include "enet/enet.h"
 #include <windows.h>
 #include <mmsystem.h>
+#include <ws2tcpip.h>
 
 static enet_uint32 timeBase = 0;
 
@@ -62,28 +63,40 @@ enet_time_set (enet_uint32 newTimeBase)
 int
 enet_address_set_host (ENetAddress * address, const char * name)
 {
-    struct hostent * hostEntry;
+	struct sockaddr_in *sockaddr_ipv4 = NULL;
+	struct addrinfo *result = NULL;
+	struct addrinfo *ptr = NULL;
+	struct addrinfo infoAddr;
+	DWORD dwRetval = 0;
 
-    hostEntry = gethostbyname (name);
-    if (hostEntry == NULL ||
-        hostEntry -> h_addrtype != AF_INET)
-    {
-        unsigned long host = inet_addr (name);
-        if (host == INADDR_NONE)
-            return -1;
-        address -> host = host;
-        return 0;
-    }
+	dwRetval = getaddrinfo(name, NULL, NULL, &result);
+	if (dwRetval != 0) {
+		ZeroMemory(&infoAddr, sizeof(infoAddr));
+		if (InetPton(AF_INET, name, &infoAddr) != 1) {
+			return -1;
+		}
+		ptr = &infoAddr;
+	} else {
+		ptr = result;
+	}
+	for (; ptr != NULL; ptr = ptr->ai_next) {
+		sockaddr_ipv4 = (struct sockaddr_in *) ptr->ai_addr;
+		break;
+	}
+	if (sockaddr_ipv4 == NULL) {
+		return -1;
+	}
+	address->host = (enet_uint32)sockaddr_ipv4->sin_addr.S_un.S_addr;
 
-    address -> host = * (enet_uint32 *) hostEntry -> h_addr_list [0];
-
-    return 0;
+	return 0;
 }
 
 int
 enet_address_get_host_ip (const ENetAddress * address, char * name, size_t nameLength)
 {
-    char * addr = inet_ntoa (* (struct in_addr *) & address -> host);
+	char buff[16];
+	const char * addr = InetNtop(AF_INET, (struct in_addr *)&address->host, buff, sizeof(buff));
+
     if (addr == NULL)
         return -1;
     else
@@ -99,23 +112,26 @@ enet_address_get_host_ip (const ENetAddress * address, char * name, size_t nameL
 int
 enet_address_get_host (const ENetAddress * address, char * name, size_t nameLength)
 {
-    struct in_addr in;
-    struct hostent * hostEntry;
- 
-    in.s_addr = address -> host;
-    
-    hostEntry = gethostbyaddr ((char *) & in, sizeof (struct in_addr), AF_INET);
-    if (hostEntry == NULL)
-      return enet_address_get_host_ip (address, name, nameLength);
-    else
-    {
-       size_t hostLen = strlen (hostEntry -> h_name);
-       if (hostLen >= nameLength)
-         return -1;
-       memcpy (name, hostEntry -> h_name, hostLen + 1);
-    }
+	struct sockaddr_in saGNI;
+	char hostname[NI_MAXHOST];
+	char servInfo[NI_MAXSERV];
+	DWORD dwRetval = 0;
 
-    return 0;
+	saGNI.sin_family = AF_INET;
+	saGNI.sin_addr.s_addr = address->host;
+	saGNI.sin_port = address->port;
+	dwRetval = getnameinfo((struct sockaddr *)&saGNI, sizeof(struct sockaddr), hostname, NI_MAXHOST, servInfo, NI_MAXSERV, NI_NUMERICSERV);
+	if (dwRetval != 0) {
+		return enet_address_get_host_ip(address, name, nameLength);
+	}
+	size_t hostLen = strlen(hostname);
+	if (hostLen >= nameLength) {
+		return -1;
+	}
+	ZeroMemory(name, nameLength);
+	memcpy_s(name, nameLength, hostname, hostLen);
+
+	return 0;
 }
 
 int
