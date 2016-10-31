@@ -49,6 +49,8 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
     host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM);
+    if (host -> socket != ENET_SOCKET_NULL)
+       enet_socket_set_option (host -> socket, ENET_SOCKOPT_IPV6_V6ONLY, 0);
     if (host -> socket == ENET_SOCKET_NULL || (address != NULL && enet_socket_bind (host -> socket, address) < 0))
     {
        if (host -> socket != ENET_SOCKET_NULL)
@@ -64,6 +66,8 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_BROADCAST, 1);
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_RCVBUF, ENET_HOST_RECEIVE_BUFFER_SIZE);
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_SNDBUF, ENET_HOST_SEND_BUFFER_SIZE);
+    enet_socket_set_option (host -> socket, ENET_SOCKOPT_IPV6_V6ONLY, 0);
+
 
     if (address != NULL && enet_socket_get_address (host -> socket, & host -> address) < 0)   
       host -> address = * address;
@@ -87,7 +91,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     host -> commandCount = 0;
     host -> bufferCount = 0;
     host -> checksum = NULL;
-    host -> receivedAddress.host = ENET_HOST_ANY;
+    host -> receivedAddress.host = in6addr_any;
     host -> receivedAddress.port = 0;
     host -> receivedData = NULL;
     host -> receivedDataLength = 0;
