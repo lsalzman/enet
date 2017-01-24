@@ -11,12 +11,22 @@
 #pragma warning (disable: 4244) // 64bit to 32bit int
 #pragma warning (disable: 4018) // signed/unsigned mismatch
 #pragma warning (disable: 4146) // unary minus operator applied to unsigned type
+#pragma warning (disable: 4142) // benign redefinition of type
 #endif
 #endif
 
 #include <stdlib.h>
-#include <winsock2.h>
 
+#ifdef ENET_BUILDING_LIB
+#include <winsock2.h>
+#endif
+
+// If these typedefs don't match what's in winsock2.h, compilation will fail.
+#ifdef _WIN64
+typedef __int64 SOCKET;
+#else
+typedef __int32 SOCKET;
+#endif
 typedef SOCKET ENetSocket;
 
 #define ENET_SOCKET_NULL INVALID_SOCKET
@@ -45,7 +55,12 @@ typedef struct
 #define ENET_API extern
 #endif /* ENET_DLL */
 
+#ifdef ENET_BUILDING_LIB
 typedef fd_set ENetSocketSet;
+#else
+// This struct will never be defined; it can only be used for pointers.
+typedef struct ENetSocketSet ENetSocketSet;
+#endif
 
 #define ENET_SOCKETSET_EMPTY(sockset)          FD_ZERO (& (sockset))
 #define ENET_SOCKETSET_ADD(sockset, socket)    FD_SET (socket, & (sockset))
