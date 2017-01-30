@@ -1,4 +1,4 @@
-/** 
+﻿/** 
  @file  win32.c
  @brief ENet Win32 system specific functions
 */
@@ -28,35 +28,31 @@ enet_initialize (void)
        return -1;
     }
 
-    timeBeginPeriod (1);
-
     return 0;
 }
 
 void
 enet_deinitialize (void)
 {
-    timeEndPeriod (1);
-
     WSACleanup ();
 }
 
 enet_uint32
 enet_host_random_seed (void)
 {
-    return (enet_uint32) timeGetTime ();
+    return (enet_uint32) (clock() * (CLOCKS_PER_SEC / 1000));
 }
 
 enet_uint32
 enet_time_get (void)
 {
-    return (enet_uint32) timeGetTime () - timeBase;
+    return (enet_uint32) (clock() * (CLOCKS_PER_SEC / 1000)) - timeBase;
 }
 
 void
 enet_time_set (enet_uint32 newTimeBase)
 {
-    timeBase = (enet_uint32) timeGetTime () - newTimeBase;
+    timeBase = (enet_uint32) (clock() * (CLOCKS_PER_SEC / 1000)) - newTimeBase;
 }
 
 int
