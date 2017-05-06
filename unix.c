@@ -102,6 +102,19 @@ enet_time_set (enet_uint32 newTimeBase)
 }
 
 int
+enet_address_set_host_ip (ENetAddress * address, const char * name)
+{
+#ifdef HAS_INET_PTON
+    if (! inet_pton (AF_INET, name, & address -> host))
+#else
+    if (! inet_aton (name, (struct in_addr *) & address -> host))
+#endif
+        return -1;
+
+    return 0;
+}
+
+int
 enet_address_set_host (ENetAddress * address, const char * name)
 {
 #ifdef HAS_GETADDRINFO
@@ -153,14 +166,7 @@ enet_address_set_host (ENetAddress * address, const char * name)
     }
 #endif
 
-#ifdef HAS_INET_PTON
-    if (! inet_pton (AF_INET, name, & address -> host))
-#else
-    if (! inet_aton (name, (struct in_addr *) & address -> host))
-#endif
-        return -1;
-
-    return 0;
+    return enet_address_set_host_ip (address, name);
 }
 
 int
