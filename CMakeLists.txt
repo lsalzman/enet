@@ -18,6 +18,9 @@ check_struct_has_member("struct msghdr" "msg_flags" "sys/types.h;sys/socket.h" H
 set(CMAKE_EXTRA_INCLUDE_FILES "sys/types.h" "sys/socket.h")
 check_type_size("socklen_t" HAS_SOCKLEN_T BUILTIN_TYPES_ONLY)
 unset(CMAKE_EXTRA_INCLUDE_FILES)
+if(MSVC)
+	add_definitions(-W3)
+endif()
  
 if(HAS_FCNTL)
     add_definitions(-DHAS_FCNTL=1)
