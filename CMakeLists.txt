@@ -20,6 +20,8 @@ check_type_size("socklen_t" HAS_SOCKLEN_T BUILTIN_TYPES_ONLY)
 unset(CMAKE_EXTRA_INCLUDE_FILES)
 if(MSVC)
 	add_definitions(-W3)
+else()
+	add_definitions(-Wno-error)
 endif()
  
 if(HAS_FCNTL)
