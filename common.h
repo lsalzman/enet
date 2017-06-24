@@ -1,7 +1,8 @@
 
 int enet_address_host_is_any_(struct _all_host_address *host) {
-	char zero[sizeof(struct _all_host_address)] = {0};
-	return enet_address_host_equal(*((struct _all_host_address *)&zero), *host);
+	static char zero[sizeof(struct _all_host_address)] = {0};
+	struct _all_host_address *temp = (struct _all_host_address *)&zero;
+	return enet_address_host_equal(*temp, *host);
 }
 
 int enet_address_set_host_ip(ENetAddress *address, const char *name) {

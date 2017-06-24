@@ -279,9 +279,9 @@ int
 enet_socket_get_address (ENetSocket socket, ENetAddress * address)
 {
     struct sockaddr_storage localaddr;
-    int addrLen = sizeof (localaddr);
+    socklen_t addr_len = sizeof (localaddr);
 
-    if (getpeername (socket, (struct sockaddr *) & localaddr, & addrLen) == -1)
+    if (getpeername (socket, (struct sockaddr *) & localaddr, & addr_len) == -1)
       return -1;
 
     return enet_address_init_from_sockaddr_storage(address, &localaddr);
