@@ -10,6 +10,14 @@
     @{
 */
 
+static void enet_socket_set_default_option (ENetSocket socket)
+{
+    enet_socket_set_option (socket, ENET_SOCKOPT_NONBLOCK, 1);
+    enet_socket_set_option (socket, ENET_SOCKOPT_BROADCAST, 1);
+    enet_socket_set_option (socket, ENET_SOCKOPT_RCVBUF, ENET_HOST_RECEIVE_BUFFER_SIZE);
+    enet_socket_set_option (socket, ENET_SOCKOPT_SNDBUF, ENET_HOST_SEND_BUFFER_SIZE);
+}
+
 /** Creates a host for communicating to peers.  
 
     @param address   the address at which other peers may connect to this host.  If NULL, then no peers may connect to the host.
@@ -48,7 +56,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     }
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
-    host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM);
+    host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM, address);
     if (host -> socket == ENET_SOCKET_NULL || (address != NULL && enet_socket_bind (host -> socket, address) < 0))
     {
        if (host -> socket != ENET_SOCKET_NULL)
@@ -60,10 +68,10 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
        return NULL;
     }
 
-    enet_socket_set_option (host -> socket, ENET_SOCKOPT_NONBLOCK, 1);
-    enet_socket_set_option (host -> socket, ENET_SOCKOPT_BROADCAST, 1);
-    enet_socket_set_option (host -> socket, ENET_SOCKOPT_RCVBUF, ENET_HOST_RECEIVE_BUFFER_SIZE);
-    enet_socket_set_option (host -> socket, ENET_SOCKOPT_SNDBUF, ENET_HOST_SEND_BUFFER_SIZE);
+    enet_socket_set_default_option (host -> socket);
+
+    if (address != NULL)
+        host -> for_listen = 1;
 
     if (address != NULL && enet_socket_get_address (host -> socket, & host -> address) < 0)   
       host -> address = * address;
@@ -87,7 +95,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     host -> commandCount = 0;
     host -> bufferCount = 0;
     host -> checksum = NULL;
-    host -> receivedAddress.host = ENET_HOST_ANY;
+    enet_address_host_init_any (host -> receivedAddress.host);
     host -> receivedAddress.port = 0;
     host -> receivedData = NULL;
     host -> receivedDataLength = 0;
@@ -176,6 +184,21 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     ENetPeer * currentPeer;
     ENetChannel * channel;
     ENetProtocol command;
+
+    if (host -> for_listen == 0)
+    {
+        if (host -> socket != ENET_SOCKET_NULL)
+        {
+            enet_socket_destroy(host -> socket);
+            host -> socket = ENET_SOCKET_NULL;
+        }
+
+        host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM, address);
+        if (host -> socket == ENET_SOCKET_NULL)
+            return NULL;
+
+        enet_socket_set_default_option (host -> socket);
+    }
 
     if (channelCount < ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT)
       channelCount = ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT;

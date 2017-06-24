@@ -11,6 +11,7 @@ extern "C"
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef _WIN32
 #include "enet/win32.h"
@@ -72,8 +73,10 @@ typedef enum _ENetSocketShutdown
     ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
 } ENetSocketShutdown;
 
+/*
 #define ENET_HOST_ANY       0
 #define ENET_HOST_BROADCAST 0xFFFFFFFFU
+*/
 #define ENET_PORT_ANY       0
 
 /**
@@ -86,11 +89,27 @@ typedef enum _ENetSocketShutdown
  * but not for enet_host_create.  Once a server responds to a broadcast, the
  * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
  */
+#define ENET_HOST_v6_LENGTH 16
+struct _all_host_address {
+   enet_uint8 is_ipv6;
+   enet_uint32 host_v4;
+   enet_uint8 host_v6[ENET_HOST_v6_LENGTH];
+};
+
 typedef struct _ENetAddress
 {
-   enet_uint32 host;
+   struct _all_host_address host;
    enet_uint16 port;
 } ENetAddress;
+
+int enet_address_host_is_any_(struct _all_host_address *);
+
+#define enet_address_host_is_any(a) enet_address_host_is_any_(&a)
+#define enet_address_host_init_any(a) (memset(&a, 0, sizeof(struct _all_host_address)))
+#define enet_address_host_equal(a, b) (memcmp(&a, &b, sizeof(struct _all_host_address)) == 0)
+#define enet_address_host_copy_from(dest, src) (memcpy(&dest, &src, sizeof(struct _all_host_address)))
+
+
 
 /**
  * Packet flag bit constants.
@@ -317,6 +336,7 @@ typedef struct _ENetPeer
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
    enet_uint32   eventData;
    size_t        totalWaitingData;
+   enet_int64    sessionGuid;
 } ENetPeer;
 
 /** An ENet packet compressor for compressing UDP packets before socket sends or receives.
@@ -359,6 +379,7 @@ typedef struct _ENetHost
 {
    ENetSocket           socket;
    ENetAddress          address;                     /**< Internet address of the host */
+   int                  for_listen;
    enet_uint32          incomingBandwidth;           /**< downstream bandwidth of the host */
    enet_uint32          outgoingBandwidth;           /**< upstream bandwidth of the host */
    enet_uint32          bandwidthThrottleEpoch;
@@ -489,7 +510,7 @@ ENET_API void enet_time_set (enet_uint32);
 /** @defgroup socket ENet socket functions
     @{
 */
-ENET_API ENetSocket enet_socket_create (ENetSocketType);
+ENET_API ENetSocket enet_socket_create (ENetSocketType, const ENetAddress *);
 ENET_API int        enet_socket_bind (ENetSocket, const ENetAddress *);
 ENET_API int        enet_socket_get_address (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_listen (ENetSocket, int);
