@@ -14,6 +14,11 @@ int enet_address_set_host_ip(ENetAddress *address, const char *name) {
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 
+	/* clear address data. */
+	enet_uint16 addr_port = address->port;
+	memset(address, 0, sizeof(ENetAddress));
+	address->port = addr_port;
+
 	if (getaddrinfo(name, 0, &hints, &ai_list) != 0)
 		return ret;
 
@@ -97,6 +102,9 @@ int enet_address_get_host(const ENetAddress *address, char *name, size_t nameLen
 
 static int enet_address_init_from_sockaddr_storage(ENetAddress *address, 
 								const struct sockaddr_storage *localaddr) {
+
+	/* clear address data. */
+	memset(address, 0, sizeof(ENetAddress));
 
 	if (localaddr->ss_family == AF_INET) {
 		struct sockaddr_in *addr = (struct sockaddr_in *)localaddr;
