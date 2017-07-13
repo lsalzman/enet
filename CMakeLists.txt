@@ -67,6 +67,7 @@ add_library(enet STATIC
         protocol.c
         unix.c
         win32.c
+        bilayer.c
     )
 
 if (MINGW)

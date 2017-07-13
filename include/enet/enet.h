@@ -90,6 +90,7 @@ typedef struct _ENetAddress
 {
    enet_uint32 host;
    enet_uint16 port;
+    uint64_t extra;
 } ENetAddress;
 
 /**
@@ -338,7 +339,28 @@ typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (const ENetBuffer * b
 
 /** Callback for intercepting received raw UDP packets. Should return 1 to intercept, 0 to ignore, or -1 to propagate an error. */
 typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, struct _ENetEvent * event);
- 
+
+typedef enum _ENetTransportType
+{
+   /** no event occurred within the specified time limit */
+   ENET_TRANSPORT_TYPE_NONE       = 0,
+   ENET_TRANSPORT_TYPE_SOCKET     = 1,
+   ENET_TRANSPORT_TYPE_CUSTOM     = 2,
+} ENetTransportType;
+
+typedef struct _ENetTransport
+{
+    ENetTransportType type;
+    void *context;
+    union {
+        ENetSocket socket;
+        void *nosocket;
+    } handle;
+
+    void (*send)();
+    void (*recv)();
+} ENetTransport;
+
 /** An ENet host for communicating with peers.
   *
   * No fields should be modified unless otherwise stated.
@@ -357,6 +379,7 @@ typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, st
   */
 typedef struct _ENetHost
 {
+    ENetTransport       transport;
    ENetSocket           socket;
    ENetAddress          address;                     /**< Internet address of the host */
    enet_uint32          incomingBandwidth;           /**< downstream bandwidth of the host */
@@ -556,7 +579,6 @@ ENET_API ENetPacket * enet_packet_create (const void *, size_t, enet_uint32);
 ENET_API void         enet_packet_destroy (ENetPacket *);
 ENET_API int          enet_packet_resize  (ENetPacket *, size_t);
 ENET_API enet_uint32  enet_crc32 (const ENetBuffer *, size_t);
-                
 ENET_API ENetHost * enet_host_create (const ENetAddress *, size_t, size_t, enet_uint32, enet_uint32);
 ENET_API void       enet_host_destroy (ENetHost *);
 ENET_API ENetPeer * enet_host_connect (ENetHost *, const ENetAddress *, size_t, enet_uint32);
