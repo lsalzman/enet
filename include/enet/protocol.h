@@ -16,7 +16,7 @@ enum
    ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE     = 65536,
    ENET_PROTOCOL_MINIMUM_CHANNEL_COUNT   = 1,
    ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT   = 255,
-   ENET_PROTOCOL_MAXIMUM_PEER_ID         = 0xFFF,
+   ENET_PROTOCOL_MAXIMUM_PEER_ID         = 0xFFFF,
    ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT  = 1024 * 1024
 };
 
@@ -65,6 +65,7 @@ typedef enum _ENetProtocolFlag
 typedef struct _ENetProtocolHeader
 {
    enet_uint16 peerID;
+   enet_uint16 flags;
    enet_uint16 sentTime;
 } ENET_PACKED ENetProtocolHeader;
 
