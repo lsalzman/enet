@@ -92,3 +92,9 @@ add_library(enet STATIC
 if (MINGW)
     target_link_libraries(enet winmm ws2_32)
 endif()
+
+add_executable(server examples/server.c)
+target_link_libraries(server enet)
+
+add_executable(client examples/client.c)
+target_link_libraries(client enet)
