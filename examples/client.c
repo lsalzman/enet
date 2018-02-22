@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <enet/enet.h>
 
 int main(int argc, char** argv)
@@ -9,6 +10,52 @@ int main(int argc, char** argv)
     ENetPeer *peer;
     ENetPacket *packet;
     int retcode;
+    unsigned int time_begin;
+    const char *host = "localhost";
+    unsigned short port = 1234;
+    int verbose = 0;
+    int packet_count = 10;
+    int packet_length = 100;
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-h") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                host = argv[i+1];
+            }
+            i++;
+        }
+        else if (strcmp(argv[i], "-p") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                port = (unsigned short)atoi(argv[i+1]);
+            }
+            i++;
+        }
+        else if (strcmp(argv[i], "-v") == 0)
+        {
+            verbose = 1;
+        }
+        else if (strcmp(argv[i], "-c") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                packet_count = atoi(argv[i+1]);
+            }
+            i++;
+        }
+        else if (strcmp(argv[i], "-l") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                packet_length = atoi(argv[i+1]);
+            }
+            i++;
+        }
+    }
 
     if (enet_initialize() != 0)
     {
@@ -28,8 +75,8 @@ int main(int argc, char** argv)
     }
 
     /* Initiate the connection. */
-    enet_address_set_host(&address, "localhost");
-    address.port = 1234;
+    enet_address_set_host(&address, host);
+    address.port = port;
     peer = enet_host_connect(client   /* host seeking the connection */, 
                              &address /* destination for the connection */, 
                              2        /* number of channels to allocate */, 
@@ -43,7 +90,7 @@ int main(int argc, char** argv)
     /* Wait up to 5 seconds for the connection attempt to succeed. */
     if (enet_host_service(client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT)
     {
-        fprintf(stdout, "Connect succeeded.\n");
+        fprintf(stdout, "Connect succeeded\n");
     }
     else
     {
@@ -52,29 +99,57 @@ int main(int argc, char** argv)
         /* had run out without any significant event.            */
         enet_peer_reset(peer);
 
-        fprintf(stderr, "Connect failed.\n");
+        fprintf(stderr, "Connect failed\n");
         goto Exit;
     }
 
-    /* Sending packets to an ENet peer. */
-    for (int i = 0; i < 4; i++)
+    /* Ping-Pong */
+    time_begin = enet_time_get();
+    for (int i = 0; i < packet_count; i++)
     {
-        packet = enet_packet_create(NULL /* initial contents of the packet's data */, 
-                                    9    /* size of the data allocated for this packet */, 
+        packet = enet_packet_create(NULL           /* initial contents of the packet's data */, 
+                                    packet_length  /* size of the data allocated for this packet */, 
                                     ENET_PACKET_FLAG_RELIABLE /* flags for this packet */);
-        
+        memset(packet->data, 0, packet_length);
         sprintf((char*)packet->data, "packet %d", i);
-
-        enet_peer_send(peer   /* destination for the packet */,
-                       i % 2  /* channel on which to send */,
+        enet_peer_send(peer   /* destination for the packet */, 
+                       i % 2  /* channel on which to send */, 
                        packet /* packet to send */);
+
+        retcode = enet_host_service(client /* host to service */, 
+                                    &event /* an event structure where event details will be placed if one occurs */, 
+                                    1000   /* number of milliseconds that ENet should wait for events */);
+        if (retcode > 0 && event.type == ENET_EVENT_TYPE_RECEIVE)
+        {
+            if (verbose)
+            {
+                fprintf(stdout, 
+                        "Reply packet %d: channel=%u length=%u data=\"%s\"\n", 
+                        i,
+                        event.channelID,
+                        (unsigned int)event.packet->dataLength,
+                        (const char*)event.packet->data);
+            }
+            /* Clean up the packet now that we're done using it. */
+            enet_packet_destroy(event.packet);
+        }
+        else
+        {
+            /* Something is wrong. */
+            fprintf(stderr, "Lost reply packet %d\n", i);
+        }
     }
-    /* Send out queued packets. One could just use enet_host_service() instead. */
-    enet_host_flush(client);
+    fprintf(stdout, "PacketCount=%d Time=%u\n", packet_count, enet_time_get() - time_begin);
+
+    /* Send a large packet(should be fragmented). */
+    packet = enet_packet_create(NULL, 6666, ENET_PACKET_FLAG_RELIABLE);
+    memset(packet->data, 0, 6666);
+    strcpy((char*)packet->data, "This is a large packet...");
+    enet_peer_send(peer, 0, packet);
 
     /* Initiate the disconnection. */
-    enet_peer_disconnect(peer /* peer to request a disconnection */, 
-                         0    /* data describing the disconnection */);
+    enet_peer_disconnect_later(peer /* peer to request a disconnection */,
+                               0    /* data describing the disconnection */);
 
     /* Allow up to 3 seconds for the disconnect to succeed and drop any packets received packets. */
     retcode = 1;
@@ -90,7 +165,7 @@ int main(int argc, char** argv)
                 break;
 
             case ENET_EVENT_TYPE_DISCONNECT:
-                fprintf(stdout, "Disconnect succeeded.\n");
+                fprintf(stdout, "Disconnect succeeded\n");
                 retcode = 0;
                 break;
 
@@ -101,7 +176,7 @@ int main(int argc, char** argv)
         else
         {
             /* Timeout or failure */
-            fprintf(stderr, "Disconnect failed.\n");
+            fprintf(stderr, "Disconnect failed\n");
             enet_peer_reset(peer);
         }
     }
