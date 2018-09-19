@@ -107,7 +107,6 @@ enet_address_set_host_ip (ENetAddress * address, const char * name)
 #ifdef HAS_INET_PTON
     if (! inet_pton (AF_INET6, name, & address -> host))
 #else
-#error "inet_pton() is needed for IPv6 support"
     if (! inet_aton (name, (struct in_addr *) & address -> host))
 #endif
 

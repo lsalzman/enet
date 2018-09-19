@@ -66,8 +66,6 @@ enet_address_set_host_ip (ENetAddress * address, const char * name)
     if (! inet_pton (AF_INET6, name, & address -> host))
         return -1;
 #else
-#error "inet_pton() is needed for IPv6 support"
-
     enet_uint8 vals [4] = { 0, 0, 0, 0 };
     int i;
 
