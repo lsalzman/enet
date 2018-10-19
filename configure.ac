@@ -23,6 +23,15 @@ AC_CHECK_TYPE(socklen_t, [AC_DEFINE(HAS_SOCKLEN_T)], ,
               #include <sys/socket.h>
 )
 
+case $host_os in
+    mingw* )
+        AM_CONDITIONAL([MINGW], [true])
+        ;;
+    * )
+        AM_CONDITIONAL([MINGW], [false])
+        ;;
+esac
+
 AC_CONFIG_FILES([Makefile
 	libenet.pc])
 AC_OUTPUT
