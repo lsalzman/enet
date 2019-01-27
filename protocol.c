@@ -1407,7 +1407,10 @@ enet_protocol_send_unreliable_outgoing_commands (ENetHost * host, ENetPeer * pee
         enet_list_empty (& peer -> outgoingReliableCommands) &&
         enet_list_empty (& peer -> outgoingUnreliableCommands) && 
         enet_list_empty (& peer -> sentReliableCommands))
+    {
       enet_peer_disconnect (peer, peer -> eventData);
+      host -> commandCount = 0;
+    }
 }
 
 static int
