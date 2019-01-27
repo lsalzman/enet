@@ -1,4 +1,8 @@
+ENet 1.3.14 (January 27, 2019):
+
+* bug fix for enet_peer_disconnect_later()
 * use getaddrinfo and getnameinfo where available
+* miscellenous cleanups
 
 ENet 1.3.13 (April 30, 2015):
 
