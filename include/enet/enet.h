@@ -147,10 +147,10 @@ typedef void (ENET_CALLBACK * ENetPacketFreeCallback) (struct _ENetPacket *);
  */
 typedef struct _ENetPacket
 {
-   size_t                   referenceCount;  /**< internal use only */
+   enet_uint32              referenceCount;  /**< internal use only */
    enet_uint32              flags;           /**< bitwise-or of ENetPacketFlag constants */
    enet_uint8 *             data;            /**< allocated data for packet */
-   size_t                   dataLength;      /**< length of data */
+   enet_uint32              dataLength;      /**< length of data */
    ENetPacketFreeCallback   freeCallback;    /**< function to be called when the packet is no longer in use */
    void *                   userData;        /**< application private data, may be freely modified */
 } ENetPacket;
