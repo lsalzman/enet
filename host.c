@@ -26,13 +26,16 @@
     at any given time.
 */
 ENetHost *
-enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelLimit, enet_uint32 incomingBandwidth, enet_uint32 outgoingBandwidth)
+enet_host_create (ENetAddressType type, const ENetAddress * address, size_t peerCount, size_t channelLimit, enet_uint32 incomingBandwidth, enet_uint32 outgoingBandwidth)
 {
     ENetHost * host;
     ENetPeer * currentPeer;
 
     if (peerCount > ENET_PROTOCOL_MAXIMUM_PEER_ID)
       return NULL;
+
+    if (address && address->type != type && type != ENET_ADDRESS_TYPE_ANY)
+        return NULL;
 
     host = (ENetHost *) enet_malloc (sizeof (ENetHost));
     if (host == NULL)
@@ -48,7 +51,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     }
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
-    host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM);
+    host -> socket = enet_socket_create (type, ENET_SOCKET_TYPE_DATAGRAM);
     if (host -> socket == ENET_SOCKET_NULL || (address != NULL && enet_socket_bind (host -> socket, address) < 0))
     {
        if (host -> socket != ENET_SOCKET_NULL)
@@ -64,6 +67,9 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_BROADCAST, 1);
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_RCVBUF, ENET_HOST_RECEIVE_BUFFER_SIZE);
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_SNDBUF, ENET_HOST_SEND_BUFFER_SIZE);
+
+    if (type == ENET_ADDRESS_TYPE_ANY)
+        enet_socket_set_option (host -> socket, ENET_SOCKOPT_IPV6ONLY, 0);
 
     if (address != NULL && enet_socket_get_address (host -> socket, & host -> address) < 0)   
       host -> address = * address;
@@ -87,7 +93,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     host -> commandCount = 0;
     host -> bufferCount = 0;
     host -> checksum = NULL;
-    host -> receivedAddress.host = ENET_HOST_ANY;
+    host -> receivedAddress.type = ENET_ADDRESS_TYPE_ANY;
     host -> receivedAddress.port = 0;
     host -> receivedData = NULL;
     host -> receivedDataLength = 0;
@@ -241,7 +247,7 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
         channel -> usedReliableWindows = 0;
         memset (channel -> reliableWindows, 0, sizeof (channel -> reliableWindows));
     }
-        
+
     command.header.command = ENET_PROTOCOL_COMMAND_CONNECT | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
     command.header.channelID = 0xFF;
     command.connect.outgoingPeerID = ENET_HOST_TO_NET_16 (currentPeer -> incomingPeerID);
