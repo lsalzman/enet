@@ -62,7 +62,8 @@ typedef enum _ENetSocketOption
    ENET_SOCKOPT_RCVTIMEO  = 6,
    ENET_SOCKOPT_SNDTIMEO  = 7,
    ENET_SOCKOPT_ERROR     = 8,
-   ENET_SOCKOPT_NODELAY   = 9
+   ENET_SOCKOPT_NODELAY   = 9,
+   ENET_SOCKOPT_IPV6ONLY  = 10
 } ENetSocketOption;
 
 typedef enum _ENetSocketShutdown
@@ -72,25 +73,31 @@ typedef enum _ENetSocketShutdown
     ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
 } ENetSocketShutdown;
 
-#define ENET_HOST_ANY       0
-#define ENET_HOST_BROADCAST 0xFFFFFFFFU
-#define ENET_PORT_ANY       0
+typedef enum _ENetAddressType
+{
+    ENET_ADDRESS_TYPE_ANY  = 0,
+    ENET_ADDRESS_TYPE_IPV4 = 1,
+    ENET_ADDRESS_TYPE_IPV6 = 2
+} ENetAddressType;
 
 /**
  * Portable internet address structure. 
  *
  * The host must be specified in network byte-order, and the port must be in host 
- * byte-order. The constant ENET_HOST_ANY may be used to specify the default 
- * server host. The constant ENET_HOST_BROADCAST may be used to specify the
- * broadcast address (255.255.255.255).  This makes sense for enet_host_connect,
- * but not for enet_host_create.  Once a server responds to a broadcast, the
- * address is updated from ENET_HOST_BROADCAST to the server's actual IP address.
+ * byte-order.
  */
 typedef struct _ENetAddress
 {
-   enet_uint32 host;
+   ENetAddressType type;
    enet_uint16 port;
+   union 
+   {
+       enet_uint8 v4[4];
+       enet_uint16 v6[8];
+   } host;
 } ENetAddress;
+
+#define ENET_PORT_ANY       0
 
 /**
  * Packet flag bit constants.
@@ -489,7 +496,7 @@ ENET_API void enet_time_set (enet_uint32);
 /** @defgroup socket ENet socket functions
     @{
 */
-ENET_API ENetSocket enet_socket_create (ENetSocketType);
+ENET_API ENetSocket enet_socket_create (ENetAddressType, ENetSocketType);
 ENET_API int        enet_socket_bind (ENetSocket, const ENetAddress *);
 ENET_API int        enet_socket_get_address (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_listen (ENetSocket, int);
@@ -510,6 +517,45 @@ ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSock
     @{
 */
 
+/** Compares two addresses (only the host part)
+    @param firstAddress first address to compare
+    @param secondAddress second address to compare
+    @retval 1 if addresses are equal
+    @retval 0 if addresses are different
+    @returns if the addresses are equal
+*/
+ENET_API int enet_address_equal_host (const ENetAddress * firstAddress, const ENetAddress * secondAddress);
+
+/** Compares two addresses and their port
+    @param firstAddress first address to compare
+    @param secondAddress second address to compare
+    @retval 1 if addresses are equal
+    @retval 0 if addresses are different
+    @returns if the addresses are equal
+*/
+ENET_API int enet_address_equal(const ENetAddress * firstAddress, const ENetAddress * secondAddress);
+
+/** Checks if an address is the special any address
+    @param address address to check
+    @retval 1 if address is any
+    @returns if the address is the any one for its family
+*/
+ENET_API int enet_address_is_any(const ENetAddress * address);
+
+/** Checks if an address is the special broadcast address
+    @param address address to check
+    @retval 1 if address is broadcast
+    @returns if the address is the broadcast one for its family
+*/
+ENET_API int enet_address_is_broadcast(const ENetAddress * address);
+
+/** Checks if an address is a loopback one
+    @param address address to check
+    @retval 1 if address is loopback
+    @returns if the address is a loopback one for its family
+*/
+ENET_API int enet_address_is_loopback(const ENetAddress * address);
+
 /** Attempts to parse the printable form of the IP address in the parameter hostName
     and sets the host field in the address parameter if successful.
     @param address destination to store the parsed IP address
@@ -522,13 +568,14 @@ ENET_API int enet_address_set_host_ip (ENetAddress * address, const char * hostN
 
 /** Attempts to resolve the host named by the parameter hostName and sets
     the host field in the address parameter if successful.
+    @param type address type (any/ipv4/ipv6)
     @param address destination to store resolved address
     @param hostName host name to lookup
     @retval 0 on success
     @retval < 0 on failure
     @returns the address of the given hostName in address on success
 */
-ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName);
+ENET_API int enet_address_set_host (ENetAddress * address, ENetAddressType type, const char * hostName);
 
 /** Gives the printable form of the IP address specified in the address parameter.
     @param address    address printed
@@ -550,14 +597,18 @@ ENET_API int enet_address_get_host_ip (const ENetAddress * address, char * hostN
 */
 ENET_API int enet_address_get_host (const ENetAddress * address, char * hostName, size_t nameLength);
 
+ENET_API void enet_address_build_any(ENetAddress * address, ENetAddressType type);
+ENET_API void enet_address_build_loopback(ENetAddress * address, ENetAddressType type);
+ENET_API void enet_address_convert_ipv6(ENetAddress * address);
+
 /** @} */
 
 ENET_API ENetPacket * enet_packet_create (const void *, size_t, enet_uint32);
 ENET_API void         enet_packet_destroy (ENetPacket *);
 ENET_API int          enet_packet_resize  (ENetPacket *, size_t);
 ENET_API enet_uint32  enet_crc32 (const ENetBuffer *, size_t);
-                
-ENET_API ENetHost * enet_host_create (const ENetAddress *, size_t, size_t, enet_uint32, enet_uint32);
+
+ENET_API ENetHost * enet_host_create (ENetAddressType type, const ENetAddress *, size_t, size_t, enet_uint32, enet_uint32);
 ENET_API void       enet_host_destroy (ENetHost *);
 ENET_API ENetPeer * enet_host_connect (ENetHost *, const ENetAddress *, size_t, enet_uint32);
 ENET_API int        enet_host_check_events (ENetHost *, ENetEvent *);
@@ -594,9 +645,9 @@ extern void                  enet_peer_on_disconnect (ENetPeer *);
 
 ENET_API void * enet_range_coder_create (void);
 ENET_API void   enet_range_coder_destroy (void *);
-ENET_API size_t enet_range_coder_compress (void *, const ENetBuffer *, size_t, size_t, enet_uint8 *, size_t);
-ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t, enet_uint8 *, size_t);
-   
+ENET_API size_t enet_range_coder_compress (void *, const ENetPeer * peer, const ENetBuffer *, size_t, size_t, enet_uint8 *, size_t);
+ENET_API size_t enet_range_coder_decompress (void *, const ENetPeer * peer, const enet_uint8 *, size_t, enet_uint8 *, size_t);
+
 extern size_t enet_protocol_command_size (enet_uint8);
 
 #ifdef __cplusplus
