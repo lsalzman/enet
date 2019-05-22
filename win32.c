@@ -489,6 +489,7 @@ enet_socket_receive (ENetSocket socket,
     if (address != NULL)
     {
         if (enet_address_from_sock_addr(address, (struct sockaddr*) sockAddrBuf) != 0)
+            return -1;
     }
 
     return (int) recvLength;
