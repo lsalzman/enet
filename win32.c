@@ -183,7 +183,7 @@ enet_address_set_host(ENetAddress * address, ENetAddressType type, const char * 
     struct addrinfo hints;
     struct addrinfo* result;
     struct addrinfo* resultList = NULL;
-	enet_uint16 port;
+    enet_uint16 port;
     ENetAddress tempAddress;
     int bestScore = -1;
 
@@ -450,8 +450,7 @@ enet_socket_send (ENetSocket socket,
                    NULL,
                    NULL) == SOCKET_ERROR)
     {
-       int lastErr = WSAGetLastError();
-       if (lastErr == WSAEWOULDBLOCK)
+       if (WSAGetLastError() == WSAEWOULDBLOCK)
          return 0;
 
        return -1;
@@ -477,12 +476,11 @@ enet_socket_receive (ENetSocket socket,
                      & recvLength,
                      & flags,
                      address != NULL ? (struct sockaddr *) & sockAddrBuf : NULL,
-                     address != NULL ? &socketAddressLen : NULL,
+                     address != NULL ? & socketAddressLen : NULL,
                      NULL,
                      NULL) == SOCKET_ERROR)
     {
-       int lastErr = WSAGetLastError();
-       switch (lastErr)
+       switch (WSAGetLastError())
        {
        case WSAEWOULDBLOCK:
        case WSAECONNRESET:
