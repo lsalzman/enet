@@ -3,11 +3,7 @@
  @brief ENet linked list functions
 */
 #define ENET_BUILDING_LIB 1
-#ifdef UNITY_PLUGIN_IOS
-#include "enet.h"
-#else
-#include <ENet/enet.h>
-#endif
+#include "enet/enet.h"
 
 #include <stdio.h>
 #include <string.h>
