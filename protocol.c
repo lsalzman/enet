@@ -1697,7 +1697,6 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         {
             size_t originalSize = host -> packetSize - sizeof(ENetProtocolHeader),
                    compressedSize = host -> compressor.compress (host -> compressor.context,
-                                        currentPeer,
                                         & host -> buffers [1], host -> bufferCount - 1,
                                         originalSize,
                                         host -> packetData [1],
