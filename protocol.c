@@ -307,7 +307,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
         }
         else 
         if (currentPeer -> state != ENET_PEER_STATE_CONNECTING &&
-            currentPeer -> address.host == host -> receivedAddress.host)
+            enet_address_equal_host(&currentPeer->address, &host->receivedAddress))
         {
             if (currentPeer -> address.port == host -> receivedAddress.port &&
                 currentPeer -> connectID == command -> connect.connectID)
@@ -1019,9 +1019,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
 
        if (peer -> state == ENET_PEER_STATE_DISCONNECTED ||
            peer -> state == ENET_PEER_STATE_ZOMBIE ||
-           ((host -> receivedAddress.host != peer -> address.host ||
-             host -> receivedAddress.port != peer -> address.port) &&
-             peer -> address.host != ENET_HOST_BROADCAST) ||
+           (!enet_address_equal(&host->receivedAddress, &peer->address) &&
+            !enet_address_is_broadcast(&peer->address)) ||
            (peer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID &&
             sessionID != peer -> incomingSessionID))
          return 0;
@@ -1698,6 +1697,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         {
             size_t originalSize = host -> packetSize - sizeof(ENetProtocolHeader),
                    compressedSize = host -> compressor.compress (host -> compressor.context,
+                                        currentPeer,
                                         & host -> buffers [1], host -> bufferCount - 1,
                                         originalSize,
                                         host -> packetData [1],
