@@ -855,20 +855,40 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
     peer -> earliestTimeout = 0;
 
     roundTripTime = ENET_TIME_DIFFERENCE (host -> serviceTime, receivedSentTime);
+    if (roundTripTime == 0)
+      roundTripTime = 1;
 
     enet_peer_throttle (peer, roundTripTime);
 
-    peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
-
-    if (roundTripTime >= peer -> roundTripTime)
+    if (peer -> roundTripTime != 0)
     {
-       peer -> roundTripTime += (roundTripTime - peer -> roundTripTime) / 8;
-       peer -> roundTripTimeVariance += (roundTripTime - peer -> roundTripTime) / 4;
+       if (roundTripTime >= peer -> roundTripTime)
+       {
+          enet_uint32 roundTripTimeDiff = roundTripTime - peer -> roundTripTime;
+          peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
+          peer -> roundTripTimeVariance += roundTripTimeDiff / 4;
+          peer -> roundTripTime += roundTripTimeDiff / 8;
+       }
+       else
+       {
+          enet_uint32 roundTripTimeDiff = peer -> roundTripTime - roundTripTime;
+          if (roundTripTime + peer -> roundTripTimeVariance >= peer -> roundTripTime)
+          {
+             peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
+             peer -> roundTripTimeVariance += roundTripTimeDiff / 4;
+          }
+          else
+          {
+             peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 32;
+             peer -> roundTripTimeVariance += roundTripTimeDiff / 32;
+          }
+          peer -> roundTripTime -= roundTripTimeDiff / 8;
+       }
     }
     else
     {
-       peer -> roundTripTime -= (peer -> roundTripTime - roundTripTime) / 8;
-       peer -> roundTripTimeVariance += (peer -> roundTripTime - roundTripTime) / 4;
+       peer -> roundTripTime = roundTripTime;
+       peer -> roundTripTimeVariance = roundTripTime / 2;
     }
 
     if (peer -> roundTripTime < peer -> lowestRoundTripTime)
@@ -1553,7 +1573,9 @@ enet_protocol_send_reliable_outgoing_commands (ENetHost * host, ENetPeer * peer)
  
        if (outgoingCommand -> roundTripTimeout == 0)
        {
-          outgoingCommand -> roundTripTimeout = peer -> roundTripTime + 4 * peer -> roundTripTimeVariance;
+          outgoingCommand -> roundTripTimeout = peer -> roundTripTime
+            ? peer -> roundTripTime + 4 * peer -> roundTripTimeVariance
+            : ENET_PEER_DEFAULT_ROUND_TRIP_TIME;
           outgoingCommand -> roundTripTimeoutLimit = peer -> timeoutLimit * outgoingCommand -> roundTripTimeout;
        }
 
