@@ -851,24 +851,39 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
     if (ENET_TIME_LESS (host -> serviceTime, receivedSentTime))
       return 0;
 
-    peer -> lastReceiveTime = host -> serviceTime;
-    peer -> earliestTimeout = 0;
-
     roundTripTime = ENET_TIME_DIFFERENCE (host -> serviceTime, receivedSentTime);
 
     enet_peer_throttle (peer, roundTripTime);
 
-    peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
-
-    if (roundTripTime >= peer -> roundTripTime)
+    if (peer -> lastReceiveTime > 0)
     {
-       peer -> roundTripTime += (roundTripTime - peer -> roundTripTime) / 8;
-       peer -> roundTripTimeVariance += (roundTripTime - peer -> roundTripTime) / 4;
+       if (roundTripTime >= peer -> roundTripTime)
+       {
+          enet_uint32 diff = roundTripTime - peer -> roundTripTime;
+          peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
+          peer -> roundTripTimeVariance += diff / 4;
+          peer -> roundTripTime += diff / 8;
+       }
+       else
+       {
+          enet_uint32 diff = peer -> roundTripTime - roundTripTime;
+          if (diff <= peer -> roundTripTimeVariance)
+          {
+             peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
+             peer -> roundTripTimeVariance += diff / 4;
+          }
+          else
+          {
+             peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 32;
+             peer -> roundTripTimeVariance += diff / 32;
+          }
+          peer -> roundTripTime -= diff / 8;
+       }
     }
     else
     {
-       peer -> roundTripTime -= (peer -> roundTripTime - roundTripTime) / 8;
-       peer -> roundTripTimeVariance += (peer -> roundTripTime - roundTripTime) / 4;
+       peer -> roundTripTime = roundTripTime;
+       peer -> roundTripTimeVariance = roundTripTime / 2;
     }
 
     if (peer -> roundTripTime < peer -> lowestRoundTripTime)
@@ -886,6 +901,9 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
         peer -> highestRoundTripTimeVariance = peer -> roundTripTimeVariance;
         peer -> packetThrottleEpoch = host -> serviceTime;
     }
+
+    peer -> lastReceiveTime = ENET_MAX (host -> serviceTime, 1);
+    peer -> earliestTimeout = 0;
 
     receivedReliableSequenceNumber = ENET_NET_TO_HOST_16 (command -> acknowledge.receivedReliableSequenceNumber);
 
