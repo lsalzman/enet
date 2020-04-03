@@ -307,7 +307,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
         }
         else 
         if (currentPeer -> state != ENET_PEER_STATE_CONNECTING &&
-            currentPeer -> address.host == host -> receivedAddress.host)
+            enet_address_host_equal(currentPeer -> address.host, host -> receivedAddress.host))
         {
             if (currentPeer -> address.port == host -> receivedAddress.port &&
                 currentPeer -> connectID == command -> connect.connectID)
@@ -1038,9 +1038,8 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
 
        if (peer -> state == ENET_PEER_STATE_DISCONNECTED ||
            peer -> state == ENET_PEER_STATE_ZOMBIE ||
-           ((host -> receivedAddress.host != peer -> address.host ||
-             host -> receivedAddress.port != peer -> address.port) &&
-             peer -> address.host != ENET_HOST_BROADCAST) ||
+           (!enet_address_host_equal(host -> receivedAddress.host, peer -> address.host) ||
+             host -> receivedAddress.port != peer -> address.port) ||
            (peer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID &&
             sessionID != peer -> incomingSessionID))
          return 0;
@@ -1082,7 +1081,7 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
        
     if (peer != NULL)
     {
-       peer -> address.host = host -> receivedAddress.host;
+       enet_address_host_copy_from(peer -> address.host, host -> receivedAddress.host);
        peer -> address.port = host -> receivedAddress.port;
        peer -> incomingDataTotal += host -> receivedDataLength;
     }
