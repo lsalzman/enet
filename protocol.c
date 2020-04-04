@@ -48,11 +48,11 @@ enet_protocol_dispatch_state (ENetHost * host, ENetPeer * peer, ENetPeerState st
 {
     enet_protocol_change_state (host, peer, state);
 
-    if (! peer -> needsDispatch)
+    if (! (peer -> flags & ENET_PEER_FLAG_NEEDS_DISPATCH))
     {
        enet_list_insert (enet_list_end (& host -> dispatchQueue), & peer -> dispatchList);
 
-       peer -> needsDispatch = 1;
+       peer -> flags |= ENET_PEER_FLAG_NEEDS_DISPATCH;
     }
 }
 
@@ -63,7 +63,7 @@ enet_protocol_dispatch_incoming_commands (ENetHost * host, ENetEvent * event)
     {
        ENetPeer * peer = (ENetPeer *) enet_list_remove (enet_list_begin (& host -> dispatchQueue));
 
-       peer -> needsDispatch = 0;
+       peer -> flags &= ~ ENET_PEER_FLAG_NEEDS_DISPATCH;
 
        switch (peer -> state)
        {
@@ -101,7 +101,7 @@ enet_protocol_dispatch_incoming_commands (ENetHost * host, ENetEvent * event)
 
            if (! enet_list_empty (& peer -> dispatchedCommands))
            {
-              peer -> needsDispatch = 1;
+              peer -> flags |= ENET_PEER_FLAG_NEEDS_DISPATCH;
          
               enet_list_insert (enet_list_end (& host -> dispatchQueue), & peer -> dispatchList);
            }
@@ -858,28 +858,35 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
 
     if (peer -> lastReceiveTime > 0)
     {
-       if (roundTripTime >= peer -> roundTripTime)
+       enet_uint32 accumRoundTripTime = (peer -> roundTripTime << 8) + peer -> roundTripTimeRemainder;
+       enet_uint32 accumRoundTripTimeVariance = (peer -> roundTripTimeVariance << 8) + peer -> roundTripTimeVarianceRemainder;
+       roundTripTime <<= 8;
+       if (roundTripTime >= accumRoundTripTime)
        {
-          enet_uint32 diff = roundTripTime - peer -> roundTripTime;
-          peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
-          peer -> roundTripTimeVariance += diff / 4;
-          peer -> roundTripTime += diff / 8;
+          enet_uint32 diff = roundTripTime - accumRoundTripTime;
+          accumRoundTripTimeVariance -= accumRoundTripTimeVariance / 4;
+          accumRoundTripTimeVariance += diff / 4;
+          accumRoundTripTime += diff / 8;
        }
        else
        {
-          enet_uint32 diff = peer -> roundTripTime - roundTripTime;
-          if (diff <= peer -> roundTripTimeVariance)
+          enet_uint32 diff = accumRoundTripTime - roundTripTime;
+          if (diff <= accumRoundTripTimeVariance)
           {
-             peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
-             peer -> roundTripTimeVariance += diff / 4;
+             accumRoundTripTimeVariance -= accumRoundTripTimeVariance / 4;
+             accumRoundTripTimeVariance += diff / 4;
           }
           else
           {
-             peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 32;
-             peer -> roundTripTimeVariance += diff / 32;
+             accumRoundTripTimeVariance -= accumRoundTripTimeVariance / 32;
+             accumRoundTripTimeVariance += diff / 32;
           }
-          peer -> roundTripTime -= diff / 8;
+          accumRoundTripTime -= diff / 8;
        }
+       peer -> roundTripTime = accumRoundTripTime >> 8;
+       peer -> roundTripTimeRemainder = accumRoundTripTime & 0xFF;
+       peer -> roundTripTimeVariance = accumRoundTripTimeVariance >> 8;
+       peer -> roundTripTimeVarianceRemainder = accumRoundTripTimeVariance & 0xFF;
     }
     else
     {
