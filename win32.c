@@ -316,7 +316,7 @@ enet_socket_send (ENetSocket socket,
                   size_t bufferCount)
 {
     struct sockaddr_in sin;
-    DWORD sentLength;
+    DWORD sentLength = 0;
 
     if (address != NULL)
     {
