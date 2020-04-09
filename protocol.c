@@ -35,6 +35,7 @@ enet_protocol_command_size (enet_uint8 commandNumber)
 static void
 enet_protocol_change_state (ENetHost * host, ENetPeer * peer, ENetPeerState state)
 {
+    (void)(host);
     if (state == ENET_PEER_STATE_CONNECTED || state == ENET_PEER_STATE_DISCONNECT_LATER)
       enet_peer_on_connect (peer);
     else
@@ -283,6 +284,7 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
 static ENetPeer *
 enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENetProtocol * command)
 {
+    (void)(header);
     enet_uint8 incomingSessionID, outgoingSessionID;
     enet_uint32 mtu, windowSize;
     ENetChannel * channel;
@@ -750,6 +752,8 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
 static int
 enet_protocol_handle_ping (ENetHost * host, ENetPeer * peer, const ENetProtocol * command)
 {
+    (void)(host);
+    (void)(command);
     if (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER)
       return -1;
 
@@ -793,6 +797,7 @@ enet_protocol_handle_bandwidth_limit (ENetHost * host, ENetPeer * peer, const EN
 static int
 enet_protocol_handle_throttle_configure (ENetHost * host, ENetPeer * peer, const ENetProtocol * command)
 {
+    (void)(host);
     if (peer -> state != ENET_PEER_STATE_CONNECTED && peer -> state != ENET_PEER_STATE_DISCONNECT_LATER)
       return -1;
 
