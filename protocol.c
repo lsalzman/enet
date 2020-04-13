@@ -854,12 +854,13 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
     roundTripTime = ENET_TIME_DIFFERENCE (host -> serviceTime, receivedSentTime);
     roundTripTime = ENET_MAX (roundTripTime, 1);
 
-    enet_peer_throttle (peer, roundTripTime);
-
     if (peer -> lastReceiveTime > 0)
     {
        enet_uint32 accumRoundTripTime = (peer -> roundTripTime << 8) + peer -> roundTripTimeRemainder;
        enet_uint32 accumRoundTripTimeVariance = (peer -> roundTripTimeVariance << 8) + peer -> roundTripTimeVarianceRemainder;
+
+       enet_peer_throttle (peer, roundTripTime);
+
        roundTripTime <<= 8;
        if (roundTripTime >= accumRoundTripTime)
        {
