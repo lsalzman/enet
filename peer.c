@@ -318,8 +318,7 @@ enet_peer_reset_queues (ENetPeer * peer)
 
     enet_peer_reset_outgoing_commands (& peer -> sentReliableCommands);
     enet_peer_reset_outgoing_commands (& peer -> sentUnreliableCommands);
-    enet_peer_reset_outgoing_commands (& peer -> outgoingReliableCommands);
-    enet_peer_reset_outgoing_commands (& peer -> outgoingUnreliableCommands);
+    enet_peer_reset_outgoing_commands (& peer -> outgoingCommands);
     enet_peer_reset_incoming_commands (& peer -> dispatchedCommands);
 
     if (peer -> channels != NULL && peer -> channelCount > 0)
@@ -573,8 +572,7 @@ void
 enet_peer_disconnect_later (ENetPeer * peer, enet_uint32 data)
 {   
     if ((peer -> state == ENET_PEER_STATE_CONNECTED || peer -> state == ENET_PEER_STATE_DISCONNECT_LATER) && 
-        ! (enet_list_empty (& peer -> outgoingReliableCommands) &&
-           enet_list_empty (& peer -> outgoingUnreliableCommands) && 
+        ! (enet_list_empty (& peer -> outgoingCommands) &&
            enet_list_empty (& peer -> sentReliableCommands)))
     {
         peer -> state = ENET_PEER_STATE_DISCONNECT_LATER;
@@ -676,10 +674,7 @@ enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoin
         break;
     }
 
-    if (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE)
-      enet_list_insert (enet_list_end (& peer -> outgoingReliableCommands), outgoingCommand);
-    else
-      enet_list_insert (enet_list_end (& peer -> outgoingUnreliableCommands), outgoingCommand);
+    enet_list_insert (enet_list_end (& peer -> outgoingCommands), outgoingCommand);
 }
 
 ENetOutgoingCommand *

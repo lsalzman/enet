@@ -313,8 +313,7 @@ typedef struct _ENetPeer
    ENetList      acknowledgements;
    ENetList      sentReliableCommands;
    ENetList      sentUnreliableCommands;
-   ENetList      outgoingReliableCommands;
-   ENetList      outgoingUnreliableCommands;
+   ENetList      outgoingCommands;
    ENetList      dispatchedCommands;
    enet_uint16   flags;
    enet_uint8    roundTripTimeRemainder;
