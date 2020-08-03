@@ -1387,7 +1387,7 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer)
     ENetBuffer * buffer = & host -> buffers [host -> bufferCount];
     ENetOutgoingCommand * outgoingCommand;
     ENetListIterator currentCommand;
-    ENetChannel *channel;
+    ENetChannel *channel = NULL;
     enet_uint16 reliableWindow;
     size_t commandSize;
     int windowExceeded = 0, windowWrap = 0, canPing = 1;
