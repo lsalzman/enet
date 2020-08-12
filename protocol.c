@@ -888,7 +888,7 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
         ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> packetThrottleEpoch) >= peer -> packetThrottleInterval)
     {
         peer -> lastRoundTripTime = peer -> lowestRoundTripTime;
-        peer -> lastRoundTripTimeVariance = ENET_MAX (peer -> highestRoundTripTimeVariance, (peer -> lowestRoundTripTime + 31) / 32);
+        peer -> lastRoundTripTimeVariance = ENET_MAX (peer -> highestRoundTripTimeVariance, (peer -> lowestRoundTripTime + 23) / 24);
         peer -> lowestRoundTripTime = peer -> roundTripTime;
         peer -> highestRoundTripTimeVariance = peer -> roundTripTimeVariance;
         peer -> packetThrottleEpoch = host -> serviceTime;
