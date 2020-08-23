@@ -66,7 +66,7 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
         peer -> packetThrottle = peer -> packetThrottleLimit;
     }
     else
-    if (rtt <= peer -> lastRoundTripTime)
+    if (rtt <= peer -> lastRoundTripTime + (peer -> lastRoundTripTimeVariance + 1) / 2)
     {
         peer -> packetThrottle += peer -> packetThrottleAcceleration;
 
