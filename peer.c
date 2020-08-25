@@ -66,7 +66,7 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
         peer -> packetThrottle = peer -> packetThrottleLimit;
     }
     else
-    if (rtt <= peer -> lastRoundTripTime)
+    if (rtt <= peer -> lastRoundTripTime + (peer -> lastRoundTripTimeVariance + 1) / 2)
     {
         peer -> packetThrottle += peer -> packetThrottleAcceleration;
 
@@ -268,7 +268,7 @@ enet_peer_reset_outgoing_commands (ENetList * queue)
 }
 
 static void
-enet_peer_remove_incoming_commands (ENetList * queue, ENetListIterator startCommand, ENetListIterator endCommand)
+enet_peer_remove_incoming_commands (ENetList * queue, ENetListIterator startCommand, ENetListIterator endCommand, ENetIncomingCommand * excludeCommand)
 {
     (void)(queue);
     ENetListIterator currentCommand;    
@@ -278,6 +278,9 @@ enet_peer_remove_incoming_commands (ENetList * queue, ENetListIterator startComm
        ENetIncomingCommand * incomingCommand = (ENetIncomingCommand *) currentCommand;
 
        currentCommand = enet_list_next (currentCommand);
+
+       if (incomingCommand == excludeCommand)
+         continue;
 
        enet_list_remove (& incomingCommand -> incomingCommandList);
  
@@ -299,7 +302,7 @@ enet_peer_remove_incoming_commands (ENetList * queue, ENetListIterator startComm
 static void
 enet_peer_reset_incoming_commands (ENetList * queue)
 {
-    enet_peer_remove_incoming_commands(queue, enet_list_begin (queue), enet_list_end (queue));
+    enet_peer_remove_incoming_commands(queue, enet_list_begin (queue), enet_list_end (queue), NULL);
 }
  
 void
@@ -698,7 +701,7 @@ enet_peer_queue_outgoing_command (ENetPeer * peer, const ENetProtocol * command,
 }
 
 void
-enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * channel)
+enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * channel, ENetIncomingCommand * queuedCommand)
 {
     ENetListIterator droppedCommand, startCommand, currentCommand;
 
@@ -777,11 +780,11 @@ enet_peer_dispatch_incoming_unreliable_commands (ENetPeer * peer, ENetChannel * 
        droppedCommand = currentCommand;
     }
 
-    enet_peer_remove_incoming_commands (& channel -> incomingUnreliableCommands, enet_list_begin (& channel -> incomingUnreliableCommands), droppedCommand);
+    enet_peer_remove_incoming_commands (& channel -> incomingUnreliableCommands, enet_list_begin (& channel -> incomingUnreliableCommands), droppedCommand, queuedCommand);
 }
 
 void
-enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * channel)
+enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * channel, ENetIncomingCommand * queuedCommand)
 {
     ENetListIterator currentCommand;
 
@@ -816,7 +819,7 @@ enet_peer_dispatch_incoming_reliable_commands (ENetPeer * peer, ENetChannel * ch
     }
 
     if (! enet_list_empty (& channel -> incomingUnreliableCommands))
-       enet_peer_dispatch_incoming_unreliable_commands (peer, channel);
+       enet_peer_dispatch_incoming_unreliable_commands (peer, channel, queuedCommand);
 }
 
 ENetIncomingCommand *
@@ -974,11 +977,11 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     {
     case ENET_PROTOCOL_COMMAND_SEND_FRAGMENT:
     case ENET_PROTOCOL_COMMAND_SEND_RELIABLE:
-       enet_peer_dispatch_incoming_reliable_commands (peer, channel);
+       enet_peer_dispatch_incoming_reliable_commands (peer, channel, incomingCommand);
        break;
 
     default:
-       enet_peer_dispatch_incoming_unreliable_commands (peer, channel);
+       enet_peer_dispatch_incoming_unreliable_commands (peer, channel, incomingCommand);
        break;
     }
 
