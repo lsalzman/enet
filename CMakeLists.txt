@@ -89,6 +89,6 @@ add_library(enet STATIC
     ${SOURCE_FILES}
 )
 
-if (MINGW)
+if (MINGW OR MSVC)
     target_link_libraries(enet winmm ws2_32)
 endif()
