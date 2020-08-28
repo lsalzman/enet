@@ -18,8 +18,15 @@ check_struct_has_member("struct msghdr" "msg_flags" "sys/types.h;sys/socket.h" H
 set(CMAKE_EXTRA_INCLUDE_FILES "sys/types.h" "sys/socket.h")
 check_type_size("socklen_t" HAS_SOCKLEN_T BUILTIN_TYPES_ONLY)
 unset(CMAKE_EXTRA_INCLUDE_FILES)
+
+set(ENET_BUILD_LIBTYPE "STATIC" CACHE STRING "ENet library build type. (SHARED/STATIC)")
+
+if (ENET_BUILD_LIBTYPE STREQUAL "STATIC")
+    add_definitions(-DENET_STATIC_LIB=1)
+endif()
+
 if(MSVC)
-	add_definitions(-W3)
+add_definitions(-W3)
 else()
 	add_definitions(-Wno-error)
 endif()
@@ -84,7 +91,7 @@ set(SOURCE_FILES
 source_group(include FILES ${INCLUDE_FILES})
 source_group(source FILES ${SOURCE_FILES})
 
-add_library(enet STATIC
+add_library(enet ${ENET_BUILD_LIBTYPE}
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
