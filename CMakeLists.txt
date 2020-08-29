@@ -19,9 +19,8 @@ set(CMAKE_EXTRA_INCLUDE_FILES "sys/types.h" "sys/socket.h")
 check_type_size("socklen_t" HAS_SOCKLEN_T BUILTIN_TYPES_ONLY)
 unset(CMAKE_EXTRA_INCLUDE_FILES)
 
-set(ENET_BUILD_LIBTYPE "STATIC" CACHE STRING "ENet library build type. (SHARED/STATIC)")
 
-if (ENET_BUILD_LIBTYPE STREQUAL "STATIC")
+if (BUILD_SHARED_LIBS)
     add_definitions(-DENET_STATIC_LIB=1)
 endif()
 
@@ -91,7 +90,7 @@ set(SOURCE_FILES
 source_group(include FILES ${INCLUDE_FILES})
 source_group(source FILES ${SOURCE_FILES})
 
-add_library(enet ${ENET_BUILD_LIBTYPE}
+add_library(enet
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
