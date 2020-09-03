@@ -838,6 +838,7 @@ static int
 enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer * peer, const ENetProtocol * command)
 {
     enet_uint32 roundTripTime,
+           roundTripTimeVariance,
            receivedSentTime,
            receivedReliableSequenceNumber;
     ENetProtocolCommand commandNumber;
@@ -871,26 +872,31 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
        peer -> roundTripTimeRemainder = accumRoundTripTime & 0xFF;
        peer -> roundTripTimeVariance = accumRoundTripTimeVariance >> 8;
        peer -> roundTripTimeVarianceRemainder = accumRoundTripTimeVariance & 0xFF;
+
+       roundTripTime = (accumRoundTripTime + 128) >> 8;
+       roundTripTimeVariance = (accumRoundTripTimeVariance + 255) >> 8;
     }
     else
     {
+       roundTripTimeVariance = (roundTripTime + 1) / 2;
+
        peer -> roundTripTime = roundTripTime;
-       peer -> roundTripTimeVariance = (roundTripTime + 1) / 2;
+       peer -> roundTripTimeVariance = roundTripTimeVariance;
     }
 
-    if (peer -> roundTripTime < peer -> lowestRoundTripTime)
-      peer -> lowestRoundTripTime = peer -> roundTripTime;
+    if (roundTripTime < peer -> lowestRoundTripTime)
+      peer -> lowestRoundTripTime = roundTripTime;
 
-    if (peer -> roundTripTimeVariance > peer -> highestRoundTripTimeVariance) 
-      peer -> highestRoundTripTimeVariance = peer -> roundTripTimeVariance;
+    if (roundTripTimeVariance > peer -> highestRoundTripTimeVariance) 
+      peer -> highestRoundTripTimeVariance = roundTripTimeVariance;
 
     if (peer -> packetThrottleEpoch == 0 ||
         ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> packetThrottleEpoch) >= peer -> packetThrottleInterval)
     {
         peer -> lastRoundTripTime = peer -> lowestRoundTripTime;
         peer -> lastRoundTripTimeVariance = ENET_MAX (peer -> highestRoundTripTimeVariance, (peer -> lowestRoundTripTime + 15) / 16);
-        peer -> lowestRoundTripTime = peer -> roundTripTime;
-        peer -> highestRoundTripTimeVariance = ENET_MAX (peer -> roundTripTimeVariance, 2);
+        peer -> lowestRoundTripTime = roundTripTime;
+        peer -> highestRoundTripTimeVariance = ENET_MAX (roundTripTimeVariance, 2);
         peer -> packetThrottleEpoch = host -> serviceTime;
     }
 
