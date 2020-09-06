@@ -896,7 +896,7 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
         peer -> lastRoundTripTime = peer -> lowestRoundTripTime;
         peer -> lastRoundTripTimeVariance = ENET_MAX (peer -> highestRoundTripTimeVariance, (peer -> lowestRoundTripTime + 15) / 16);
         peer -> lowestRoundTripTime = roundTripTime;
-        peer -> highestRoundTripTimeVariance = ENET_MAX (roundTripTimeVariance, 2);
+        peer -> highestRoundTripTimeVariance = ENET_MAX (roundTripTimeVariance, 3);
         peer -> packetThrottleEpoch = host -> serviceTime;
     }
 
