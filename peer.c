@@ -66,7 +66,7 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
         peer -> packetThrottle = peer -> packetThrottleLimit;
     }
     else
-    if (rtt <= peer -> lastRoundTripTime + (peer -> lastRoundTripTimeVariance + 1) / 2)
+    if (rtt <= peer -> lastRoundTripTime)
     {
         peer -> packetThrottle += peer -> packetThrottleAcceleration;
 
@@ -76,7 +76,7 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
         return 1;
     }
     else
-    if (rtt >= peer -> lastRoundTripTime + 2 * peer -> lastRoundTripTimeVariance)
+    if (rtt > peer -> lastRoundTripTime + 2 * peer -> lastRoundTripTimeVariance)
     {
         if (peer -> packetThrottle > peer -> packetThrottleDeceleration)
           peer -> packetThrottle -= peer -> packetThrottleDeceleration;
@@ -421,8 +421,6 @@ enet_peer_reset (ENetPeer * peer)
     peer -> eventData = 0;
     peer -> totalWaitingData = 0;
     peer -> flags = 0;
-    peer -> roundTripTimeRemainder = 0;
-    peer -> roundTripTimeVarianceRemainder = 0;
 
     memset (peer -> unsequencedWindow, 0, sizeof (peer -> unsequencedWindow));
     
