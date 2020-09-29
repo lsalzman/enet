@@ -6,10 +6,12 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifndef __ORBIS__
 #include <sys/ioctl.h>
+#include <netdb.h>
+#endif
 #include <sys/time.h>
 #include <netinet/tcp.h>
-#include <netdb.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -17,6 +19,42 @@
 
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
+
+#ifdef __ORBIS__
+#include <assert.h>
+#include <net.h>
+#include <stdbool.h>
+
+#define SOMAXCONN 128
+
+#ifdef HAS_POLL
+#undef HAS_POLL
+#endif
+#ifndef HAS_FCNTL
+#define HAS_FCNTL 1
+#endif
+#ifndef HAS_INET_PTON
+#define HAS_INET_PTON 1
+#endif
+#ifndef HAS_INET_NTOP
+#define HAS_INET_NTOP 1
+#endif
+#ifndef HAS_MSGHDR_FLAGS
+#define HAS_MSGHDR_FLAGS 1
+#endif
+#ifndef HAS_SOCKLEN_T
+#define HAS_SOCKLEN_T 1
+#endif
+#ifdef HAS_GETADDRINFO
+#undef HAS_GETADDRINFO
+#endif
+#ifdef HAS_GETNAMEINFO
+#undef HAS_GETNAMEINFO 
+#endif
+#ifdef HAS_GETHOSTBYADDR_R
+#undef HAS_GETHOSTBYADDR_R
+#endif
+#endif // __ORBIS__
 
 #ifdef __APPLE__
 #ifdef HAS_POLL
@@ -116,6 +154,46 @@ enet_address_set_host_ip (ENetAddress * address, const char * name)
 int
 enet_address_set_host (ENetAddress * address, const char * name)
 {
+#ifdef __ORBIS__
+	SceNetInAddr addr;
+	SceNetId rid = -1;
+	int memid = -1;
+	int ret;
+
+	ret = sceNetPoolCreate(__FUNCTION__, 4 * 1024, 0);
+	if (ret < 0) {
+		sceNetResolverDestroy(rid);
+		sceNetPoolDestroy(memid);
+		return -1;
+	}
+	memid = ret;
+	ret = sceNetResolverCreate(__FUNCTION__, memid, 0);
+	if (ret < 0) {
+		sceNetResolverDestroy(rid);
+		sceNetPoolDestroy(memid);
+		return -1;
+	}
+	rid = ret;
+	ret = sceNetResolverStartNtoa(rid, name, &addr, 0, 0, 0);
+	if (ret < 0) {
+		sceNetResolverDestroy(rid);
+		sceNetPoolDestroy(memid);
+		return -1;
+	}
+	address->host = addr.s_addr;
+	ret = sceNetResolverDestroy(rid);
+	if (ret < 0) {
+		sceNetResolverDestroy(rid);
+		sceNetPoolDestroy(memid);
+		return -1;
+	}
+	ret = sceNetPoolDestroy(memid);
+	if (ret < 0) {
+		sceNetResolverDestroy(rid);
+		sceNetPoolDestroy(memid);
+		return -1;
+	}
+#else
 #ifdef HAS_GETADDRINFO
     struct addrinfo hints, * resultList = NULL, * result = NULL;
 
@@ -164,8 +242,8 @@ enet_address_set_host (ENetAddress * address, const char * name)
         return 0;
     }
 #endif
-
-    return enet_address_set_host_ip (address, name);
+#endif
+	return enet_address_set_host_ip(address, name);
 }
 
 int
@@ -191,6 +269,9 @@ enet_address_get_host_ip (const ENetAddress * address, char * name, size_t nameL
 int
 enet_address_get_host (const ENetAddress * address, char * name, size_t nameLength)
 {
+#ifdef __ORBIS__
+	assert(false); // FUNCTIONALITY NOT AVAILABLE
+#else
 #ifdef HAS_GETNAMEINFO
     struct sockaddr_in sin;
     int err;
@@ -242,6 +323,7 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
 #endif
 
     return enet_address_get_host_ip (address, name, nameLength);
+#endif
 }
 
 int
