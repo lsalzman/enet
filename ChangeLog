@@ -1,3 +1,7 @@
+ENet 1.3.17 (November 15, 2020):
+
+* fixes for sender getting too far ahead or receiver that can cause instability with reliable packets
+
 ENet 1.3.16 (September 8, 2020):
 
 * fix bug in unreliable fragment queuing
