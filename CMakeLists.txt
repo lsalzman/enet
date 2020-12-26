@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.4.3)
 
 project(enet)
 
@@ -96,5 +96,9 @@ add_library(enet
 )
 
 if (WIN32)
+    if (BUILD_SHARED_LIBS)
+        set_property(TARGET enet PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    endif()
+
     target_link_libraries(enet winmm ws2_32)
 endif()
