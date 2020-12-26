@@ -86,7 +86,8 @@ set(SOURCE_FILES
     protocol.c
     address.c
     unix.c
-    win32.c)
+    win32.c
+    interop_helpers.c)
 
 source_group(include FILES ${INCLUDE_FILES})
 source_group(source FILES ${SOURCE_FILES})
