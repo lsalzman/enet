@@ -84,6 +84,7 @@ set(SOURCE_FILES
     packet.c
     peer.c
     protocol.c
+    address.c
     unix.c
     win32.c)
 
