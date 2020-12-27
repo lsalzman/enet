@@ -4,7 +4,7 @@
 #define TYPE_SIZE(ID, VAL) if (typeinfo_id == (ID)) return (VAL)
 
 
-size_t enet_interophelper_sizeoroffset(int typeinfo_id)
+size_t enet_interophelper_sizeoroffset(enet_uint32 typeinfo_id)
 {
     // Add offsets you need below and keep the id unique.
     TYPE_SIZE(0,  sizeof(ENetSocket));

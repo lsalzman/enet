@@ -655,7 +655,7 @@ ENET_API size_t enet_range_coder_decompress (void *, const enet_uint8 *, size_t,
 
 extern size_t enet_protocol_command_size (enet_uint8);
 
-ENET_API size_t enet_interophelper_sizeoroffset(int typeinfo_id);
+ENET_API size_t enet_interophelper_sizeoroffset(enet_uint32 typeinfo_id);
 
 #ifdef __cplusplus
 }
