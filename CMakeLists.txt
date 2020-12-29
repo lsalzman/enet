@@ -25,7 +25,7 @@ if (BUILD_SHARED_LIBS)
 endif()
 
 if(MSVC)
-add_definitions(-W3)
+	add_definitions(-W3)
 else()
 	add_definitions(-Wno-error)
 endif()
