@@ -21,7 +21,7 @@ unset(CMAKE_EXTRA_INCLUDE_FILES)
 
 
 if (BUILD_SHARED_LIBS)
-    add_definitions(-DENET_SHARED_LIB=1)
+    add_definitions(-DENET_DLL=1)
 endif()
 
 if(MSVC)
