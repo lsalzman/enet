@@ -9,6 +9,8 @@
 #include <windows.h>
 #include <mmsystem.h>
 
+#pragma warning (disable : 4996)
+
 static enet_uint32 timeBase = 0;
 
 int
