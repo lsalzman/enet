@@ -62,6 +62,7 @@ set(INCLUDE_FILES
     ${INCLUDE_FILES_PREFIX}/callbacks.h
     ${INCLUDE_FILES_PREFIX}/enet.h
     ${INCLUDE_FILES_PREFIX}/list.h
+		${INCLUDE_FILES_PREFIX}/map.h		
     ${INCLUDE_FILES_PREFIX}/protocol.h
     ${INCLUDE_FILES_PREFIX}/time.h
     ${INCLUDE_FILES_PREFIX}/types.h
@@ -75,6 +76,7 @@ set(SOURCE_FILES
     compress.c
     host.c
     list.c
+		map.c
     packet.c
     peer.c
     protocol.c
