@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6...3.19)
 
 project(enet)
 
@@ -89,6 +89,8 @@ add_library(enet STATIC
     ${SOURCE_FILES}
 )
 
-if (MINGW)
+target_include_directories(enet PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
+if (MINGW OR MSVC)
     target_link_libraries(enet winmm ws2_32)
 endif()
