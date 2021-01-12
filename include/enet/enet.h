@@ -485,11 +485,11 @@ ENET_API ENetVersion enet_linked_version (void);
   Returns the wall-time in milliseconds.  Its initial value is unspecified
   unless otherwise set.
   */
-ENET_API enet_uint32 enet_time_get (void);
+ENET_API enet_uint64 enet_time_get (void);
 /**
   Sets the current wall-time in milliseconds.
   */
-ENET_API void enet_time_set (enet_uint32);
+ENET_API void enet_time_set (enet_uint64);
 
 /** @defgroup socket ENet socket functions
     @{
@@ -502,7 +502,7 @@ ENET_API ENetSocket enet_socket_accept (ENetSocket, ENetAddress *);
 ENET_API int        enet_socket_connect (ENetSocket, const ENetAddress *);
 ENET_API int        enet_socket_send (ENetSocket, const ENetAddress *, const ENetBuffer *, size_t);
 ENET_API int        enet_socket_receive (ENetSocket, ENetAddress *, ENetBuffer *, size_t);
-ENET_API int        enet_socket_wait (ENetSocket, enet_uint32 *, enet_uint32);
+ENET_API int        enet_socket_wait (ENetSocket, enet_uint32 *, enet_uint64);
 ENET_API int        enet_socket_set_option (ENetSocket, ENetSocketOption, int);
 ENET_API int        enet_socket_get_option (ENetSocket, ENetSocketOption, int *);
 ENET_API int        enet_socket_shutdown (ENetSocket, ENetSocketShutdown);
@@ -574,7 +574,7 @@ ENET_API int        enet_host_compress_with_range_coder (ENetHost * host);
 ENET_API void       enet_host_channel_limit (ENetHost *, size_t);
 ENET_API void       enet_host_bandwidth_limit (ENetHost *, enet_uint32, enet_uint32);
 extern   void       enet_host_bandwidth_throttle (ENetHost *);
-extern  enet_uint32 enet_host_random_seed (void);
+extern  enet_uint64 enet_host_random_seed (void);
 
 ENET_API int                 enet_peer_send (ENetPeer *, enet_uint8, ENetPacket *);
 ENET_API ENetPacket *        enet_peer_receive (ENetPeer *, enet_uint8 * channelID);

@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-static enet_uint32 timeBase = 0;
+static enet_uint64 timeBase = 0;
 
 int
 enet_initialize (void)
@@ -41,22 +41,22 @@ enet_deinitialize (void)
     WSACleanup ();
 }
 
-enet_uint32
+enet_uint64
 enet_host_random_seed (void)
 {
-    return (enet_uint32) timeGetTime ();
+    return (enet_uint64) timeGetTime ();
 }
 
-enet_uint32
+enet_uint64
 enet_time_get (void)
 {
-    return (enet_uint32) timeGetTime () - timeBase;
+    return (enet_uint64) timeGetTime () - timeBase;
 }
 
 void
-enet_time_set (enet_uint32 newTimeBase)
+enet_time_set (enet_uint64 newTimeBase)
 {
-    timeBase = (enet_uint32) timeGetTime () - newTimeBase;
+    timeBase = (enet_uint64) timeGetTime () - newTimeBase;
 }
 
 int
@@ -401,7 +401,7 @@ enet_socketset_select (ENetSocket maxSocket, ENetSocketSet * readSet, ENetSocket
 }
 
 int
-enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint32 timeout)
+enet_socket_wait (ENetSocket socket, enet_uint32 * condition, enet_uint64 timeout)
 {
     fd_set readSet, writeSet;
     struct timeval timeVal;
