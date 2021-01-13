@@ -160,6 +160,16 @@ enet_host_destroy (ENetHost * host)
     enet_free (host);
 }
 
+enet_uint32
+enet_host_random (ENetHost * host)
+{
+    /* Mulberry32 by Tommy Ettinger */
+    enet_uint32 n = (host -> randomSeed += 0x6D2B79F5U);
+    n = (n ^ (n >> 15)) * (n | 1U);
+    n ^= n + (n ^ (n >> 7)) * (n | 61U);
+    return n ^ (n >> 14);
+}
+
 /** Initiates a connection to a foreign host.
     @param host host seeking the connection
     @param address destination for the connection
@@ -199,7 +209,7 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     currentPeer -> channelCount = channelCount;
     currentPeer -> state = ENET_PEER_STATE_CONNECTING;
     currentPeer -> address = * address;
-    currentPeer -> connectID = ++ host -> randomSeed;
+    currentPeer -> connectID = enet_host_random (host);
 
     if (host -> outgoingBandwidth == 0)
       currentPeer -> windowSize = ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE;
