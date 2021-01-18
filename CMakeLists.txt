@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.4.3)
 
 project(enet)
 
@@ -18,6 +18,12 @@ check_struct_has_member("struct msghdr" "msg_flags" "sys/types.h;sys/socket.h" H
 set(CMAKE_EXTRA_INCLUDE_FILES "sys/types.h" "sys/socket.h")
 check_type_size("socklen_t" HAS_SOCKLEN_T BUILTIN_TYPES_ONLY)
 unset(CMAKE_EXTRA_INCLUDE_FILES)
+
+
+if (BUILD_SHARED_LIBS)
+    add_definitions(-DENET_DLL=1)
+endif()
+
 if(MSVC)
 	add_definitions(-W3)
 else()
@@ -84,11 +90,15 @@ set(SOURCE_FILES
 source_group(include FILES ${INCLUDE_FILES})
 source_group(source FILES ${SOURCE_FILES})
 
-add_library(enet STATIC
+add_library(enet
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
 
-if (MINGW)
+if (WIN32)
+    if (BUILD_SHARED_LIBS)
+        set_property(TARGET enet PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    endif()
+
     target_link_libraries(enet winmm ws2_32)
 endif()
