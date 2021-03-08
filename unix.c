@@ -54,7 +54,9 @@
 #endif
 
 #ifndef HAS_SOCKLEN_T
+#ifndef __APPLE__
 typedef int socklen_t;
+#endif
 #endif
 
 #ifndef MSG_NOSIGNAL
