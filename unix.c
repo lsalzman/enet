@@ -53,8 +53,11 @@
 #include <poll.h>
 #endif
 
+// see https://github.com/lsalzman/enet/issues/90
 #ifndef HAS_SOCKLEN_T
+#ifndef __socklen_t_defined
 typedef int socklen_t;
+#endif
 #endif
 
 #ifndef MSG_NOSIGNAL
