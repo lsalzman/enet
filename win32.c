@@ -11,6 +11,20 @@
 
 static enet_uint32 timeBase = 0;
 
+#if defined(WINAPI_FAMILY) && WINAPI_FAMILY == WINAPI_FAMILY_APP
+// if we are compiling for the Universal Windows Platform (UWP)
+// the functions timeBeginPeriod, timeEndPeriod and timeGetTime are not available
+
+void timeBeginPeriod(int) {}
+void timeEndPeriod(int) {}
+
+enet_uint32 timeGetTime()
+{
+  return static_cast<enet_uint32>(GetTickCount64());
+}
+
+#endif
+
 int
 enet_initialize (void)
 {
