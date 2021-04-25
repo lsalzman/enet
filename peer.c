@@ -99,12 +99,14 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
 int
 enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
 {
+   if (peer->state != ENET_PEER_STATE_CONNECTED)
+       return -1;
+ 
    ENetChannel * channel = & peer -> channels [channelID];
    ENetProtocol command;
    size_t fragmentLength;
 
-   if (peer -> state != ENET_PEER_STATE_CONNECTED ||
-       channelID >= peer -> channelCount ||
+   if (channelID >= peer -> channelCount ||
        packet -> dataLength > peer -> host -> maximumPacketSize)
      return -1;
 
