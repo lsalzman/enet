@@ -1368,6 +1368,8 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
        ++ peer -> packetsLost;
 
        outgoingCommand -> roundTripTimeout *= 2;
+       if (outgoingCommand -> roundTripTimeout > outgoingCommand -> roundTripTimeoutLimit)
+         outgoingCommand -> roundTripTimeout = outgoingCommand -> roundTripTimeoutLimit;
 
        enet_list_insert (insertPosition, enet_list_remove (& outgoingCommand -> outgoingCommandList));
 
