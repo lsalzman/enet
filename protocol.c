@@ -860,19 +860,19 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
     {
        enet_peer_throttle (peer, roundTripTime);
 
-       peer -> roundTripTimeVariance -= peer -> roundTripTimeVariance / 4;
+       peer -> roundTripTimeVariance -= (peer -> roundTripTimeVariance + 3) / 4;
 
        if (roundTripTime >= peer -> roundTripTime)
        {
           enet_uint32 diff = roundTripTime - peer -> roundTripTime;
-          peer -> roundTripTimeVariance += diff / 4;
-          peer -> roundTripTime += diff / 8;
+          peer -> roundTripTimeVariance += (diff + 3) / 4;
+          peer -> roundTripTime += (diff + 7) / 8;
        }
        else
        {
           enet_uint32 diff = peer -> roundTripTime - roundTripTime;
-          peer -> roundTripTimeVariance += diff / 4;
-          peer -> roundTripTime -= diff / 8;
+          peer -> roundTripTimeVariance += (diff + 3) / 4;
+          peer -> roundTripTime -= (diff + 7) / 8;
        }
     }
     else
