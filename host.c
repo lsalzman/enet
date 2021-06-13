@@ -130,6 +130,7 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
        enet_peer_reset (currentPeer);
     }
 
+    enet_map_init (& host -> peerIDMapping, host -> peerCount);
     return host;
 }
 
@@ -158,6 +159,7 @@ enet_host_destroy (ENetHost * host)
 
     enet_free (host -> peers);
     enet_free (host);
+    enet_map_free (& host -> peerIDMapping);
 }
 
 enet_uint32
@@ -192,12 +194,14 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     if (channelCount > ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT)
       channelCount = ENET_PROTOCOL_MAXIMUM_CHANNEL_COUNT;
 
+    int peerIndex = 0;
     for (currentPeer = host -> peers;
          currentPeer < & host -> peers [host -> peerCount];
          ++ currentPeer)
     {
        if (currentPeer -> state == ENET_PEER_STATE_DISCONNECTED)
          break;
+       peerIndex++;
     }
 
     if (currentPeer >= & host -> peers [host -> peerCount])
@@ -240,9 +244,16 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
         memset (channel -> reliableWindows, 0, sizeof (channel -> reliableWindows));
     }
         
+    // Generate a random peer ID and save it to the host's mapping so we can look it up later.
+    enet_uint16 randomValue = (enet_uint16) enet_host_random_seed ();
+    randomValue &= ~ (ENET_PROTOCOL_HEADER_FLAG_MASK | ENET_PROTOCOL_HEADER_SESSION_MASK);
+    if(enet_map_insert (& host -> peerIDMapping, randomValue, peerIndex) == 0)
+      return NULL;
+
     command.header.command = ENET_PROTOCOL_COMMAND_CONNECT | ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE;
     command.header.channelID = 0xFF;
-    command.connect.outgoingPeerID = ENET_HOST_TO_NET_16 (currentPeer -> incomingPeerID);
+    currentPeer -> incomingPeerID = randomValue;
+    command.connect.outgoingPeerID = ENET_HOST_TO_NET_16 (randomValue);
     command.connect.incomingSessionID = currentPeer -> incomingSessionID;
     command.connect.outgoingSessionID = currentPeer -> outgoingSessionID;
     command.connect.mtu = ENET_HOST_TO_NET_32 (currentPeer -> mtu);
