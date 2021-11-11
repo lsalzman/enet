@@ -619,8 +619,6 @@ enet_peer_queue_acknowledgement (ENetPeer * peer, const ENetProtocol * command, 
 void
 enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoingCommand)
 {
-    ENetChannel * channel = & peer -> channels [outgoingCommand -> command.header.channelID];
-    
     peer -> outgoingDataTotal += enet_protocol_command_size (outgoingCommand -> command.header.command) + outgoingCommand -> fragmentLength;
 
     if (outgoingCommand -> command.header.channelID == 0xFF)
@@ -631,31 +629,35 @@ enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoin
        outgoingCommand -> unreliableSequenceNumber = 0;
     }
     else
-    if (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE)
     {
-       ++ channel -> outgoingReliableSequenceNumber;
-       channel -> outgoingUnreliableSequenceNumber = 0;
+        ENetChannel * channel = & peer -> channels [outgoingCommand -> command.header.channelID];
 
-       outgoingCommand -> reliableSequenceNumber = channel -> outgoingReliableSequenceNumber;
-       outgoingCommand -> unreliableSequenceNumber = 0;
-    }
-    else
-    if (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_UNSEQUENCED)
-    {
-       ++ peer -> outgoingUnsequencedGroup;
+        if (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE)
+        {
+           ++ channel -> outgoingReliableSequenceNumber;
+           channel -> outgoingUnreliableSequenceNumber = 0;
 
-       outgoingCommand -> reliableSequenceNumber = 0;
-       outgoingCommand -> unreliableSequenceNumber = 0;
+           outgoingCommand -> reliableSequenceNumber = channel -> outgoingReliableSequenceNumber;
+           outgoingCommand -> unreliableSequenceNumber = 0;
+        }
+        else
+        if (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_UNSEQUENCED)
+        {
+           ++ peer -> outgoingUnsequencedGroup;
+
+           outgoingCommand -> reliableSequenceNumber = 0;
+           outgoingCommand -> unreliableSequenceNumber = 0;
+        }
+        else
+        {
+           if (outgoingCommand -> fragmentOffset == 0)
+             ++ channel -> outgoingUnreliableSequenceNumber;
+
+           outgoingCommand -> reliableSequenceNumber = channel -> outgoingReliableSequenceNumber;
+           outgoingCommand -> unreliableSequenceNumber = channel -> outgoingUnreliableSequenceNumber;
+        }
     }
-    else
-    {
-       if (outgoingCommand -> fragmentOffset == 0)
-         ++ channel -> outgoingUnreliableSequenceNumber;
-        
-       outgoingCommand -> reliableSequenceNumber = channel -> outgoingReliableSequenceNumber;
-       outgoingCommand -> unreliableSequenceNumber = channel -> outgoingUnreliableSequenceNumber;
-    }
-   
+
     outgoingCommand -> sendAttempts = 0;
     outgoingCommand -> sentTime = 0;
     outgoingCommand -> roundTripTimeout = 0;
