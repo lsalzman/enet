@@ -92,3 +92,8 @@ add_library(enet STATIC
 if (MINGW)
     target_link_libraries(enet winmm ws2_32)
 endif()
+
+install(FILES ${INCLUDE_FILES} DESTINATION ${INCLUDE_FILES_PREFIX})
+install(TARGETS enet RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+                     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+                     ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
