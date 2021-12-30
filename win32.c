@@ -422,7 +422,7 @@ enet_socket_send (ENetSocket socket,
     unsigned char sockAddrBuf[sizeof(struct sockaddr_in6)];
     int socketAddressLen;
 
-    DWORD sentLength;
+    DWORD sentLength = 0;
 
     if (address != NULL)
     {
@@ -459,7 +459,8 @@ enet_socket_receive (ENetSocket socket,
     unsigned char sockAddrBuf[sizeof(struct sockaddr_in6)] = { 0 };
     int socketAddressLen = sizeof(sockAddrBuf);
     DWORD flags = 0,
-          recvLength;
+          recvLength = 0;
+    struct sockaddr_in sin;
 
     if (WSARecvFrom (socket,
                      (LPWSABUF) buffers,
