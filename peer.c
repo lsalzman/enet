@@ -93,7 +93,9 @@ enet_peer_throttle (ENetPeer * peer, enet_uint32 rtt)
 
     On success, ENet will assume ownership of the packet, and so enet_packet_destroy
     should not be called on it thereafter. On failure, the caller still must destroy
-    the packet on its own as ENet has not queued the packet.
+    the packet on its own as ENet has not queued the packet. The caller can also
+    check the packet's referenceCount field after sending to check if ENet queued
+    the packet and thus incremented the referenceCount.
 
     @param peer destination for the packet
     @param channelID channel on which to send
