@@ -98,9 +98,6 @@ enet_packet_resize (ENetPacket * packet, size_t dataLength)
     return 0;
 }
 
-static int initializedCRC32 = 0;
-static enet_uint32 crcTable [256];
-
 static enet_uint32 
 reflect_crc (int val, int bits)
 {
@@ -115,8 +112,8 @@ reflect_crc (int val, int bits)
     return result;
 }
 
-static void 
-initialize_crc32 (void)
+void 
+enet_host_initialize_crc32 (ENetHost * host)
 {
     int byte;
 
@@ -133,18 +130,18 @@ initialize_crc32 (void)
                 crc <<= 1;
         }
 
-        crcTable [byte] = reflect_crc (crc, 32);
+        host -> crcTable [byte] = reflect_crc (crc, 32);
     }
 
-    initializedCRC32 = 1;
+    host -> initializedCRC32 = 1;
 }
     
 enet_uint32
-enet_crc32 (const ENetBuffer * buffers, size_t bufferCount)
+enet_host_crc32 (ENetHost * host, const ENetBuffer * buffers, size_t bufferCount)
 {
     enet_uint32 crc = 0xFFFFFFFF;
     
-    if (! initializedCRC32) initialize_crc32 ();
+    if (! host -> initializedCRC32) enet_host_initialize_crc32 (host);
 
     while (bufferCount -- > 0)
     {
@@ -153,7 +150,7 @@ enet_crc32 (const ENetBuffer * buffers, size_t bufferCount)
 
         while (data < dataEnd)
         {
-            crc = (crc >> 8) ^ crcTable [(crc & 0xFF) ^ *data++];        
+            crc = (crc >> 8) ^ host -> crcTable [(crc & 0xFF) ^ *data++];        
         }
 
         ++ buffers;
