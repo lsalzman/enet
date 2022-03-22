@@ -1069,7 +1069,7 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
         buffer.data = host -> receivedData;
         buffer.dataLength = host -> receivedDataLength;
 
-        if (host -> checksum (& buffer, 1) != desiredChecksum)
+        if (host -> checksum (host, & buffer, 1) != desiredChecksum)
           return 0;
     }
        
@@ -1674,7 +1674,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
             enet_uint32 * checksum = (enet_uint32 *) & headerData [host -> buffers -> dataLength];
             * checksum = currentPeer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID ? currentPeer -> connectID : 0;
             host -> buffers -> dataLength += sizeof (enet_uint32);
-            * checksum = host -> checksum (host -> buffers, host -> bufferCount);
+            * checksum = host -> checksum (host, host -> buffers, host -> bufferCount);
         }
 
         if (shouldCompress > 0)
