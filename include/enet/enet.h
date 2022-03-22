@@ -339,7 +339,7 @@ typedef struct _ENetCompressor
 } ENetCompressor;
 
 /** Callback that computes the checksum of the data held in buffers[0:bufferCount-1] */
-typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (const ENetBuffer * buffers, size_t bufferCount);
+typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (struct _ENetHost* host, const ENetBuffer * buffers, size_t bufferCount);
 
 /** Callback for intercepting received raw UDP packets. Should return 1 to intercept, 0 to ignore, or -1 to propagate an error. */
 typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, struct _ENetEvent * event);
@@ -398,6 +398,8 @@ typedef struct _ENetHost
    size_t               duplicatePeers;              /**< optional number of allowed peers from duplicate IPs, defaults to ENET_PROTOCOL_MAXIMUM_PEER_ID */
    size_t               maximumPacketSize;           /**< the maximum allowable packet size that may be sent or received on a peer */
    size_t               maximumWaitingData;          /**< the maximum aggregate amount of buffer space a peer may use waiting for packets to be delivered */
+   int                  initializedCRC32;
+   enet_uint32          crcTable[256];
 } ENetHost;
 
 /**
@@ -560,7 +562,8 @@ ENET_API int enet_address_get_host (const ENetAddress * address, char * hostName
 ENET_API ENetPacket * enet_packet_create (const void *, size_t, enet_uint32);
 ENET_API void         enet_packet_destroy (ENetPacket *);
 ENET_API int          enet_packet_resize  (ENetPacket *, size_t);
-ENET_API enet_uint32  enet_crc32 (const ENetBuffer *, size_t);
+ENET_API enet_uint32  enet_host_crc32 (ENetHost *, const ENetBuffer *, size_t);
+ENET_API void         enet_host_initialize_crc32 (ENetHost *);
                 
 ENET_API ENetHost * enet_host_create (const ENetAddress *, size_t, size_t, enet_uint32, enet_uint32);
 ENET_API void       enet_host_destroy (ENetHost *);
