@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.12...3.20)
 
 project(enet)
 
+option(BUILD_EXAMPLES "Build examples" OFF)
+
 # The "configure" step.
 include(CheckFunctionExists)
 include(CheckStructHasMember)
@@ -89,6 +91,17 @@ add_library(enet STATIC
     ${SOURCE_FILES}
 )
 
-if (MINGW)
+if (WIN32 OR MINGW)
     target_link_libraries(enet winmm ws2_32)
 endif()
+
+if (BUILD_EXAMPLES)
+
+add_executable(server examples/server.c)
+target_link_libraries(server enet)
+
+add_executable(client examples/client.c)
+target_link_libraries(client enet)
+
+endif()
+
