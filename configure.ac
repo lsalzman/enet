@@ -3,6 +3,7 @@ AC_CONFIG_SRCDIR([include/enet/enet.h])
 AM_INIT_AUTOMAKE([foreign])
 
 AC_CONFIG_MACRO_DIR([m4])
+LT_INIT
 
 AC_PROG_CC
 AC_PROG_LIBTOOL
