@@ -55,8 +55,6 @@ if(HAS_SOCKLEN_T)
     add_definitions(-DHAS_SOCKLEN_T=1)
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
 set(INCLUDE_FILES_PREFIX include/enet)
 set(INCLUDE_FILES
     ${INCLUDE_FILES_PREFIX}/callbacks.h
@@ -88,6 +86,11 @@ add_library(enet STATIC
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
+
+target_include_directories(enet PUBLIC ${PROJECT_SOURCE_DIR}/include) # define the public header files path
+# consuming projects should be able to do #include "enet/enet.h" in their IDE (tested with CLion)
+
+file(COPY ${INCLUDE_FILES_PREFIX}/enet.h DESTINATION "include") # Copy the public header file to the build include directory for convenience
 
 if (MINGW)
     target_link_libraries(enet winmm ws2_32)
