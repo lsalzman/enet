@@ -63,7 +63,8 @@ typedef enum _ENetSocketOption
    ENET_SOCKOPT_SNDTIMEO  = 7,
    ENET_SOCKOPT_ERROR     = 8,
    ENET_SOCKOPT_NODELAY   = 9,
-   ENET_SOCKOPT_IPV6ONLY  = 10
+   ENET_SOCKOPT_TTL       = 10,
+   ENET_SOCKOPT_IPV6ONLY  = 11
 } ENetSocketOption;
 
 typedef enum _ENetSocketShutdown

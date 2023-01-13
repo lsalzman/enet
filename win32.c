@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ws2tcpip.h>
+#include <ws2ipdef.h>
 
 static enet_uint32 timeBase = 0;
 
@@ -333,6 +334,10 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
             result = setsockopt (socket, IPPROTO_TCP, TCP_NODELAY, (char *) & value, sizeof (int));
             break;
 
+        case ENET_SOCKOPT_TTL:
+            result = setsockopt (socket, IPPROTO_IP, IP_TTL, (char *) & value, sizeof (int));
+            break;
+
         case ENET_SOCKOPT_IPV6ONLY:
         {
             DWORD option = value;
@@ -355,6 +360,11 @@ enet_socket_get_option (ENetSocket socket, ENetSocketOption option, int * value)
         case ENET_SOCKOPT_ERROR:
             len = sizeof(int);
             result = getsockopt (socket, SOL_SOCKET, SO_ERROR, (char *) value, & len);
+            break;
+
+        case ENET_SOCKOPT_TTL:
+            len = sizeof(int);
+            result = getsockopt (socket, IPPROTO_IP, IP_TTL, (char *) value, & len);
             break;
 
         default:
