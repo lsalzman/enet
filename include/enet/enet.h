@@ -21,6 +21,7 @@ extern "C"
 #include "enet/types.h"
 #include "enet/protocol.h"
 #include "enet/list.h"
+#include "enet/map.h"
 #include "enet/callbacks.h"
 
 #define ENET_VERSION_MAJOR 1
@@ -372,6 +373,7 @@ typedef struct _ENetHost
    enet_uint32          randomSeed;
    int                  recalculateBandwidthLimits;
    ENetPeer *           peers;                       /**< array of peers allocated for this host */
+   ENetMap              peerIDMapping;               /**< keep track of what peer ID belongs to what peer */
    size_t               peerCount;                   /**< number of peers allocated for this host */
    size_t               channelLimit;                /**< maximum number of channels allowed for connected peers */
    enet_uint32          serviceTime;

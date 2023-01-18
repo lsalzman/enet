@@ -370,6 +370,7 @@ enet_peer_on_disconnect (ENetPeer * peer)
           -- peer -> host -> bandwidthLimitedPeers;
 
         -- peer -> host -> connectedPeers;
+        enet_map_delete (& peer -> host -> peerIDMapping, peer -> outgoingPeerID);
     }
 }
 
@@ -522,6 +523,7 @@ enet_peer_disconnect_now (ENetPeer * peer, enet_uint32 data)
 
         enet_peer_queue_outgoing_command (peer, & command, NULL, 0, 0);
 
+        enet_map_delete (& peer -> host -> peerIDMapping, peer -> outgoingPeerID);
         enet_host_flush (peer -> host);
     }
 
