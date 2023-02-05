@@ -1365,7 +1365,7 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
 
        if (peer -> earliestTimeout != 0 &&
              (ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMaximum ||
-               (outgoingCommand -> roundTripTimeout >= outgoingCommand -> roundTripTimeoutLimit &&
+               ((1 << (outgoingCommand -> sendAttempts - 1)) >= peer -> timeoutLimit &&
                  ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMinimum)))
        {
           enet_protocol_notify_disconnect (host, peer, event);
@@ -1495,10 +1495,7 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer, ENetLis
           ++ outgoingCommand -> sendAttempts;
  
           if (outgoingCommand -> roundTripTimeout == 0)
-          {
-             outgoingCommand -> roundTripTimeout = peer -> roundTripTime + 4 * peer -> roundTripTimeVariance;
-             outgoingCommand -> roundTripTimeoutLimit = peer -> timeoutLimit * outgoingCommand -> roundTripTimeout;
-          }
+            outgoingCommand -> roundTripTimeout = peer -> roundTripTime + 4 * peer -> roundTripTimeVariance;
 
           if (enet_list_empty (& peer -> sentReliableCommands))
             peer -> nextTimeout = host -> serviceTime + outgoingCommand -> roundTripTimeout;

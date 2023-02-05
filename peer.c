@@ -678,7 +678,6 @@ enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoin
     outgoingCommand -> sendAttempts = 0;
     outgoingCommand -> sentTime = 0;
     outgoingCommand -> roundTripTimeout = 0;
-    outgoingCommand -> roundTripTimeoutLimit = 0;
     outgoingCommand -> command.header.reliableSequenceNumber = ENET_HOST_TO_NET_16 (outgoingCommand -> reliableSequenceNumber);
     outgoingCommand -> queueTime = ++ peer -> host -> totalQueued;
 

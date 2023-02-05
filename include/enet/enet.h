@@ -170,11 +170,10 @@ typedef struct _ENetOutgoingCommand
    enet_uint16  unreliableSequenceNumber;
    enet_uint32  sentTime;
    enet_uint32  roundTripTimeout;
-   enet_uint32  roundTripTimeoutLimit;
+   enet_uint32  queueTime;
    enet_uint32  fragmentOffset;
    enet_uint16  fragmentLength;
    enet_uint16  sendAttempts;
-   enet_uint32  queueTime;
    ENetProtocol command;
    ENetPacket * packet;
 } ENetOutgoingCommand;
