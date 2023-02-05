@@ -328,7 +328,6 @@ enet_peer_reset_queues (ENetPeer * peer)
       enet_free (enet_list_remove (enet_list_begin (& peer -> acknowledgements)));
 
     enet_peer_reset_outgoing_commands (& peer -> sentReliableCommands);
-    enet_peer_reset_outgoing_commands (& peer -> sentUnreliableCommands);
     enet_peer_reset_outgoing_commands (& peer -> outgoingCommands);
     enet_peer_reset_outgoing_commands (& peer -> outgoingSendReliableCommands);
     enet_peer_reset_incoming_commands (& peer -> dispatchedCommands);

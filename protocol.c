@@ -159,16 +159,16 @@ enet_protocol_notify_disconnect (ENetHost * host, ENetPeer * peer, ENetEvent * e
 }
 
 static void
-enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
+enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer, ENetList * sentUnreliableCommands)
 {
     ENetOutgoingCommand * outgoingCommand;
 
-    if (enet_list_empty (& peer -> sentUnreliableCommands))
+    if (enet_list_empty (sentUnreliableCommands))
       return;
 
     do
     {
-        outgoingCommand = (ENetOutgoingCommand *) enet_list_front (& peer -> sentUnreliableCommands);
+        outgoingCommand = (ENetOutgoingCommand *) enet_list_front (sentUnreliableCommands);
         
         enet_list_remove (& outgoingCommand -> outgoingCommandList);
 
@@ -185,7 +185,7 @@ enet_protocol_remove_sent_unreliable_commands (ENetPeer * peer)
         }
 
         enet_free (outgoingCommand);
-    } while (! enet_list_empty (& peer -> sentUnreliableCommands));
+    } while (! enet_list_empty (sentUnreliableCommands));
 
     if (peer -> state == ENET_PEER_STATE_DISCONNECT_LATER &&
         ! enet_peer_has_outgoing_commands (peer))
@@ -1399,7 +1399,7 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
 }
 
 static int
-enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer)
+enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer, ENetList * sentUnreliableCommands)
 {
     ENetProtocol * command = & host -> commands [host -> commandCount];
     ENetBuffer * buffer = & host -> buffers [host -> bufferCount];
@@ -1551,7 +1551,7 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer)
           enet_list_remove (& outgoingCommand -> outgoingCommandList);
 
           if (outgoingCommand -> packet != NULL)
-            enet_list_insert (enet_list_end (& peer -> sentUnreliableCommands), outgoingCommand);
+            enet_list_insert (enet_list_end (sentUnreliableCommands), outgoingCommand);
        }
 
        buffer -> data = command;
@@ -1585,7 +1585,7 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer)
 
     if (peer -> state == ENET_PEER_STATE_DISCONNECT_LATER &&
         ! enet_peer_has_outgoing_commands (peer) &&
-        enet_list_empty (& peer -> sentUnreliableCommands))
+        enet_list_empty (sentUnreliableCommands))
       enet_peer_disconnect (peer, peer -> eventData);
 
     return canPing;
@@ -1596,10 +1596,13 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 {
     enet_uint8 headerData [sizeof (ENetProtocolHeader) + sizeof (enet_uint32)];
     ENetProtocolHeader * header = (ENetProtocolHeader *) headerData;
-    int continueSending = 0, sentLength = 0;
+    int sentLength = 0;
     size_t shouldCompress = 0;
+    ENetList sentUnreliableCommands;
 
-    for (int sendPass = 0; sendPass <= continueSending; ++ sendPass)
+    enet_list_clear (& sentUnreliableCommands);
+
+    for (int sendPass = 0, continueSending = 0; sendPass <= continueSending; ++ sendPass)
     for (ENetPeer * currentPeer = host -> peers;
          currentPeer < & host -> peers [host -> peerCount];
          ++ currentPeer)
@@ -1632,13 +1635,13 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 
         if (((enet_list_empty (& currentPeer -> outgoingCommands) &&
               enet_list_empty (& currentPeer -> outgoingSendReliableCommands)) ||
-             enet_protocol_check_outgoing_commands (host, currentPeer)) &&
+             enet_protocol_check_outgoing_commands (host, currentPeer, & sentUnreliableCommands)) &&
             enet_list_empty (& currentPeer -> sentReliableCommands) &&
             ENET_TIME_DIFFERENCE (host -> serviceTime, currentPeer -> lastReceiveTime) >= currentPeer -> pingInterval &&
             currentPeer -> mtu - host -> packetSize >= sizeof (ENetProtocolPing))
         { 
             enet_peer_ping (currentPeer);
-            enet_protocol_check_outgoing_commands (host, currentPeer);
+            enet_protocol_check_outgoing_commands (host, currentPeer, & sentUnreliableCommands);
         }
 
         if (host -> commandCount == 0)
@@ -1715,7 +1718,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 
         sentLength = enet_socket_send (host -> socket, & currentPeer -> address, host -> buffers, host -> bufferCount);
 
-        enet_protocol_remove_sent_unreliable_commands (currentPeer);
+        enet_protocol_remove_sent_unreliable_commands (currentPeer, & sentUnreliableCommands);
 
         if (sentLength < 0)
           return -1;

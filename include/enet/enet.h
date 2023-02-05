@@ -315,9 +315,8 @@ typedef struct _ENetPeer
    enet_uint16   outgoingReliableSequenceNumber;
    ENetList      acknowledgements;
    ENetList      sentReliableCommands;
-   ENetList      sentUnreliableCommands;
-   ENetList      outgoingCommands;
    ENetList      outgoingSendReliableCommands;
+   ENetList      outgoingCommands;
    ENetList      dispatchedCommands;
    enet_uint16   flags;
    enet_uint16   reserved;
