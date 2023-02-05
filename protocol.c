@@ -1304,7 +1304,7 @@ enet_protocol_send_acknowledgements (ENetHost * host, ENetPeer * peer)
            buffer >= & host -> buffers [sizeof (host -> buffers) / sizeof (ENetBuffer)] ||
            peer -> mtu - host -> packetSize < sizeof (ENetProtocolAcknowledge))
        {
-          host -> continueSending = 1;
+          peer -> flags |= ENET_PEER_FLAG_CONTINUE_SENDING;
 
           break;
        }
@@ -1479,8 +1479,8 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer)
            (outgoingCommand -> packet != NULL && 
              (enet_uint16) (peer -> mtu - host -> packetSize) < (enet_uint16) (commandSize + outgoingCommand -> fragmentLength)))
        {
-          host -> continueSending = 1;
-          
+          peer -> flags |= ENET_PEER_FLAG_CONTINUE_SENDING;
+
           break;
        }
 
@@ -1596,21 +1596,20 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 {
     enet_uint8 headerData [sizeof (ENetProtocolHeader) + sizeof (enet_uint32)];
     ENetProtocolHeader * header = (ENetProtocolHeader *) headerData;
-    ENetPeer * currentPeer;
-    int sentLength;
+    int continueSending = 0, sentLength = 0;
     size_t shouldCompress = 0;
- 
-    host -> continueSending = 1;
 
-    while (host -> continueSending)
-    for (host -> continueSending = 0,
-           currentPeer = host -> peers;
+    for (int sendPass = 0; sendPass <= continueSending; ++ sendPass)
+    for (ENetPeer * currentPeer = host -> peers;
          currentPeer < & host -> peers [host -> peerCount];
          ++ currentPeer)
     {
         if (currentPeer -> state == ENET_PEER_STATE_DISCONNECTED ||
-            currentPeer -> state == ENET_PEER_STATE_ZOMBIE)
+            currentPeer -> state == ENET_PEER_STATE_ZOMBIE ||
+            (sendPass > 0 && ! (currentPeer -> flags & ENET_PEER_FLAG_CONTINUE_SENDING)))
           continue;
+
+        currentPeer -> flags &= ~ ENET_PEER_FLAG_CONTINUE_SENDING;
 
         host -> headerFlags = 0;
         host -> commandCount = 0;
@@ -1628,7 +1627,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
             if (event != NULL && event -> type != ENET_EVENT_TYPE_NONE)
               return 1;
             else
-              continue;
+              goto nextPeer;
         }
 
         if (((enet_list_empty (& currentPeer -> outgoingCommands) &&
@@ -1643,7 +1642,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         }
 
         if (host -> commandCount == 0)
-          continue;
+          goto nextPeer;
 
         if (currentPeer -> packetLossEpoch == 0)
           currentPeer -> packetLossEpoch = host -> serviceTime;
@@ -1723,6 +1722,10 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 
         host -> totalSentData += sentLength;
         host -> totalSentPackets ++;
+
+    nextPeer:
+        if (currentPeer -> flags & ENET_PEER_FLAG_CONTINUE_SENDING)
+          continueSending = sendPass + 1;
     }
    
     return 0;

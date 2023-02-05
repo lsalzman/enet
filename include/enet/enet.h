@@ -254,7 +254,8 @@ typedef struct _ENetChannel
 
 typedef enum _ENetPeerFlag
 {
-   ENET_PEER_FLAG_NEEDS_DISPATCH = (1 << 0)
+   ENET_PEER_FLAG_NEEDS_DISPATCH   = (1 << 0),
+   ENET_PEER_FLAG_CONTINUE_SENDING = (1 << 1)
 } ENetPeerFlag;
 
 /**
@@ -378,7 +379,7 @@ typedef struct _ENetHost
    size_t               channelLimit;                /**< maximum number of channels allowed for connected peers */
    enet_uint32          serviceTime;
    ENetList             dispatchQueue;
-   int                  continueSending;
+   enet_uint32          totalQueued;
    size_t               packetSize;
    enet_uint16          headerFlags;
    ENetProtocol         commands [ENET_PROTOCOL_MAXIMUM_PACKET_COMMANDS];
@@ -401,7 +402,6 @@ typedef struct _ENetHost
    size_t               duplicatePeers;              /**< optional number of allowed peers from duplicate IPs, defaults to ENET_PROTOCOL_MAXIMUM_PEER_ID */
    size_t               maximumPacketSize;           /**< the maximum allowable packet size that may be sent or received on a peer */
    size_t               maximumWaitingData;          /**< the maximum aggregate amount of buffer space a peer may use waiting for packets to be delivered */
-   enet_uint32          totalQueued;
 } ENetHost;
 
 /**
