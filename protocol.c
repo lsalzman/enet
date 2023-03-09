@@ -384,7 +384,8 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
     if (mtu > ENET_PROTOCOL_MAXIMUM_MTU)
       mtu = ENET_PROTOCOL_MAXIMUM_MTU;
 
-    peer -> mtu = mtu;
+    if (mtu < peer -> mtu)
+      peer -> mtu = mtu;
 
     if (host -> outgoingBandwidth == 0 &&
         peer -> incomingBandwidth == 0)
