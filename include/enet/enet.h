@@ -583,6 +583,8 @@ ENET_API int enet_address_set_host_ip (ENetAddress * address, const char * hostN
 */
 ENET_API int enet_address_set_host (ENetAddress * address, ENetAddressType type, const char * hostName);
 
+#define ENET_ADDRESS_MAX_LENGTH 40 /*full IPv6 addresses take 39 characters + 1 null byte */
+
 /** Gives the printable form of the IP address specified in the address parameter.
     @param address    address printed
     @param hostName   destination for name, must not be NULL
