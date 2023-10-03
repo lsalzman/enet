@@ -511,7 +511,7 @@ enet_address_get_host_ip (const ENetAddress * address, char * name, size_t nameL
                 p += advance;
             }
 
-            *p = '\0';
+            *p++ = '\0';
 
             size_t addrLen = p - buffer;
             if (nameLength < addrLen)
