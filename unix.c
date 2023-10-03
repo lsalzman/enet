@@ -239,19 +239,19 @@ enet_address_set_host (ENetAddress * address, ENetAddressType type, const char *
                 tempAddress.port = port; /* preserve port */
 
                 int addressScore = 0;
-                if (type == ENET_ADDRESS_TYPE_ANY)
+                if (tempAddress.type == type || (tempAddress.type == ENET_ADDRESS_TYPE_IPV6 && type == ENET_ADDRESS_TYPE_ANY))
+                    addressScore += 10;
+                else if (tempAddress.type == ENET_ADDRESS_TYPE_IPV4)
                 {
-                    if (tempAddress.type == ENET_ADDRESS_TYPE_IPV6)
-                        addressScore += 10;
-                    else if (tempAddress.type == ENET_ADDRESS_TYPE_IPV4)
+                    if (type == ENET_ADDRESS_TYPE_ANY)
+                        addressScore += 5; /* lower score than IPv6 addresses */
+                    else if (type == ENET_ADDRESS_TYPE_IPV6)
                     {
-                        /* ANY basically means IPv6 with support for IPv4, but we still have to map our IPv4 to IPv6 */
-                        addressScore += 5;
+                        // Convert that IPv4 to an IPv6
                         enet_address_convert_ipv6(&tempAddress);
+                        addressScore += 3; /* lower score than a real IPv6 */
                     }
                 }
-                else if (tempAddress.type == type)
-                    addressScore += 10;
 
                 if (addressScore > bestScore)
                 {
