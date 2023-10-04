@@ -341,7 +341,7 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
         case ENET_SOCKOPT_IPV6ONLY:
         {
             DWORD option = value;
-            result = setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, (char *) & value, sizeof(option));
+            result = setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, (char *) & option, sizeof(option));
             break;
         }
 

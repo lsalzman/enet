@@ -52,6 +52,10 @@ enet_host_create (ENetAddressType type, const ENetAddress * address, size_t peer
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
     host -> socket = enet_socket_create (type, ENET_SOCKET_TYPE_DATAGRAM);
+
+    if (host -> socket != ENET_SOCKET_NULL && type == ENET_ADDRESS_TYPE_ANY)
+        enet_socket_set_option (host -> socket, ENET_SOCKOPT_IPV6ONLY, 0);
+
     if (host -> socket == ENET_SOCKET_NULL || (address != NULL && enet_socket_bind (host -> socket, address) < 0))
     {
        if (host -> socket != ENET_SOCKET_NULL)
@@ -67,9 +71,6 @@ enet_host_create (ENetAddressType type, const ENetAddress * address, size_t peer
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_BROADCAST, 1);
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_RCVBUF, ENET_HOST_RECEIVE_BUFFER_SIZE);
     enet_socket_set_option (host -> socket, ENET_SOCKOPT_SNDBUF, ENET_HOST_SEND_BUFFER_SIZE);
-
-    if (type == ENET_ADDRESS_TYPE_ANY)
-        enet_socket_set_option (host -> socket, ENET_SOCKOPT_IPV6ONLY, 0);
 
     if (address != NULL && enet_socket_get_address (host -> socket, & host -> address) < 0)   
       host -> address = * address;
