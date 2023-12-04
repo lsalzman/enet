@@ -85,7 +85,7 @@ set(SOURCE_FILES
 source_group(include FILES ${INCLUDE_FILES})
 source_group(source FILES ${SOURCE_FILES})
 
-add_library(enet STATIC
+add_library(enet
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
