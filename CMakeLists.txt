@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.12...3.20)
 
-project(enet)
+# I.e. The ABI version
+project(enet VERSION 7.0.5)
+set(ENET_VERSION "1.3.18")
 
 # The "configure" step.
 include(CheckFunctionExists)
@@ -93,6 +95,10 @@ add_library(enet
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
+set_target_properties(enet PROPERTIES
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    VERSION ${PROJECT_VERSION}
+)
 
 if (WIN32)
     target_link_libraries(enet winmm ws2_32)
@@ -107,3 +113,13 @@ install(TARGETS enet
 install(DIRECTORY include/enet
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+# Add variables for substitution in libenet.pc.in
+set(PACKAGE_VERSION ${ENET_VERSION})
+set(PACKAGE_NAME "lib${PROJECT_NAME}")
+set(prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix ${CMAKE_INSTALL_PREFIX})
+set(libdir ${CMAKE_INSTALL_FULL_LIBDIR})
+set(includedir ${CMAKE_INSTALL_FULL_INCLUDEDIR})
+configure_file(libenet.pc.in libenet.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libenet.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
