@@ -6,6 +6,7 @@ project(enet)
 include(CheckFunctionExists)
 include(CheckStructHasMember)
 include(CheckTypeSize)
+include(GNUInstallDirs)
 check_function_exists("fcntl" HAS_FCNTL)
 check_function_exists("poll" HAS_POLL)
 check_function_exists("getaddrinfo" HAS_GETADDRINFO)
@@ -94,9 +95,9 @@ if (MINGW)
 endif()
 
 install(TARGETS enet
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib/static
-    LIBRARY DESTINATION lib)
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/static
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(DIRECTORY include/
-        DESTINATION include)
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
