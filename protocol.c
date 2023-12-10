@@ -1243,6 +1243,9 @@ enet_protocol_receive_incoming_commands (ENetHost * host, ENetEvent * event)
                                              & buffer,
                                              1);
 
+       if (receivedLength == -2)
+         continue;
+
        if (receivedLength < 0)
          return -1;
 

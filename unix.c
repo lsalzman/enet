@@ -539,7 +539,7 @@ enet_socket_receive (ENetSocket socket,
 
 #ifdef HAS_MSGHDR_FLAGS
     if (msgHdr.msg_flags & MSG_TRUNC)
-      return -1;
+      return -2;
 #endif
 
     if (address != NULL)
