@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <mmsystem.h>
 #include <ws2ipdef.h>
+#include <ws2tcpip.h>
 
 static enet_uint32 timeBase = 0;
 
