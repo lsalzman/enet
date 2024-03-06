@@ -71,6 +71,7 @@ set(INCLUDE_FILES
 )
 
 set(SOURCE_FILES
+    address.c
     callbacks.c
     compress.c
     host.c
