@@ -4,10 +4,16 @@
 */
 #ifdef _WIN32
 
+#ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
+
+
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
 #include <windows.h>
 #include <mmsystem.h>
+#include <string.h>
 #include <ws2ipdef.h>
 
 static enet_uint32 timeBase = 0;
@@ -288,6 +294,7 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
 {
     SOCKET result;
     struct sockaddr_in sin;
+    memset(&sin, 0, sizeof sin);
     int sinLength = sizeof (struct sockaddr_in);
 
     result = accept (socket, 
@@ -366,7 +373,7 @@ enet_socket_receive (ENetSocket socket,
     DWORD flags = 0,
           recvLength = 0;
     struct sockaddr_in sin;
-
+    memset(&sin, 0, sizeof sin);
     if (WSARecvFrom (socket,
                      (LPWSABUF) buffers,
                      (DWORD) bufferCount,
