@@ -84,7 +84,12 @@ set(SOURCE_FILES
 source_group(include FILES ${INCLUDE_FILES})
 source_group(source FILES ${SOURCE_FILES})
 
-add_library(enet STATIC
+if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    add_definitions(-DENET_DLL=1)
+    add_definitions(-DENET_BUILDING_LIB)
+endif()
+
+add_library(enet
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
