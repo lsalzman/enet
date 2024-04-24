@@ -98,10 +98,12 @@ if (WIN32)
     target_link_libraries(enet winmm ws2_32)
 endif()
 
+include(GNUInstallDirs)
 install(TARGETS enet
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib/static
-    LIBRARY DESTINATION lib)
-
-install(DIRECTORY include/
-        DESTINATION include)
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/enet
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
