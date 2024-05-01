@@ -487,13 +487,15 @@ enet_socket_receive (ENetSocket socket,
        case WSAEWOULDBLOCK:
        case WSAECONNRESET:
           return 0;
+       case WSAEMSGSIZE:
+          return -2;
        }
 
        return -1;
     }
 
     if (flags & MSG_PARTIAL)
-      return -1;
+      return -2;
 
     if (address != NULL)
     {

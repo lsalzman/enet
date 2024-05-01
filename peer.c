@@ -328,8 +328,8 @@ enet_peer_reset_queues (ENetPeer * peer)
       enet_free (enet_list_remove (enet_list_begin (& peer -> acknowledgements)));
 
     enet_peer_reset_outgoing_commands (& peer -> sentReliableCommands);
-    enet_peer_reset_outgoing_commands (& peer -> sentUnreliableCommands);
     enet_peer_reset_outgoing_commands (& peer -> outgoingCommands);
+    enet_peer_reset_outgoing_commands (& peer -> outgoingSendReliableCommands);
     enet_peer_reset_incoming_commands (& peer -> dispatchedCommands);
 
     if (peer -> channels != NULL && peer -> channelCount > 0)
@@ -571,6 +571,17 @@ enet_peer_disconnect (ENetPeer * peer, enet_uint32 data)
     }
 }
 
+int
+enet_peer_has_outgoing_commands (ENetPeer * peer)
+{
+  if (enet_list_empty (& peer -> outgoingCommands) &&
+      enet_list_empty (& peer -> outgoingSendReliableCommands) &&
+      enet_list_empty (& peer -> sentReliableCommands))
+    return 0;
+
+  return 1;
+}
+
 /** Request a disconnection from a peer, but only after all queued outgoing packets are sent.
     @param peer peer to request a disconnection
     @param data data describing the disconnection
@@ -581,8 +592,7 @@ void
 enet_peer_disconnect_later (ENetPeer * peer, enet_uint32 data)
 {   
     if ((peer -> state == ENET_PEER_STATE_CONNECTED || peer -> state == ENET_PEER_STATE_DISCONNECT_LATER) && 
-        ! (enet_list_empty (& peer -> outgoingCommands) &&
-           enet_list_empty (& peer -> sentReliableCommands)))
+        enet_peer_has_outgoing_commands (peer))
     {
         peer -> state = ENET_PEER_STATE_DISCONNECT_LATER;
         peer -> eventData = data;
@@ -668,8 +678,8 @@ enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoin
     outgoingCommand -> sendAttempts = 0;
     outgoingCommand -> sentTime = 0;
     outgoingCommand -> roundTripTimeout = 0;
-    outgoingCommand -> roundTripTimeoutLimit = 0;
     outgoingCommand -> command.header.reliableSequenceNumber = ENET_HOST_TO_NET_16 (outgoingCommand -> reliableSequenceNumber);
+    outgoingCommand -> queueTime = ++ peer -> host -> totalQueued;
 
     switch (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK)
     {
@@ -680,12 +690,16 @@ enet_peer_setup_outgoing_command (ENetPeer * peer, ENetOutgoingCommand * outgoin
     case ENET_PROTOCOL_COMMAND_SEND_UNSEQUENCED:
         outgoingCommand -> command.sendUnsequenced.unsequencedGroup = ENET_HOST_TO_NET_16 (peer -> outgoingUnsequencedGroup);
         break;
-    
+
     default:
         break;
     }
 
-    enet_list_insert (enet_list_end (& peer -> outgoingCommands), outgoingCommand);
+    if ((outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE) != 0 &&
+        outgoingCommand -> packet != NULL)
+      enet_list_insert (enet_list_end (& peer -> outgoingSendReliableCommands), outgoingCommand);
+    else
+      enet_list_insert (enet_list_end (& peer -> outgoingCommands), outgoingCommand);
 }
 
 ENetOutgoingCommand *
