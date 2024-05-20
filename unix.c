@@ -504,8 +504,10 @@ enet_socket_receive (ENetSocket socket,
         switch (errno)
         {
             case EWOULDBLOCK:
-            case EINTR:
                 return 0;
+            case EINTR:
+            case EMSGSIZE:
+                return -2;
             default:
                 return -1;
         }
