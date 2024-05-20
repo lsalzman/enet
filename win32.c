@@ -381,6 +381,7 @@ enet_socket_receive (ENetSocket socket,
        {
        case WSAEWOULDBLOCK:
        case WSAECONNRESET:
+       case WSAEINTR:
           return 0;
        case WSAEMSGSIZE:
           return -2;
