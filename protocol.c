@@ -256,7 +256,7 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
        {
           -- channel -> reliableWindows [reliableWindow];
           if (! channel -> reliableWindows [reliableWindow])
-            channel -> usedReliableWindows &= ~ (1 << reliableWindow);
+            channel -> usedReliableWindows &= ~ (1u << reliableWindow);
        }
     }
 
@@ -500,13 +500,13 @@ enet_protocol_handle_send_unsequenced (ENetHost * host, ENetPeer * peer, const E
         memset (peer -> unsequencedWindow, 0, sizeof (peer -> unsequencedWindow));
     }
     else
-    if (peer -> unsequencedWindow [index / 32] & (1 << (index % 32)))
+    if (peer -> unsequencedWindow [index / 32] & (1u << (index % 32)))
       return 0;
       
     if (enet_peer_queue_incoming_command (peer, command, (const enet_uint8 *) command + sizeof (ENetProtocolSendUnsequenced), dataLength, ENET_PACKET_FLAG_UNSEQUENCED, 0) == NULL)
       return -1;
    
-    peer -> unsequencedWindow [index / 32] |= 1 << (index % 32);
+    peer -> unsequencedWindow [index / 32] |= 1u << (index % 32);
  
     return 0;
 }
@@ -624,11 +624,11 @@ enet_protocol_handle_send_fragment (ENetHost * host, ENetPeer * peer, const ENet
          return -1;
     }
     
-    if ((startCommand -> fragments [fragmentNumber / 32] & (1 << (fragmentNumber % 32))) == 0)
+    if ((startCommand -> fragments [fragmentNumber / 32] & (1u << (fragmentNumber % 32))) == 0)
     {
        -- startCommand -> fragmentsRemaining;
 
-       startCommand -> fragments [fragmentNumber / 32] |= (1 << (fragmentNumber % 32));
+       startCommand -> fragments [fragmentNumber / 32] |= (1u << (fragmentNumber % 32));
 
        if (fragmentOffset + fragmentLength > startCommand -> packet -> dataLength)
          fragmentLength = startCommand -> packet -> dataLength - fragmentOffset;
@@ -742,11 +742,11 @@ enet_protocol_handle_send_unreliable_fragment (ENetHost * host, ENetPeer * peer,
          return -1;
     }
 
-    if ((startCommand -> fragments [fragmentNumber / 32] & (1 << (fragmentNumber % 32))) == 0)
+    if ((startCommand -> fragments [fragmentNumber / 32] & (1u << (fragmentNumber % 32))) == 0)
     {
        -- startCommand -> fragmentsRemaining;
 
-       startCommand -> fragments [fragmentNumber / 32] |= (1 << (fragmentNumber % 32));
+       startCommand -> fragments [fragmentNumber / 32] |= (1u << (fragmentNumber % 32));
 
        if (fragmentOffset + fragmentLength > startCommand -> packet -> dataLength)
          fragmentLength = startCommand -> packet -> dataLength - fragmentOffset;
@@ -1373,7 +1373,7 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
 
        if (peer -> earliestTimeout != 0 &&
              (ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMaximum ||
-               ((1 << (outgoingCommand -> sendAttempts - 1)) >= peer -> timeoutLimit &&
+               ((1u << (outgoingCommand -> sendAttempts - 1)) >= peer -> timeoutLimit &&
                  ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMinimum)))
        {
           enet_protocol_notify_disconnect (host, peer, event);
@@ -1455,8 +1455,8 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer, ENetLis
              if (outgoingCommand -> sendAttempts < 1 &&
                   ! (outgoingCommand -> reliableSequenceNumber % ENET_PEER_RELIABLE_WINDOW_SIZE) &&
                   (channel -> reliableWindows [(reliableWindow + ENET_PEER_RELIABLE_WINDOWS - 1) % ENET_PEER_RELIABLE_WINDOWS] >= ENET_PEER_RELIABLE_WINDOW_SIZE ||
-                    channel -> usedReliableWindows & ((((1 << (ENET_PEER_FREE_RELIABLE_WINDOWS + 2)) - 1) << reliableWindow) |
-                      (((1 << (ENET_PEER_FREE_RELIABLE_WINDOWS + 2)) - 1) >> (ENET_PEER_RELIABLE_WINDOWS - reliableWindow)))))
+                    channel -> usedReliableWindows & ((((1u << (ENET_PEER_FREE_RELIABLE_WINDOWS + 2)) - 1) << reliableWindow) |
+                      (((1u << (ENET_PEER_FREE_RELIABLE_WINDOWS + 2)) - 1) >> (ENET_PEER_RELIABLE_WINDOWS - reliableWindow)))))
              {
                 windowWrap = 1;
                 currentSendReliableCommand = enet_list_end (& peer -> outgoingSendReliableCommands);
@@ -1496,7 +1496,7 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer, ENetLis
        {
           if (channel != NULL && outgoingCommand -> sendAttempts < 1)
           {
-             channel -> usedReliableWindows |= 1 << reliableWindow;
+             channel -> usedReliableWindows |= 1u << reliableWindow;
              ++ channel -> reliableWindows [reliableWindow];
           }
 
