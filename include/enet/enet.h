@@ -5,11 +5,6 @@
 #ifndef __ENET_ENET_H__
 #define __ENET_ENET_H__
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stdlib.h>
 
 #ifdef _WIN32
@@ -22,6 +17,11 @@ extern "C"
 #include "enet/protocol.h"
 #include "enet/list.h"
 #include "enet/callbacks.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #define ENET_VERSION_MAJOR 1
 #define ENET_VERSION_MINOR 3
