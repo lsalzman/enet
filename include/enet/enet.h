@@ -5,11 +5,6 @@
 #ifndef __ENET_ENET_H__
 #define __ENET_ENET_H__
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stdlib.h>
 
 #ifdef _WIN32
@@ -445,6 +440,11 @@ typedef struct _ENetEvent
    enet_uint32          data;      /**< data associated with the event, if appropriate */
    ENetPacket *         packet;    /**< packet associated with the event, if appropriate */
 } ENetEvent;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /** @defgroup global ENet global functions
     @{ 
