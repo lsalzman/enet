@@ -108,7 +108,6 @@ typedef enum _ENetPacketFlag
      * made until the packet is delivered */
    ENET_PACKET_FLAG_RELIABLE    = (1 << 0),
    /** packet will not be sequenced with other packets
-     * not supported for reliable packets
      */
    ENET_PACKET_FLAG_UNSEQUENCED = (1 << 1),
    /** packet will not allocate data, and user must supply it instead */
