@@ -50,7 +50,8 @@ enet_packet_create (const void * data, size_t dataLength, enet_uint32 flags)
     return packet;
 }
 
-/** Destroys the packet and deallocates its data.
+/** Destroys the packet and deallocates its data. Note that you should not call this if you pass the packet to
+    enet_peer_send, as that function will handle the destruction of the packet.
     @param packet packet to be destroyed
 */
 void
