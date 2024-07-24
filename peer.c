@@ -4,6 +4,7 @@
 */
 #include <string.h>
 #define ENET_BUILDING_LIB 1
+#include "enet/utility.h"
 #include "enet/enet.h"
 
 /** @defgroup peer ENet peer functions 
@@ -249,7 +250,7 @@ enet_peer_receive (ENetPeer * peer, enet_uint8 * channelID)
 
    enet_free (incomingCommand);
 
-   peer -> totalWaitingData -= packet -> dataLength;
+   peer -> totalWaitingData -= ENET_MIN (peer -> totalWaitingData, packet -> dataLength);
 
    return packet;
 }
@@ -295,7 +296,7 @@ enet_peer_remove_incoming_commands (ENetPeer * peer, ENetList * queue, ENetListI
        {
           -- incomingCommand -> packet -> referenceCount;
 
-          peer -> totalWaitingData -= incomingCommand -> packet -> dataLength;
+          peer -> totalWaitingData -= ENET_MIN (peer -> totalWaitingData, incomingCommand -> packet -> dataLength);
 
           if (incomingCommand -> packet -> referenceCount == 0)
             enet_packet_destroy (incomingCommand -> packet);
