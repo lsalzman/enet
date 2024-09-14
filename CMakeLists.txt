@@ -84,19 +84,26 @@ set(SOURCE_FILES
 source_group(include FILES ${INCLUDE_FILES})
 source_group(source FILES ${SOURCE_FILES})
 
-add_library(enet STATIC
+if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    add_definitions(-DENET_DLL=1)
+    add_definitions(-DENET_BUILDING_LIB)
+endif()
+
+add_library(enet
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
 )
 
-if (MINGW)
+if (WIN32)
     target_link_libraries(enet winmm ws2_32)
 endif()
 
+include(GNUInstallDirs)
 install(TARGETS enet
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib/static
-    LIBRARY DESTINATION lib)
-
-install(DIRECTORY include/
-        DESTINATION include)
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/enet
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)

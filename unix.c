@@ -531,10 +531,16 @@ enet_socket_receive (ENetSocket socket,
 
     if (recvLength == -1)
     {
-       if (errno == EWOULDBLOCK)
-         return 0;
-
-       return -1;
+        switch (errno)
+        {
+            case EWOULDBLOCK:
+                return 0;
+            case EINTR:
+            case EMSGSIZE:
+                return -2;
+            default:
+                return -1;
+        }
     }
 
 #ifdef HAS_MSGHDR_FLAGS

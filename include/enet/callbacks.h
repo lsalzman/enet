@@ -14,14 +14,24 @@ typedef struct _ENetCallbacks
     void (ENET_CALLBACK * no_memory) (void);
 } ENetCallbacks;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /** @defgroup callbacks ENet internal callbacks
     @{
     @ingroup private
 */
+
 extern void * enet_malloc (size_t);
 extern void   enet_free (void *);
 
 /** @} */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __ENET_CALLBACKS_H__ */
 

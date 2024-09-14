@@ -8,7 +8,7 @@
 #include "enet/enet.h"
 #include <windows.h>
 #include <mmsystem.h>
-#include <ws2ipdef.h>
+#include <ws2tcpip.h>
 
 static enet_uint32 timeBase = 0;
 
@@ -427,11 +427,12 @@ enet_socket_receive (ENetSocket socket,
        case WSAEWOULDBLOCK:
        case WSAECONNRESET:
           return 0;
+       case WSAEINTR:
        case WSAEMSGSIZE:
           return -2;
+       default:
+          return -1;
        }
-
-       return -1;
     }
 
     if (flags & MSG_PARTIAL)
