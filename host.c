@@ -47,15 +47,6 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
        return NULL;
     }
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
-    
-    host -> activePeers = (ENetPeer **)enet_malloc((peerCount + 1) * sizeof(ENetPeer*));
-    if (host->activePeers == NULL)
-    {
-        enet_free(host->peers);
-        enet_free(host);
-        return NULL;
-    }
-    memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
     host -> socket = enet_socket_create (ENET_SOCKET_TYPE_DATAGRAM);
     if (host -> socket == ENET_SOCKET_NULL || (address != NULL && enet_socket_bind (host -> socket, address) < 0))
@@ -63,7 +54,6 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
        if (host -> socket != ENET_SOCKET_NULL)
          enet_socket_destroy (host -> socket);
 
-       enet_free (host -> activePeers);
        enet_free (host -> peers);
        enet_free (host);
 
@@ -94,7 +84,6 @@ enet_host_create (const ENetAddress * address, size_t peerCount, size_t channelL
     host -> recalculateBandwidthLimits = 0;
     host -> mtu = ENET_HOST_DEFAULT_MTU;
     host -> peerCount = peerCount;
-    host -> peerStatesChanged = 1;
     host -> commandCount = 0;
     host -> bufferCount = 0;
     host -> checksum = NULL;
@@ -168,7 +157,6 @@ enet_host_destroy (ENetHost * host)
     if (host -> compressor.context != NULL && host -> compressor.destroy)
       (* host -> compressor.destroy) (host -> compressor.context);
 
-    enet_free (host -> activePeers);
     enet_free (host -> peers);
     enet_free (host);
 }
@@ -220,7 +208,7 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
     if (currentPeer -> channels == NULL)
       return NULL;
     currentPeer -> channelCount = channelCount;
-    enet_peer_change_state(currentPeer, ENET_PEER_STATE_CONNECTING);
+    currentPeer -> state = ENET_PEER_STATE_CONNECTING;
     currentPeer -> address = * address;
     currentPeer -> connectID = enet_host_random (host);
     currentPeer -> mtu = host -> mtu;

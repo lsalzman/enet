@@ -40,7 +40,7 @@ enet_protocol_change_state (ENetHost * host, ENetPeer * peer, ENetPeerState stat
     else
       enet_peer_on_disconnect (peer);
 
-    enet_peer_change_state(peer, state);
+    peer -> state = state;
 }
 
 static void
@@ -337,7 +337,7 @@ enet_protocol_handle_connect (ENetHost * host, ENetProtocolHeader * header, ENet
     if (peer -> channels == NULL)
       return NULL;
     peer -> channelCount = channelCount;
-    enet_peer_change_state(peer, ENET_PEER_STATE_ACKNOWLEDGING_CONNECT);
+    peer -> state = ENET_PEER_STATE_ACKNOWLEDGING_CONNECT;
     peer -> connectID = command -> connect.connectID;
     peer -> address = host -> receivedAddress;
     peer -> mtu = host -> mtu;
@@ -1596,49 +1596,22 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer, ENetLis
     return canPing;
 }
 
-static void
-enet_protocol_on_peer_states_changed(ENetHost * host)
-{
-    // Update active peers array
-    enet_uint16 activePeersPos = 0;
-    for (ENetPeer *currentPeer = host->peers; currentPeer < &host -> peers[host->peerCount]; ++currentPeer)
-    {
-        if (currentPeer -> state != ENET_PEER_STATE_DISCONNECTED &&
-            currentPeer -> state != ENET_PEER_STATE_ZOMBIE)
-        {
-            host -> activePeers[activePeersPos] = currentPeer;
-            activePeersPos++;
-        }
-    }
-    // End of active peers
-    host -> activePeers[activePeersPos] = NULL;
-}
-
 static int
 enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int checkForTimeouts)
 {
     enet_uint8 headerData [sizeof (ENetProtocolHeader) + sizeof (enet_uint32)];
     ENetProtocolHeader * header = (ENetProtocolHeader *) headerData;
     int sentLength = 0;
-    ENetPeer * currentPeer = NULL;
     size_t shouldCompress = 0;
     ENetList sentUnreliableCommands;
 
     enet_list_clear (& sentUnreliableCommands);
 
     for (int sendPass = 0, continueSending = 0; sendPass <= continueSending; ++ sendPass)
+    for (ENetPeer * currentPeer = host -> peers;
+         currentPeer < & host -> peers [host -> peerCount];
+         ++ currentPeer)
     {
-        // Check if active peers array must be refilled.
-        // Normally a peer state is stable and equals Connected or Disconnected, so no refilling is required.
-        if (host->peerStatesChanged)
-        {
-            host->peerStatesChanged = 0;
-            enet_protocol_on_peer_states_changed(host);
-        }
-
-        for (enet_uint16 i = 0; host->activePeers[i]; ++i)
-        {
-        currentPeer = host->activePeers[i];
         if (currentPeer -> state == ENET_PEER_STATE_DISCONNECTED ||
             currentPeer -> state == ENET_PEER_STATE_ZOMBIE ||
             (sendPass > 0 && ! (currentPeer -> flags & ENET_PEER_FLAG_CONTINUE_SENDING)))
@@ -1764,7 +1737,6 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
     nextPeer:
         if (currentPeer -> flags & ENET_PEER_FLAG_CONTINUE_SENDING)
           continueSending = sendPass + 1;
-        }
     }
    
     return 0;
