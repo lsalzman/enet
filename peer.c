@@ -376,6 +376,16 @@ enet_peer_on_disconnect (ENetPeer * peer)
     }
 }
 
+void
+enet_peer_change_state(ENetPeer * peer, ENetPeerState newState)
+{
+    peer->state = newState;
+    if (peer->host)
+    {
+        peer->host->peerStatesChanged = 1;
+    }
+}
+
 /** Forcefully disconnects a peer.
     @param peer peer to forcefully disconnect
     @remarks The foreign host represented by the peer is not notified of the disconnection and will timeout
@@ -389,7 +399,7 @@ enet_peer_reset (ENetPeer * peer)
     peer -> outgoingPeerID = ENET_PROTOCOL_MAXIMUM_PEER_ID;
     peer -> connectID = 0;
 
-    peer -> state = ENET_PEER_STATE_DISCONNECTED;
+    enet_peer_change_state(peer, ENET_PEER_STATE_DISCONNECTED);
 
     peer -> incomingBandwidth = 0;
     peer -> outgoingBandwidth = 0;
@@ -565,7 +575,7 @@ enet_peer_disconnect (ENetPeer * peer, enet_uint32 data)
     {
         enet_peer_on_disconnect (peer);
 
-        peer -> state = ENET_PEER_STATE_DISCONNECTING;
+        enet_peer_change_state(peer, ENET_PEER_STATE_DISCONNECTING);
     }
     else
     {
@@ -597,7 +607,7 @@ enet_peer_disconnect_later (ENetPeer * peer, enet_uint32 data)
     if ((peer -> state == ENET_PEER_STATE_CONNECTED || peer -> state == ENET_PEER_STATE_DISCONNECT_LATER) && 
         enet_peer_has_outgoing_commands (peer))
     {
-        peer -> state = ENET_PEER_STATE_DISCONNECT_LATER;
+        enet_peer_change_state(peer, ENET_PEER_STATE_DISCONNECT_LATER);
         peer -> eventData = data;
     }
     else
