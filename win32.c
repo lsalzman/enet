@@ -236,6 +236,10 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
             result = setsockopt (socket, IPPROTO_IP, IP_TTL, (char *) & value, sizeof (int));
             break;
 
+        case ENET_SOCKOPT_TOS:
+            result = setsockopt (socket, IPPROTO_IP, IP_TOS, (char *) & value, sizeof (int));
+            break;
+
         default:
             break;
     }
@@ -256,6 +260,11 @@ enet_socket_get_option (ENetSocket socket, ENetSocketOption option, int * value)
         case ENET_SOCKOPT_TTL:
             len = sizeof(int);
             result = getsockopt (socket, IPPROTO_IP, IP_TTL, (char *) value, & len);
+            break;
+
+        case ENET_SOCKOPT_TOS:
+            len = sizeof(int);
+            result = getsockopt (socket, IPPROTO_IP, IP_TOS, (char *) value, & len);
             break;
 
         default:
