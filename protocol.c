@@ -1386,6 +1386,8 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
        ++ peer -> packetsLost;
 
        outgoingCommand -> roundTripTimeout *= 2;
+       if (outgoingCommand -> roundTripTimeout > outgoingCommand -> roundTripTimeoutLimit)
+         outgoingCommand -> roundTripTimeout = outgoingCommand -> roundTripTimeoutLimit;
 
        if (outgoingCommand -> packet != NULL)
        {
