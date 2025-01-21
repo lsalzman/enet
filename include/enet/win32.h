@@ -1,4 +1,4 @@
-/** 
+/**
  @file  win32.h
  @brief ENet Win32 header
 */
@@ -21,6 +21,8 @@
 #endif
 
 #include <stdlib.h>
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <winsock2.h>
 
 typedef SOCKET ENetSocket;
