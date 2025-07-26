@@ -58,7 +58,8 @@ typedef enum _ENetSocketOption
    ENET_SOCKOPT_SNDTIMEO  = 7,
    ENET_SOCKOPT_ERROR     = 8,
    ENET_SOCKOPT_NODELAY   = 9,
-   ENET_SOCKOPT_TTL       = 10
+   ENET_SOCKOPT_TTL       = 10,
+   ENET_SOCKOPT_IPV6_V6ONLY = 11
 } ENetSocketOption;
 
 typedef enum _ENetSocketShutdown
@@ -68,6 +69,7 @@ typedef enum _ENetSocketShutdown
     ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
 } ENetSocketShutdown;
 
+#define ENET_IPV6           1
 #define ENET_HOST_ANY       0
 #define ENET_HOST_BROADCAST 0xFFFFFFFFU
 #define ENET_PORT_ANY       0
@@ -84,9 +86,12 @@ typedef enum _ENetSocketShutdown
  */
 typedef struct _ENetAddress
 {
-   enet_uint32 host;
+   struct in6_addr host;
    enet_uint16 port;
+   enet_uint16 sin6_scope_id;
 } ENetAddress;
+
+#define in6_equal(in6_addr_a, in6_addr_b) (memcmp(&in6_addr_a, &in6_addr_b, sizeof(struct in6_addr)) == 0)
 
 /**
  * Packet flag bit constants.
