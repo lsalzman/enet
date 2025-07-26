@@ -2,7 +2,6 @@
  @file  protocol.c
  @brief ENet protocol functions
 */
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #define ENET_BUILDING_LIB 1
