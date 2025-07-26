@@ -15,11 +15,11 @@ check_function_exists("gethostbyaddr_r" HAS_GETHOSTBYADDR_R)
 check_function_exists("inet_pton" HAS_INET_PTON)
 check_function_exists("inet_ntop" HAS_INET_NTOP)
 check_c_source_compiles("
-  #include <stddef.h>
-  struct S { int a; double b; };
-  int main() {
+    #include <stddef.h>
+    struct S { int a; double b; };
+    int main() {
     return (int)offsetof(struct S, b);
-  }
+    }
 " HAS_OFFSETOF)
 check_struct_has_member("struct msghdr" "msg_flags" "sys/types.h;sys/socket.h" HAS_MSGHDR_FLAGS)
 set(CMAKE_EXTRA_INCLUDE_FILES "sys/types.h" "sys/socket.h")
