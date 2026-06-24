@@ -368,6 +368,8 @@ typedef struct _ENetHost
    int                  recalculateBandwidthLimits;
    ENetPeer *           peers;                       /**< array of peers allocated for this host */
    size_t               peerCount;                   /**< number of peers allocated for this host */
+   int                  peerStatesChanged;           /**< 0,1 - flagged on any peer state change */
+   ENetPeer **          activePeers;                 /**< active peer pointers */
    size_t               channelLimit;                /**< maximum number of channels allowed for connected peers */
    enet_uint32          serviceTime;
    ENetList             dispatchQueue;
@@ -599,6 +601,7 @@ extern void                  enet_peer_dispatch_incoming_unreliable_commands (EN
 extern void                  enet_peer_dispatch_incoming_reliable_commands (ENetPeer *, ENetChannel *, ENetIncomingCommand *);
 extern void                  enet_peer_on_connect (ENetPeer *);
 extern void                  enet_peer_on_disconnect (ENetPeer *);
+extern void                  enet_peer_change_state(ENetPeer *, ENetPeerState);
 
 ENET_API void * enet_range_coder_create (void);
 ENET_API void   enet_range_coder_destroy (void *);
