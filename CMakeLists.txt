@@ -65,8 +65,6 @@ if(HAS_SOCKLEN_T)
     add_definitions(-DHAS_SOCKLEN_T=1)
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
 set(INCLUDE_FILES_PREFIX include/enet)
 set(INCLUDE_FILES
     ${INCLUDE_FILES_PREFIX}/callbacks.h
@@ -102,6 +100,11 @@ endif()
 add_library(enet
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
+)
+
+target_include_directories(enet PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 if (WIN32)
