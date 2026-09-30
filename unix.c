@@ -364,7 +364,7 @@ int
 enet_socket_get_address (ENetSocket socket, ENetAddress * address)
 {
     unsigned char sockAddrBuf[sizeof(struct sockaddr_in6)] = { 0 };
-    int bufferLength;
+    int bufferLength = sizeof(struct sockaddr_in6);
 
     if (getsockname(socket, (struct sockaddr *) sockAddrBuf, &bufferLength) == -1)
         return -1;
