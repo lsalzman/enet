@@ -364,7 +364,7 @@ int
 enet_socket_get_address (ENetSocket socket, ENetAddress * address)
 {
     unsigned char sockAddrBuf[sizeof(struct sockaddr_in6)] = { 0 };
-    int bufferLength;
+    socklen_t bufferLength = sizeof(sockAddrBuf);
 
     if (getsockname(socket, (struct sockaddr *) sockAddrBuf, &bufferLength) == -1)
         return -1;
@@ -492,7 +492,7 @@ enet_socket_accept (ENetSocket socket, ENetAddress * address)
 {
     int result;
     unsigned char sockAddrBuf[sizeof(struct sockaddr_in6)] = { 0 };
-    int socketAddressLen = sizeof(sockAddrBuf);
+    socklen_t socketAddressLen = sizeof(sockAddrBuf);
 
     result = accept (socket, 
                      address != NULL ? (struct sockaddr*) sockAddrBuf : NULL,
@@ -567,7 +567,7 @@ enet_socket_receive (ENetSocket socket,
                      size_t bufferCount)
 {
     unsigned char sockAddrBuf[sizeof(struct sockaddr_in6)] = { 0 };
-    int socketAddressLen = sizeof(sockAddrBuf);
+    socklen_t socketAddressLen = sizeof(sockAddrBuf);
     struct msghdr msgHdr;
     struct sockaddr_in sin;
     int recvLength;
