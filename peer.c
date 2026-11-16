@@ -986,6 +986,11 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
           goto notifyError;
        }
        memset (incomingCommand -> fragments, 0, (fragmentCount + 31) / 32 * sizeof (enet_uint32));
+
+       /* Fragment numbers do not guarantee complete byte coverage. Initialize
+        * reassembly storage so gaps cannot expose uninitialized memory. */
+       if (data == NULL)
+           memset(packet->data, 0, packet->dataLength);
     }
 
     if (packet != NULL)
