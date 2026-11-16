@@ -317,7 +317,7 @@ typedef struct _ENetPeer
    enet_uint16   outgoingUnsequencedGroup;
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
    enet_uint32   eventData;
-   size_t        totalWaitingData;
+   size_t        totalWaitingData;           /**< requested allocation bytes retained by queued receive packets, commands and fragment maps */
 } ENetPeer;
 
 /** An ENet packet compressor for compressing UDP packets before socket sends or receives.
@@ -393,7 +393,7 @@ typedef struct _ENetHost
    size_t               bandwidthLimitedPeers;
    size_t               duplicatePeers;              /**< optional number of allowed peers from duplicate IPs, defaults to ENET_PROTOCOL_MAXIMUM_PEER_ID */
    size_t               maximumPacketSize;           /**< the maximum allowable packet size that may be sent or received on a peer */
-   size_t               maximumWaitingData;          /**< the maximum aggregate amount of buffer space a peer may use waiting for packets to be delivered */
+   size_t               maximumWaitingData;          /**< receive allocation admission threshold, including payload, packet, command and fragment-map storage; one admitted packet may cross this threshold */
 } ENetHost;
 
 /**

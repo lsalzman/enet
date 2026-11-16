@@ -222,6 +222,16 @@ enet_peer_send (ENetPeer * peer, enet_uint8 channelID, ENetPacket * packet)
    return 0;
 }
 
+/* Requested allocation size apart from the payload. Callers validate the
+ * fragment count before allocation; queued commands retain that count. */
+static size_t
+enet_peer_incoming_command_overhead (enet_uint32 fragmentCount)
+{
+   size_t fragmentWords = fragmentCount / 32 + (fragmentCount % 32 != 0);
+
+   return sizeof (ENetPacket) + sizeof (ENetIncomingCommand) + fragmentWords * sizeof (enet_uint32);
+}
+
 /** Attempts to dequeue any incoming queued packet.
     @param peer peer to dequeue packets from
     @param channelID holds the channel ID of the channel the packet was received on success
@@ -243,14 +253,15 @@ enet_peer_receive (ENetPeer * peer, enet_uint8 * channelID)
 
    packet = incomingCommand -> packet;
 
+   peer -> totalWaitingData -= ENET_MIN (peer -> totalWaitingData,
+       packet -> dataLength + enet_peer_incoming_command_overhead (incomingCommand -> fragmentCount));
+
    -- packet -> referenceCount;
 
    if (incomingCommand -> fragments != NULL)
      enet_free (incomingCommand -> fragments);
 
    enet_free (incomingCommand);
-
-   peer -> totalWaitingData -= ENET_MIN (peer -> totalWaitingData, packet -> dataLength);
 
    return packet;
 }
@@ -296,7 +307,8 @@ enet_peer_remove_incoming_commands (ENetPeer * peer, ENetList * queue, ENetListI
        {
           -- incomingCommand -> packet -> referenceCount;
 
-          peer -> totalWaitingData -= ENET_MIN (peer -> totalWaitingData, incomingCommand -> packet -> dataLength);
+          peer -> totalWaitingData -= ENET_MIN (peer -> totalWaitingData,
+              incomingCommand -> packet -> dataLength + enet_peer_incoming_command_overhead (incomingCommand -> fragmentCount));
 
           if (incomingCommand -> packet -> referenceCount == 0)
             enet_packet_destroy (incomingCommand -> packet);
@@ -857,6 +869,7 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     ENetIncomingCommand * incomingCommand;
     ENetListIterator currentCommand;
     ENetPacket * packet = NULL;
+    size_t waitingData;
 
     if (peer -> state == ENET_PEER_STATE_DISCONNECT_LATER)
       goto discardCommand;
@@ -956,7 +969,17 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
        goto discardCommand;
     }
 
-    if (peer -> totalWaitingData >= peer -> host -> maximumWaitingData)
+    if (peer -> totalWaitingData >= peer -> host -> maximumWaitingData ||
+        fragmentCount > ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT)
+      goto notifyError;
+
+    /* Empty packets still retain a packet and command. Keep the existing
+     * admission threshold, but include the receive-queue bookkeeping. */
+    waitingData = enet_peer_incoming_command_overhead (fragmentCount);
+    if (dataLength > (size_t) -1 - waitingData)
+      goto notifyError;
+    waitingData += dataLength;
+    if (waitingData > (size_t) -1 - peer -> totalWaitingData)
       goto notifyError;
 
     packet = enet_packet_create (data, dataLength, flags);
@@ -977,8 +1000,7 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     
     if (fragmentCount > 0)
     { 
-       if (fragmentCount <= ENET_PROTOCOL_MAXIMUM_FRAGMENT_COUNT)
-         incomingCommand -> fragments = (enet_uint32 *) enet_malloc ((fragmentCount + 31) / 32 * sizeof (enet_uint32));
+       incomingCommand -> fragments = (enet_uint32 *) enet_malloc ((fragmentCount + 31) / 32 * sizeof (enet_uint32));
        if (incomingCommand -> fragments == NULL)
        {
           enet_free (incomingCommand);
@@ -992,7 +1014,7 @@ enet_peer_queue_incoming_command (ENetPeer * peer, const ENetProtocol * command,
     {
        ++ packet -> referenceCount;
       
-       peer -> totalWaitingData += packet -> dataLength;
+       peer -> totalWaitingData += waitingData;
     }
 
     enet_list_insert (enet_list_next (currentCommand), incomingCommand);
