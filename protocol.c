@@ -261,6 +261,10 @@ enet_protocol_remove_sent_reliable_command (ENetPeer * peer, enet_uint16 reliabl
     }
 
     commandNumber = (ENetProtocolCommand) (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_MASK);
+
+    /* VERIFY_CONNECT can remove CONNECT without an ordinary acknowledgement. */
+    peer -> earliestTimeout = 0;
+    peer -> flags &= ~ ENET_PEER_FLAG_TIMEOUT_STARTED;
     
     enet_list_remove (& outgoingCommand -> outgoingCommandList);
 
@@ -914,6 +918,7 @@ enet_protocol_handle_acknowledge (ENetHost * host, ENetEvent * event, ENetPeer *
 
     peer -> lastReceiveTime = ENET_MAX (host -> serviceTime, 1);
     peer -> earliestTimeout = 0;
+    peer -> flags &= ~ ENET_PEER_FLAG_TIMEOUT_STARTED;
 
     receivedReliableSequenceNumber = ENET_NET_TO_HOST_16 (command -> acknowledge.receivedReliableSequenceNumber);
 
@@ -1350,11 +1355,57 @@ enet_protocol_send_acknowledgements (ENetHost * host, ENetPeer * peer)
     host -> bufferCount = buffer - host -> buffers;
 }
 
+/* Rebuild the timeout origin after an acknowledgement or command removal. Retransmissions can be
+ * waiting in either outgoing queue, and a send timestamp of zero is valid. */
+static void
+enet_protocol_find_earliest_timeout (ENetPeer * peer, ENetList * queue)
+{
+    ENetListIterator currentCommand;
+
+    for (currentCommand = enet_list_begin (queue);
+         currentCommand != enet_list_end (queue);
+         currentCommand = enet_list_next (currentCommand))
+    {
+       ENetOutgoingCommand * outgoingCommand = (ENetOutgoingCommand *) currentCommand;
+
+       if (! (outgoingCommand -> command.header.command & ENET_PROTOCOL_COMMAND_FLAG_ACKNOWLEDGE) ||
+           outgoingCommand -> sendAttempts == 0)
+         continue;
+
+       if (! (peer -> flags & ENET_PEER_FLAG_TIMEOUT_STARTED) ||
+           ENET_TIME_LESS (outgoingCommand -> sentTime, peer -> earliestTimeout))
+         peer -> earliestTimeout = outgoingCommand -> sentTime;
+
+       peer -> flags |= ENET_PEER_FLAG_TIMEOUT_STARTED;
+    }
+}
+
 static int
 enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * event)
 {
     ENetOutgoingCommand * outgoingCommand;
     ENetListIterator currentCommand, insertPosition, insertSendReliablePosition;
+
+    if (! (peer -> flags & ENET_PEER_FLAG_TIMEOUT_STARTED))
+    {
+       enet_protocol_find_earliest_timeout (peer, & peer -> sentReliableCommands);
+       enet_protocol_find_earliest_timeout (peer, & peer -> outgoingCommands);
+       enet_protocol_find_earliest_timeout (peer, & peer -> outgoingSendReliableCommands);
+    }
+
+    /* A retry may be due after the maximum deadline, or still be queued for
+     * sending. Neither condition may postpone the maximum-timeout check. */
+    if ((peer -> flags & ENET_PEER_FLAG_TIMEOUT_STARTED) &&
+        ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMaximum)
+    {
+       enet_protocol_notify_disconnect (host, peer, event);
+
+       return 1;
+    }
+
+    if (enet_list_empty (& peer -> sentReliableCommands) ||
+        ! ENET_TIME_GREATER_EQUAL (host -> serviceTime, peer -> nextTimeout))
+      return 0;
 
     currentCommand = enet_list_begin (& peer -> sentReliableCommands);
     insertPosition = enet_list_begin (& peer -> outgoingCommands);
@@ -1369,14 +1420,10 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
        if (ENET_TIME_DIFFERENCE (host -> serviceTime, outgoingCommand -> sentTime) < outgoingCommand -> roundTripTimeout)
          continue;
 
-       if (peer -> earliestTimeout == 0 ||
-           ENET_TIME_LESS (outgoingCommand -> sentTime, peer -> earliestTimeout))
-         peer -> earliestTimeout = outgoingCommand -> sentTime;
-
-       if (peer -> earliestTimeout != 0 &&
-             (ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMaximum ||
-               ((1u << (outgoingCommand -> sendAttempts - 1)) >= peer -> timeoutLimit &&
-                 ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMinimum)))
+       /* Preserve the exponential multiplier without shifting past 32 bits. */
+       if ((outgoingCommand -> sendAttempts >= 33 ||
+            (1u << (outgoingCommand -> sendAttempts - 1)) >= peer -> timeoutLimit) &&
+           ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= peer -> timeoutMinimum)
        {
           enet_protocol_notify_disconnect (host, peer, event);
 
@@ -1385,7 +1432,8 @@ enet_protocol_check_timeouts (ENetHost * host, ENetPeer * peer, ENetEvent * even
 
        ++ peer -> packetsLost;
 
-       outgoingCommand -> roundTripTimeout *= 2;
+       outgoingCommand -> roundTripTimeout = outgoingCommand -> roundTripTimeout >= ENET_PEER_MAXIMUM_TIMEOUT / 2 ?
+                                              ENET_PEER_MAXIMUM_TIMEOUT : outgoingCommand -> roundTripTimeout * 2;
 
        if (outgoingCommand -> packet != NULL)
        {
@@ -1502,10 +1550,17 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer, ENetLis
              ++ channel -> reliableWindows [reliableWindow];
           }
 
-          ++ outgoingCommand -> sendAttempts;
+          if (outgoingCommand -> sendAttempts < 0xFFFF)
+            ++ outgoingCommand -> sendAttempts;
  
           if (outgoingCommand -> roundTripTimeout == 0)
-            outgoingCommand -> roundTripTimeout = peer -> roundTripTime + 4 * peer -> roundTripTimeVariance;
+          {
+             enet_uint32 roundTripTime = ENET_MIN (peer -> roundTripTime, ENET_PEER_MAXIMUM_TIMEOUT);
+
+             /* Bound the operands before multiplying or adding. */
+             outgoingCommand -> roundTripTimeout = peer -> roundTripTimeVariance > (ENET_PEER_MAXIMUM_TIMEOUT - roundTripTime) / 4 ?
+                                                    ENET_PEER_MAXIMUM_TIMEOUT : ENET_MAX (roundTripTime + 4 * peer -> roundTripTimeVariance, 1);
+          }
 
           if (enet_list_empty (& peer -> sentReliableCommands))
             peer -> nextTimeout = host -> serviceTime + outgoingCommand -> roundTripTimeout;
@@ -1629,9 +1684,9 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         if (! enet_list_empty (& currentPeer -> acknowledgements))
           enet_protocol_send_acknowledgements (host, currentPeer);
 
-        if (checkForTimeouts != 0 &&
-            ! enet_list_empty (& currentPeer -> sentReliableCommands) &&
-            ENET_TIME_GREATER_EQUAL (host -> serviceTime, currentPeer -> nextTimeout) &&
+        /* serviceTime is fixed for all send passes. Check each peer once, avoiding
+         * repeated queue scans while draining unreliable traffic. */
+        if (checkForTimeouts != 0 && sendPass == 0 &&
             enet_protocol_check_timeouts (host, currentPeer, event) == 1)
         {
             if (event != NULL && event -> type != ENET_EVENT_TYPE_NONE)

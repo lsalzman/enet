@@ -224,6 +224,8 @@ enum
    ENET_PEER_TIMEOUT_LIMIT                = 32,
    ENET_PEER_TIMEOUT_MINIMUM              = 5000,
    ENET_PEER_TIMEOUT_MAXIMUM              = 30000,
+   /* Half the time-comparison window, leaving room for delayed servicing. */
+   ENET_PEER_MAXIMUM_TIMEOUT              = 12 * 60 * 60 * 1000,
    ENET_PEER_PING_INTERVAL                = 500,
    ENET_PEER_UNSEQUENCED_WINDOWS          = 64,
    ENET_PEER_UNSEQUENCED_WINDOW_SIZE      = 1024,
@@ -248,7 +250,8 @@ typedef struct _ENetChannel
 typedef enum _ENetPeerFlag
 {
    ENET_PEER_FLAG_NEEDS_DISPATCH   = (1 << 0),
-   ENET_PEER_FLAG_CONTINUE_SENDING = (1 << 1)
+   ENET_PEER_FLAG_CONTINUE_SENDING = (1 << 1),
+   ENET_PEER_FLAG_TIMEOUT_STARTED = (1 << 2)
 } ENetPeerFlag;
 
 /**

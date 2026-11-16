@@ -320,6 +320,9 @@ enet_peer_reset_queues (ENetPeer * peer)
 {
     ENetChannel * channel;
 
+    peer -> flags &= ~ ENET_PEER_FLAG_TIMEOUT_STARTED;
+    peer -> earliestTimeout = 0;
+
     if (peer -> flags & ENET_PEER_FLAG_NEEDS_DISPATCH)
     {
        enet_list_remove (& peer -> dispatchList);
@@ -467,11 +470,12 @@ enet_peer_ping (ENetPeer * peer)
 
     @param peer the peer to adjust
     @param pingInterval the interval at which to send pings; defaults to ENET_PEER_PING_INTERVAL if 0
+    @remarks Intervals above ENET_PEER_MAXIMUM_TIMEOUT (12 hours) are clamped.
 */
 void
 enet_peer_ping_interval (ENetPeer * peer, enet_uint32 pingInterval)
 {
-    peer -> pingInterval = pingInterval ? pingInterval : ENET_PEER_PING_INTERVAL;
+    peer -> pingInterval = pingInterval ? ENET_MIN (pingInterval, ENET_PEER_MAXIMUM_TIMEOUT) : ENET_PEER_PING_INTERVAL;
 }
 
 /** Sets the timeout parameters for a peer.
@@ -489,14 +493,21 @@ enet_peer_ping_interval (ENetPeer * peer, enet_uint32 pingInterval)
     @param timeoutLimit the timeout limit; defaults to ENET_PEER_TIMEOUT_LIMIT if 0
     @param timeoutMinimum the timeout minimum; defaults to ENET_PEER_TIMEOUT_MINIMUM if 0
     @param timeoutMaximum the timeout maximum; defaults to ENET_PEER_TIMEOUT_MAXIMUM if 0
+    @remarks Nonzero minimum and maximum durations above ENET_PEER_MAXIMUM_TIMEOUT
+    (12 hours) are clamped. The maximum is checked on service passes independently
+    of retry expiration; the minimum still requires the timeout-limit multiplier
+    to be reached on a retry. Hosts must be serviced regularly, with less than
+    ENET_PEER_MAXIMUM_TIMEOUT between timer-processing passes. Blocking service
+    waits and application scheduling can delay timeout processing. This does not
+    change the range or meaning of the timeoutLimit multiplier.
 */
 
 void
 enet_peer_timeout (ENetPeer * peer, enet_uint32 timeoutLimit, enet_uint32 timeoutMinimum, enet_uint32 timeoutMaximum)
 {
     peer -> timeoutLimit = timeoutLimit ? timeoutLimit : ENET_PEER_TIMEOUT_LIMIT;
-    peer -> timeoutMinimum = timeoutMinimum ? timeoutMinimum : ENET_PEER_TIMEOUT_MINIMUM;
-    peer -> timeoutMaximum = timeoutMaximum ? timeoutMaximum : ENET_PEER_TIMEOUT_MAXIMUM;
+    peer -> timeoutMinimum = timeoutMinimum ? ENET_MIN (timeoutMinimum, ENET_PEER_MAXIMUM_TIMEOUT) : ENET_PEER_TIMEOUT_MINIMUM;
+    peer -> timeoutMaximum = timeoutMaximum ? ENET_MIN (timeoutMaximum, ENET_PEER_MAXIMUM_TIMEOUT) : ENET_PEER_TIMEOUT_MAXIMUM;
 }
 
 /** Force an immediate disconnection from a peer.
