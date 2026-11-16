@@ -1684,7 +1684,9 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         if (! enet_list_empty (& currentPeer -> acknowledgements))
           enet_protocol_send_acknowledgements (host, currentPeer);
 
-        if (checkForTimeouts != 0 &&
+        /* serviceTime is fixed for all send passes. Check each peer once, avoiding
+         * repeated queue scans while draining unreliable traffic. */
+        if (checkForTimeouts != 0 && sendPass == 0 &&
             enet_protocol_check_timeouts (host, currentPeer, event) == 1)
         {
             if (event != NULL && event -> type != ENET_EVENT_TYPE_NONE)
